@@ -1,0 +1,419 @@
+export interface Division {
+  id: string;
+  name: string;
+  shortName: string;
+  description: string;
+  icon: string;
+  memberCount: number;
+  color: string;
+  technologies: string[];
+}
+
+export interface Project {
+  id: string;
+  slug: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  division: string;
+  divisionId: string;
+  tags: string[];
+  year: number;
+  status: "published" | "draft";
+  featured: boolean;
+  image: string;
+  members: string[];
+  award: string;
+  githubUrl?: string;
+  liveUrl?: string;
+}
+
+export interface Member {
+  id: string;
+  name: string;
+  role: string;
+  division: string;
+  year: string;
+  avatar: string;
+  github: string;
+  linkedin: string;
+  active: boolean;
+}
+
+export interface Album {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  coverImage: string;
+  date: string;
+  photoCount: number;
+  photos: string[];
+}
+
+export interface FAQ {
+  id: string;
+  question: string;
+  answer: string;
+}
+
+export interface Event {
+  id: string;
+  title: string;
+  date: string;
+  time: string;
+  location: string;
+  type: "Workshop" | "Bootcamp" | "Seminar" | "Sharing Session";
+  description: string;
+  image: string;
+  isOpen: boolean;
+  registrationLink?: string;
+}
+
+export const divisions: Division[] = [
+  {
+    id: "academy",
+    name: "WiTECH Academy",
+    shortName: "Academy",
+    description: "Pusatnya upgrade diri! Fokus ningkatin kompetensi member lewat kelas seru, workshop, dan mentoring. Nggak cuma skill teknis, soft skill kamu juga bakal diasah dari nol biar makin siap terjun ke dunia profesional.",
+    icon: "Smartphone",
+    memberCount: 4,
+    color: "#ff5e5b",
+    technologies: ["Mentoring", "Workshop", "Soft Skill", "Hard Skill"],
+  },
+  {
+    id: "lab",
+    name: "WiTECH Lab",
+    shortName: "Lab",
+    description: "Dapur inovasinya Witech! Wadah buat ngembangin ide gila kamu jadi karya dan solusi teknologi beneran. Kita garap berbagai proyek kolaborasi seru yang pastinya bermanfaat buat kampus dan masyarakat sekitar.",
+    icon: "Code",
+    memberCount: 4,
+    color: "#6366f1",
+    technologies: ["Kolaborasi", "Inovasi", "Problem Solving", "Pengembangan Ide"],
+  },
+  {
+    id: "creative",
+    name: "WiTECH Creative",
+    shortName: "Creative",
+    description: "Otak di balik visual kece organisasi! Kita yang kelola identitas visual, media digital, dan bikin konten kreatif. Mulai dari ngedesain poster, ngedit video, sampai ngebangun branding organisasi yang inovatif.",
+    icon: "Palette",
+    memberCount: 5,
+    color: "#00cecb",
+    technologies: ["Visual Design", "Multimedia", "Branding", "Content Creator"],
+  },
+  {
+    id: "connect",
+    name: "WiTECH Connect",
+    shortName: "Connect",
+    description: "Jembatan relasi kita! Kerjanya cari teman, bangun kolaborasi, dan kemitraan sama organisasi, industri, sampai masyarakat. Seru-seruan bikin event keren dan nambah koneksi luas berawal dari divisi ini.",
+    icon: "Shield",
+    memberCount: 5,
+    color: "#10b981",
+    technologies: ["Public Relations", "Event Organizing", "Networking", "Kemitraan"],
+  },
+  {
+    id: "research",
+    name: "WiTECH Research",
+    shortName: "Research",
+    description: "Tim pemikir yang suka ngulik data! Kita fokus ke penelitian, analisis data, dan inovasi. Hasil riset dan publikasi ilmiah kita bakal dipake sebagai kontribusi nyata teknologi untuk nyelesaiin masalah sehari-hari.",
+    icon: "Brain",
+    memberCount: 5,
+    color: "#8b5cf6",
+    technologies: ["Riset Ilmiah", "Analisis Data", "Publikasi", "Inovasi Teknologi"],
+  },
+];
+
+export const projects: Project[] = [
+  {
+    id: "1",
+    slug: "wilearn-platform",
+    title: "WiLearn",
+    subtitle: "Campus E-Learning Platform",
+    description: "A comprehensive e-learning platform serving 5,000+ students with live classes, course management, and AI-powered progress tracking.",
+    division: "Web & App Development",
+    divisionId: "webapp",
+    tags: ["React", "Node.js", "PostgreSQL", "WebRTC"],
+    year: 2024,
+    status: "published",
+    featured: true,
+    image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=500&fit=crop&auto=format",
+    members: ["Rizky Pratama", "Ahmad Fauzi"],
+    award: "1st Place — National Tech Competition 2024",
+  },
+  {
+    id: "2",
+    slug: "campusnav-app",
+    title: "CampusNav",
+    subtitle: "Smart Campus Navigation",
+    description: "An indoor-outdoor navigation app for university campuses using AR wayfinding and real-time crowd density mapping via BLE beacons.",
+    division: "Web & App Development",
+    divisionId: "webapp",
+    tags: ["Flutter", "ARKit", "BLE", "Firebase"],
+    year: 2024,
+    status: "published",
+    featured: true,
+    image: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&h=500&fit=crop&auto=format",
+    members: ["Budi Santoso", "Dewi Rahayu"],
+    award: "Best Mobile App — Gemastik 2024",
+  },
+  {
+    id: "3",
+    slug: "workshop-excel-data",
+    title: "Workshop Excel & Data",
+    subtitle: "Staff & Student Training Materials",
+    description: "Membuat materi pembelajaran interaktif Excel untuk mempermudah staf kampus dan mahasiswa non-IT dalam mengolah data sehari-hari.",
+    division: "Digital Literacy",
+    divisionId: "digilit",
+    tags: ["Excel", "Google Workspace", "Training"],
+    year: 2024,
+    status: "published",
+    featured: true,
+    image: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&h=500&fit=crop&auto=format",
+    members: ["Budi Santoso", "Intan Permata"],
+    award: "",
+  },
+  {
+    id: "4",
+    slug: "campus-event-poster",
+    title: "Campus Event Poster Design",
+    subtitle: "Creative Assets for University Events",
+    description: "Mendesain berbagai kebutuhan publikasi seperti poster, banner, dan aset media sosial untuk acara tahunan kampus dan UKM lain.",
+    division: "Creative & Design",
+    divisionId: "creative",
+    tags: ["Figma", "Canva", "Photoshop", "Illustrator"],
+    year: 2023,
+    status: "published",
+    featured: false,
+    image: "https://images.unsplash.com/photo-1626785774573-4b799315345d?w=800&h=500&fit=crop&auto=format",
+    members: ["Siti Nurhaliza", "Ayu Pertiwi"],
+    award: "",
+  },
+  {
+    id: "5",
+    slug: "pc-clinic",
+    title: "PC Clinic",
+    subtitle: "Free Troubleshooting Service",
+    description: "Layanan perbaikan laptop dan HP gratis untuk mahasiswa. Dari install ulang OS, bersihin virus, sampai konsultasi upgrade hardware.",
+    division: "Hardware & IoT",
+    divisionId: "hardware",
+    tags: ["PC Building", "Repair", "Windows", "Hardware"],
+    year: 2024,
+    status: "published",
+    featured: false,
+    image: "https://images.unsplash.com/photo-1597872253142-0a8ca520fb55?w=800&h=500&fit=crop&auto=format",
+    members: ["Fajar Nugroho", "Galih Pratomo"],
+    award: "Best Community Service 2024",
+  },
+  {
+    id: "6",
+    slug: "wisec-toolkit",
+    title: "WiSec Toolkit",
+    subtitle: "Security Awareness Platform",
+    description: "An interactive cybersecurity training platform with simulated phishing campaigns, CTF challenges, dan panduan aman berselancar.",
+    division: "Cybersecurity & Networking",
+    divisionId: "cybernet",
+    tags: ["Python", "Django", "Docker", "Security"],
+    year: 2023,
+    status: "published",
+    featured: false,
+    image: "https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=800&h=500&fit=crop&auto=format",
+    members: ["Hendro Wijaya", "Dimas Setiawan"],
+    award: "",
+  },
+];
+
+export const members: Member[] = [
+  // Core
+  { id: "1", name: "IDDRUS, M.Kom", role: "Pembina", division: "Core", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=IDDRUS", github: "", linkedin: "", active: true },
+  { id: "2", name: "Sulfa eka safira", role: "Ketua", division: "Core", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sulfa", github: "", linkedin: "", active: true },
+  { id: "3", name: "Gibran aljilani", role: "Wakil Ketua", division: "Core", year: "2024", avatar: "/foto-angota/ghibrancakep.jpeg", github: "", linkedin: "", active: true },
+  { id: "4", name: "Zhubdatul fadhilah", role: "Sekretaris", division: "Core", year: "2024", avatar: "/foto-angota/zhuu.jpeg", github: "", linkedin: "", active: true },
+  { id: "5", name: "Oktari fitriani anwar", role: "Wakil Sekretaris", division: "Core", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Oktari", github: "", linkedin: "", active: true },
+  { id: "6", name: "Rumsil lailiyatun nuraini", role: "Bendahara", division: "Core", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Rumsil", github: "", linkedin: "", active: true },
+  { id: "7", name: "Nurul intan aulia H", role: "Wakil Bendahara", division: "Core", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Nurul", github: "", linkedin: "", active: true },
+  
+  // WiTECH Academy
+  { id: "8", name: "Muhammad Jasuli", role: "Ketua Divisi", division: "WiTECH Academy", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jasuli", github: "", linkedin: "", active: true },
+  { id: "9", name: "Ach. Faiz mahmudi", role: "Anggota", division: "WiTECH Academy", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Faiz", github: "", linkedin: "", active: true },
+  { id: "10", name: "Dina Safitri", role: "Anggota", division: "WiTECH Academy", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Dina", github: "", linkedin: "", active: true },
+  { id: "11", name: "Lailatul Hasanah", role: "Anggota", division: "WiTECH Academy", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Lailatul", github: "", linkedin: "", active: true },
+
+  // WiTECH Lab
+  { id: "12", name: "Wildan khuzamy faradis", role: "Ketua Divisi", division: "WiTECH Lab", year: "2024", avatar: "/foto-angota/wildanz.jpeg", github: "", linkedin: "", active: true },
+  { id: "13", name: "Nofan nelandi R", role: "Anggota", division: "WiTECH Lab", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Nofan", github: "", linkedin: "", active: true },
+  { id: "14", name: "Nur Hartatik", role: "Anggota", division: "WiTECH Lab", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Hartatik", github: "", linkedin: "", active: true },
+  { id: "15", name: "Wafika Jamila hadi", role: "Anggota", division: "WiTECH Lab", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Wafika", github: "", linkedin: "", active: true },
+
+  // WiTECH Creative
+  { id: "16", name: "Mukhlishatul afifah", role: "Ketua Divisi", division: "WiTECH Creative", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mukhlishatul", github: "", linkedin: "", active: true },
+  { id: "17", name: "Moh Hazmi Farhadinoto", role: "Anggota", division: "WiTECH Creative", year: "2024", avatar: "/foto-angota/hazmigantengbanget.jpeg", github: "", linkedin: "", active: true },
+  { id: "18", name: "Irfan Haryanto", role: "Anggota", division: "WiTECH Creative", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Irfan", github: "", linkedin: "", active: true },
+  { id: "19", name: "Zian ayu fitri R", role: "Anggota", division: "WiTECH Creative", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Zian", github: "", linkedin: "", active: true },
+  { id: "20", name: "Alya faradiana", role: "Anggota", division: "WiTECH Creative", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alya", github: "", linkedin: "", active: true },
+
+  // WiTECH Connect
+  { id: "21", name: "Trio lestari rais sobri", role: "Ketua Divisi", division: "WiTECH Connect", year: "2024", avatar: "/foto-angota/dio.jpeg", github: "", linkedin: "", active: true },
+  { id: "22", name: "Moh Jufri", role: "Anggota", division: "WiTECH Connect", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jufri", github: "", linkedin: "", active: true },
+  { id: "23", name: "Liana Intan Prastika", role: "Anggota", division: "WiTECH Connect", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Liana", github: "", linkedin: "", active: true },
+  { id: "24", name: "Dzul kifli", role: "Anggota", division: "WiTECH Connect", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Dzul", github: "", linkedin: "", active: true },
+  { id: "25", name: "Robitul auliya' alfayedz", role: "Anggota", division: "WiTECH Connect", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Robitul", github: "", linkedin: "", active: true },
+
+  // WiTECH Research
+  { id: "26", name: "Adelia mahardika puteri", role: "Ketua Divisi", division: "WiTECH Research", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Adelia", github: "", linkedin: "", active: true },
+  { id: "27", name: "Dewa putra kusuma", role: "Anggota", division: "WiTECH Research", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Dewa", github: "", linkedin: "", active: true },
+  { id: "28", name: "Utami Tri Hapsari", role: "Anggota", division: "WiTECH Research", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Utami", github: "", linkedin: "", active: true },
+  { id: "29", name: "Ach Fikri Maulana Putra", role: "Anggota", division: "WiTECH Research", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Fikri", github: "", linkedin: "", active: true },
+  { id: "30", name: "Balwanindyta Akrida Putri", role: "Anggota", division: "WiTECH Research", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Balwanindyta", github: "", linkedin: "", active: true },
+];
+
+export const albums: Album[] = [
+  {
+    id: "1",
+    slug: "gemastik-2024",
+    title: "Gemastik 2024",
+    description: "National competition highlights from Gemastik XVII at Universitas Diponegoro, Semarang.",
+    coverImage: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&h=500&fit=crop&auto=format",
+    date: "2024-11-15",
+    photoCount: 48,
+    photos: [
+      "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&h=800&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=1200&h=800&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=1200&h=800&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1528605105345-5344ea20e269?w=1200&h=800&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?w=1200&h=800&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=1200&h=800&fit=crop&auto=format",
+    ],
+  },
+  {
+    id: "2",
+    slug: "workshop-ai-2024",
+    title: "AI Workshop Series",
+    description: "Three-day intensive workshop on modern AI/ML techniques, featuring speakers from top tech companies.",
+    coverImage: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=800&h=500&fit=crop&auto=format",
+    date: "2024-09-20",
+    photoCount: 32,
+    photos: [
+      "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=1200&h=800&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=1200&h=800&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1605379399642-870262d3d051?w=1200&h=800&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1499951360447-b19be8fe80f5?w=1200&h=800&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1531482615713-2afd69097998?w=1200&h=800&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&h=800&fit=crop&auto=format",
+    ],
+  },
+  {
+    id: "3",
+    slug: "orientation-2024",
+    title: "Member Orientation 2024",
+    description: "Welcoming the newest batch of Witech members with hands-on workshops and team bonding activities.",
+    coverImage: "https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=800&h=500&fit=crop&auto=format",
+    date: "2024-08-05",
+    photoCount: 56,
+    photos: [
+      "https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=1200&h=800&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1200&h=800&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1515169067868-5387ec356754?w=1200&h=800&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=1200&h=800&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=1200&h=800&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=1200&h=800&fit=crop&auto=format",
+    ],
+  },
+  {
+    id: "4",
+    slug: "hackathon-internal-2024",
+    title: "Internal Hackathon 2024",
+    description: "24-hour internal hackathon where cross-division teams built complete projects from scratch.",
+    coverImage: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800&h=500&fit=crop&auto=format",
+    date: "2024-07-12",
+    photoCount: 24,
+    photos: [
+      "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=1200&h=800&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1200&h=800&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1200&h=800&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1484417894907-623942c8ee29?w=1200&h=800&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=1200&h=800&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1200&h=800&fit=crop&auto=format",
+    ],
+  },
+];
+
+export const faqs: FAQ[] = [
+  {
+    id: "1",
+    question: "Harus anak IT kah buat ikutan Witech?",
+    answer: "Enggak! Semua jurusan welcome banget di sini. Witech (UKM Teknologi) adalah tempat belajar bareng buat siapa aja yang tertarik sama teknologi. Dari belajar Excel buat anak ekonomi, ngedit video buat anak komunikasi, sampai coding buat anak teknik—semua ada tempatnya!",
+  },
+  {
+    id: "2",
+    question: "Gimana cara gabung jadi member Witech?",
+    answer: "Gampang banget! Pendaftaran dibuka dua kali setahun, di awal semester ganjil dan genap. Alurnya: isi form, ngobrol santai (interview singkat), dan ikut serunya masa orientasi. Pantengin terus IG @witech.official ya biar gak ketinggalan info open recruitment!",
+  },
+  {
+    id: "3",
+    question: "Bayar gak sih kalau mau join?",
+    answer: "Daftarnya gratis kok! Kalau udah jadi member aktif, baru deh ada kas organisasi Rp 50.000 per semester. Uang ini dipakai balik buat kalian lagi, seperti beli lisensi tools pro, bikin acara, atau support project bareng.",
+  },
+  {
+    id: "4",
+    question: "Aku sibuk kuliah nih, bakal ganggu jadwal gak?",
+    answer: "Tenang aja, kegiatan kita fleksibel kok. Rata-rata cukup luangkan waktu 4-6 jam seminggu buat kumpul divisi atau garap project santai. Organisasi jalan, kuliah tetap aman!",
+  },
+  {
+    id: "5",
+    question: "Apa sih untungnya ikutan UKM Witech?",
+    answer: "Banyak banget! Kamu bisa dapet skill baru yang dibutuhin dunia kerja (mau IT atau bukan), nambah temen lintas jurusan, akses tools premium kayak Canva Pro atau Figma, dapet sertifikat, dan tentunya pengalaman bikin karya nyata buat portofolio kamu.",
+  },
+  {
+    id: "6",
+    question: "Kalau aku bener-bener pemula (gaptek), pilih divisi apa?",
+    answer: "Semua divisi buka pintu lebar-lebar buat pemula! Tapi kalau kamu mau belajar dari hal-hal yang sering dipakai sehari-hari, divisi Digital Literacy (DigiLit) atau Creative & Design cocok banget buat permulaan. Nanti bakal dibimbing dari nol sampai jago sama teman-teman senior.",
+  },
+  {
+    id: "7",
+    question: "Witech nerima kerja sama atau kolaborasi proyek gak?",
+    answer: "Pasti dong! Kita seneng banget kalau ada kolaborasi, baik dari UKM/Hima lain, dosen, ataupun sponsor luar kampus. Langsung aja kontak lewat email partnership@witech.id atau DM Instagram kita.",
+  },
+  {
+    id: "8",
+    question: "Di mana aku bisa liat hasil karya Witech?",
+    answer: "Cek langsung di halaman Portfolio website ini ya! Di situ ada kumpulan karya keren dari semua divisi, mulai dari desain poster, sistem web kampus, sampai kegiatan benerin laptop mahasiswa.",
+  },
+];
+
+export const events: Event[] = [
+  {
+    id: "evt-1",
+    title: "Workshop UI/UX Design Figma",
+    date: "12 Oktober 2024",
+    time: "09:00 - 12:00 WIB",
+    location: "Lab Komputer Utama",
+    type: "Workshop",
+    description: "Belajar bikin desain aplikasi kece pakai Figma dari nol! Cocok buat kamu yang pengen jadi UI/UX Designer.",
+    image: "https://images.unsplash.com/photo-1541462608143-67571c6738dd",
+    isOpen: true,
+    registrationLink: "#"
+  },
+  {
+    id: "evt-2",
+    title: "Ngoding Bareng Web Dev",
+    date: "20 Oktober 2024",
+    time: "13:00 - 16:00 WIB",
+    location: "Student Center Lt. 3",
+    type: "Bootcamp",
+    description: "Bikin website portofolio pertamamu pakai HTML & CSS. Gak perlu bingung, kita pandu step by step.",
+    image: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97",
+    isOpen: true,
+    registrationLink: "#"
+  },
+  {
+    id: "evt-3",
+    title: "Sharing Session: Tips Juara Gemastik",
+    date: "2 November 2024",
+    time: "19:00 - 21:00 WIB",
+    location: "Online via Zoom",
+    type: "Sharing Session",
+    description: "Ngobrol santai bareng kakak tingkat yang menang lomba Gemastik. Bongkar rahasia dan tips dari mereka!",
+    image: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0",
+    isOpen: false
+  }
+];

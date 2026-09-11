@@ -1,0 +1,17 @@
+{
+  "name": "witech-workspace",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --dir frontend run dev",
+    "build": "pnpm --dir frontend run build",
+    "preview": "pnpm --dir frontend run preview",
+    "format": "pnpm --dir frontend run format",
+    "frontend:dev": "pnpm --dir frontend run dev",
+    "frontend:build": "pnpm --dir frontend run build",
+    "backend:install": "pnpm --dir backend install",
+    "backend:dev": "pnpm --dir backend dev"
+  },
+  "packageManager": "pnpm@10.0.0"
+}
