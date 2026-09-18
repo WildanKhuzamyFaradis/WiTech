@@ -42,7 +42,7 @@ const Divisions = () => {
             <span className="gradient-text">Belajar Bareng!</span>
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-3xl mx-auto leading-relaxed">
-            Nggak ada background IT? Nggak masalah! Witech terbuka buat <strong>SEMUA JURUSAN</strong>. Dari Word, desain grafis, sampai coding, kita belajar bareng dari nol!
+            Tidak perlu latar belakang IT. WiTech terbuka untuk semua jurusan. Mulai dari Microsoft Office, desain grafis, hingga pemrograman, kita belajar bersama dari nol.
           </p>
         </div>
       </section>
@@ -130,15 +130,15 @@ const Divisions = () => {
           <div className="relative z-10">
             <div className="text-center mb-16">
               <span className="text-5xl mb-4 block">🚀</span>
-              <h2 className="text-4xl md:text-5xl font-black tracking-tighter mb-4">Gimana sih belajarnya?</h2>
-              <p className="text-lg text-muted-foreground font-medium">Tiga langkah simpel buat jadi pro!</p>
+              <h2 className="text-4xl md:text-5xl font-black tracking-tighter mb-4">Bagaimana proses belajarnya?</h2>
+              <p className="text-lg text-muted-foreground font-medium">Tiga langkah sederhana untuk berkembang.</p>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
-                { num: "01", title: "Mulai dari Nol", desc: "Kita ajarin hal-hal basic sampai advanced. Santai aja, semua orang pasti bisa!", icon: BookOpen, color: "var(--color-primary)", emoji: "🌱" },
-                { num: "02", title: "Praktek Langsung", desc: "Banyakin hands-on project biar skill kamu makin terasah dan siap pakai.", icon: Zap, color: "var(--color-secondary)", emoji: "⚡" },
-                { num: "03", title: "Bikin Karya", desc: "Bangun portfolio keren buat modal magang atau kerja nanti. Keren kan?", icon: Sparkles, color: "var(--color-accent)", emoji: "🏆" },
+                { num: "01", title: "Mulai dari dasar", desc: "Kami membantu kamu memahami konsep dasar hingga level yang lebih lanjut dengan cara yang lebih mudah dipahami.", icon: BookOpen, color: "var(--color-primary)", emoji: "🌱" },
+                { num: "02", title: "Praktik langsung", desc: "Kamu akan terlibat dalam proyek nyata agar keterampilan yang dipelajari lebih siap diterapkan.", icon: Zap, color: "var(--color-secondary)", emoji: "⚡" },
+                { num: "03", title: "Buat karya", desc: "Bangun portofolio yang bisa menjadi bekal saat kamu melanjutkan ke magang, kerja, atau proyek berikutnya.", icon: Sparkles, color: "var(--color-accent)", emoji: "🏆" },
               ].map((step) => {
                 const StepIcon = step.icon;
                 return (
@@ -173,9 +173,9 @@ const Divisions = () => {
           
           <div className="relative z-10">
             <span className="text-5xl mb-6 block">✨</span>
-            <h2 className="text-4xl md:text-5xl font-black mb-6 tracking-tighter text-white">Tertarik Buat Join?</h2>
+            <h2 className="text-4xl md:text-5xl font-black mb-6 tracking-tighter text-white">Tertarik untuk bergabung?</h2>
             <p className="text-xl font-medium max-w-2xl mx-auto mb-10 text-background/80 leading-relaxed">
-              Yuk gabung sama teman-teman lintas jurusan lainnya. Kita tunggu kontribusi dan karya keren kamu di Witech!
+              Yuk bergabung dengan teman-teman dari berbagai jurusan. Kami menantikan kontribusimu di WiTech.
             </p>
             <Link to="/contact" className="inline-flex items-center gap-3 px-10 py-5 bg-primary text-white border-2 border-border rounded-2xl font-black text-xl hover:-translate-y-2 transition-transform neo-shadow-sm hover:neo-shadow-md group">
               Daftar Sekarang <ArrowRight size={24} strokeWidth={3} className="group-hover:translate-x-1 transition-transform" />

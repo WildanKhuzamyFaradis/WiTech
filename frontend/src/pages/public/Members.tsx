@@ -97,11 +97,11 @@ export default function Members() {
             Anggota Witech
           </div>
           <h1 className="text-5xl md:text-7xl font-black leading-tight tracking-tighter mb-6">
-            Orang-orang Keren <br />
-            <span className="text-primary">Di Balik Layar.</span>
+            Orang-orang di <br />
+            <span className="text-primary">Balik Layar.</span>
           </h1>
           <p className="text-xl font-medium text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            Kenalan yuk! Dari anak IT yang suka ngoding, sampai anak komunikasi yang jago desain dan marketing. Semua kumpul di sini buat belajar bareng.
+            Kenalan yuk! Ada yang suka coding, ada yang jago desain, dan ada yang aktif di komunikasi serta event. Semua berkumpul di sini untuk belajar dan berkembang bersama.
           </p>
         </div>
       </section>
@@ -184,9 +184,9 @@ export default function Members() {
             <div className="size-24 bg-muted rounded-full flex items-center justify-center text-4xl mb-6">
               🔍
             </div>
-            <h3 className="text-3xl font-black mb-4 tracking-tight">Waduh, nggak ketemu nih!</h3>
+            <h3 className="text-3xl font-black mb-4 tracking-tight">Tidak ada hasil yang cocok</h3>
             <p className="text-lg text-muted-foreground font-medium max-w-md mx-auto">
-              Coba cari dengan nama lain atau cek divisi sebelahnya ya. Mungkin typo sedikit?
+              Coba cari dengan nama lain atau pilih divisi yang berbeda.
             </p>
             <button 
               onClick={() => {setSearchTerm(""); setSelectedDivision("All");}}

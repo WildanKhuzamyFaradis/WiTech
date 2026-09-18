@@ -35,10 +35,10 @@ const divisionIcons: Record<string, React.ComponentType<{ size?: number; classNa
 };
 
 const stats = [
-  { value: "120+", label: "Member Seru" },
-  { value: "25+",  label: "Proyek & Event" },
-  { value: "Semua", label: "Jurusan Welcome" },
-  { value: "5",    label: "Divisi Kece" },
+  { value: "120+", label: "Anggota" },
+  { value: "25+", label: "Proyek & Kegiatan" },
+  { value: "Semua", label: "Jurusan" },
+  { value: "5", label: "Divisi" },
 ];
 
 export default function Home() {
@@ -64,7 +64,7 @@ export default function Home() {
           </h1>
 
           <p className="anim-fade-up d-2 text-xl md:text-2xl text-foreground/80 font-medium max-w-2xl leading-relaxed mb-12">
-            Dari belajar Word, Excel, desain grafis, coding, sampai benerin HP dan rakit PC semua bisa! Kita adalah komunitas buat siapa aja yang mau seru-seruan bareng teknologi.
+            Mulai dari Microsoft Office, desain grafis, pemrograman, hingga perbaikan perangkat dan perakitan PC, semuanya bisa dipelajari di sini. WiTech adalah komunitas untuk siapa pun yang ingin belajar dan berkembang bersama teknologi.
           </p>
 
           <div className="anim-fade-up d-3 flex items-center gap-4 flex-wrap">
@@ -85,7 +85,7 @@ export default function Home() {
             {stats.map((stat, i) => (
               <div key={stat.label} className="reveal py-16 px-8 flex flex-col items-center text-center group hover:bg-background transition-colors" style={{ transitionDelay: `${i * 0.1}s` }}>
                 <p className="text-5xl md:text-6xl font-black text-foreground mb-3 group-hover:scale-110 transition-transform duration-300">
-                  {stat.label === "Divisi Kece" ? divisions.length : stat.value}
+                  {stat.label === "Divisi" ? divisions.length : stat.value}
                 </p>
                 <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground">{stat.label}</p>
               </div>
@@ -99,10 +99,10 @@ export default function Home() {
         <div className="mb-16 md:flex items-end justify-between gap-8">
           <div className="max-w-2xl">
             <h2 className="text-4xl md:text-6xl font-black mb-4">
-              Dari Excel sampai AI.
+              Dari Microsoft Office hingga AI.
             </h2>
             <p className="text-xl text-muted-foreground font-medium">
-              Gak cuma coding! Ada desain, troubleshooting, data, dan banyak lagi. Pilih yang paling cocok buat kamu.
+              Tidak hanya fokus di bidang coding. Ada divisi yang menangani desain, troubleshooting, data, dan banyak lagi. Pilih yang paling sesuai dengan minatmu.
             </p>
           </div>
           <Link to="/divisions" className="hidden md:inline-flex items-center gap-2 font-bold hover:text-primary transition-colors text-lg">
@@ -164,10 +164,10 @@ export default function Home() {
           <div className="mb-16 md:flex items-end justify-between gap-8">
             <div className="max-w-2xl">
               <h2 className="text-4xl md:text-6xl font-black mb-4 text-white">
-                Bukan cuma teori.
+                Bukan hanya teori.
               </h2>
               <p className="text-xl font-medium text-background/70">
-                Dari workshop Excel sampai bikin aplikasi, dari desain poster sampai rakit PC semuanya dikerjain bareng.
+                Dari workshop Microsoft Excel hingga pembuatan aplikasi, desain poster, dan perakitan PC, semuanya dikerjakan secara kolaboratif.
               </p>
             </div>
             <Link to="/portfolio" className="hidden md:inline-flex items-center gap-2 font-bold hover:text-primary transition-colors text-lg text-white">
@@ -229,10 +229,10 @@ export default function Home() {
             
             <div className="relative z-10">
               <h2 className="font-black mb-8" style={{ fontSize: "clamp(3rem, 6vw, 5rem)" }}>
-                Mulai Petualangan <br /> <span className="text-primary">Teknologimu!</span>
+                Mulai perjalanan <br /> <span className="text-primary">teknologimu.</span>
               </h2>
               <p className="text-xl md:text-2xl text-muted-foreground font-medium max-w-2xl mx-auto mb-12 leading-relaxed">
-                Apapun jurusanmu teknik, sastra, ekonomi, sampai seni kalau kamu mau belajar teknologi, kamu diterima di sini! 🎉
+                Apapun jurusanmu—teknik, sastra, ekonomi, maupun seni—kalau kamu ingin belajar teknologi, kamu tetap diterima di sini.
               </p>
               
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

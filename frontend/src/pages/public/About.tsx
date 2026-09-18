@@ -18,11 +18,11 @@ const About: React.FC = () => {
               Tentang Kami
             </div>
             <h1 className="text-5xl md:text-7xl font-black mb-8 tracking-tighter leading-[1.1]">
-              Dibuat mahasiswa. <br />
+              Diciptakan oleh mahasiswa. <br />
               <span className="gradient-text">Untuk semua.</span>
             </h1>
             <p className="text-xl font-medium text-muted-foreground leading-relaxed mb-10 max-w-xl">
-              Witech bukan cuma buat anak IT! Mau kamu dari sastra, bisnis, pertanian, atau kedokteran, kita semua butuh teknologi.
+              WiTech bukan hanya untuk mahasiswa dari bidang IT. Siapa pun dari jurusan lain tetap bisa belajar dan berkembang bersama teknologi.
             </p>
             <div className="flex flex-wrap gap-4">
               <Link to="/contact" className="inline-flex items-center gap-2 px-8 py-4 bg-foreground text-background border-2 border-border rounded-xl text-lg font-bold neo-shadow-sm hover:bg-primary hover:text-white transition-all hover:-translate-y-1">
@@ -64,7 +64,7 @@ const About: React.FC = () => {
             </div>
             <h2 className="text-4xl font-black mb-6 tracking-tight">Visi Kita</h2>
             <p className="text-lg font-medium text-muted-foreground leading-relaxed">
-              Mewujudkan lingkungan kampus yang melek teknologi di semua disiplin ilmu. Kita percaya teknologi adalah alat bantu, dan setiap mahasiswa berhak belajar cara memanfaatkannya tanpa merasa terintimidasi.
+              Mewujudkan lingkungan kampus yang lebih melek teknologi di berbagai disiplin ilmu. Kami percaya teknologi adalah alat yang dapat dipelajari oleh siapa pun, tanpa rasa takut atau keterbatasan latar belakang.
             </p>
           </div>
           
@@ -121,9 +121,9 @@ const About: React.FC = () => {
             <div className="absolute -top-8 left-8 size-16 bg-accent border-2 border-border rounded-2xl flex items-center justify-center neo-shadow-sm">
               <HeartHandshake size={32} strokeWidth={2.5} />
             </div>
-            <h3 className="text-2xl font-black mb-4 tracking-tight">Open & Inclusive</h3>
+            <h3 className="text-2xl font-black mb-4 tracking-tight">Open & Inklusif</h3>
             <p className="text-base text-muted-foreground font-medium leading-relaxed">
-              Gak peduli kamu anak IT atau bukan, jago komputer atau gaptek. Kalau kamu mau belajar ngetik cepet, desain poster, atau ngoding robot, pintu kita selalu terbuka!
+              Tidak peduli latar belakang jurusan atau kemampuan awal. Jika kamu tertarik belajar teknologi, mulai dari dasar aplikasi kantor, desain, hingga pemrograman, kami siap membantumu berkembang.
             </p>
           </div>
           
@@ -131,9 +131,9 @@ const About: React.FC = () => {
             <div className="absolute -top-8 left-8 size-16 bg-primary border-2 border-border rounded-2xl flex items-center justify-center neo-shadow-sm">
               <Lightbulb size={32} className="text-white" strokeWidth={2.5} />
             </div>
-            <h3 className="text-2xl font-black mb-4 tracking-tight">Creative & Fun</h3>
+            <h3 className="text-2xl font-black mb-4 tracking-tight">Kreatif & Menyenangkan</h3>
             <p className="text-base text-muted-foreground font-medium leading-relaxed">
-              Belajar teknologi gak boleh bosen! Kita bikin acara yang interaktif, dari bedah laptop bareng sampai turnamen e-sports, biar semuanya enjoy.
+              Belajar teknologi tidak harus membosankan. Kami menghadirkan pengalaman yang interaktif, mulai dari diskusi ringan, sesi praktik, hingga kegiatan kolaboratif yang membuat proses belajar terasa lebih hidup.
             </p>
           </div>
 
@@ -141,9 +141,9 @@ const About: React.FC = () => {
             <div className="absolute -top-8 left-8 size-16 bg-secondary border-2 border-border rounded-2xl flex items-center justify-center neo-shadow-sm">
               <Globe size={32} className="text-foreground" strokeWidth={2.5} />
             </div>
-            <h3 className="text-2xl font-black mb-4 tracking-tight">Impactful</h3>
+            <h3 className="text-2xl font-black mb-4 tracking-tight">Bermanfaat</h3>
             <p className="text-base text-muted-foreground font-medium leading-relaxed">
-              Skill yang kamu pelajari di sini harus bisa dipakai di dunia nyata. Entah itu buat ngerjain skripsi lebih cepet atau buka usaha online.
+              Keterampilan yang dipelajari di sini dirancang agar bisa digunakan dalam kehidupan nyata, mulai dari mendukung tugas akademik hingga membuka peluang kerja dan usaha di masa depan.
             </p>
           </div>
         </div>
@@ -152,15 +152,15 @@ const About: React.FC = () => {
       {/* ── TIMELINE ────────────────────────────────────────── */}
       <section className="max-w-4xl mx-auto px-6 mb-32">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-black tracking-tighter mb-4">Perjalanan Kita</h2>
-          <p className="text-xl text-muted-foreground font-medium max-w-2xl mx-auto">Dari kumpul-kumpul kecil sampai jadi UKM terbesar.</p>
+          <h2 className="text-4xl md:text-5xl font-black tracking-tighter mb-4">Perjalanan Kami</h2>
+          <p className="text-xl text-muted-foreground font-medium max-w-2xl mx-auto">Dari komunitas kecil hingga berkembang menjadi wadah belajar teknologi yang lebih luas.</p>
         </div>
         <div className="relative border-l-2 border-border ml-4 space-y-12">
           {[
-            { year: '2018', title: 'Witech Berdiri', desc: 'Dibentuk oleh sekumpulan mahasiswa yang resah melihat banyak temannya yang kesulitan menggunakan software dasar kampus.', color: 'bg-primary' },
-            { year: '2020', title: 'Ekspansi Divisi', desc: 'Mulai merangkul desain grafis, video editing, dan tips smartphone untuk menjangkau lebih banyak jurusan.', color: 'bg-secondary' },
-            { year: '2022', title: 'Tech for All Festival', desc: 'Mengadakan festival teknologi kampus pertama yang pesertanya 70% non-IT!', color: 'bg-accent' },
-            { year: '2024', title: 'UKM Terbesar', desc: 'Menjadi salah satu UKM paling diminati di kampus dengan anggota dari seluruh fakultas.', color: 'bg-purple-500' },
+          { year: '2018', title: 'WiTech berdiri', desc: 'Dimulai dari kebutuhan mahasiswa untuk belajar perangkat lunak dasar dan keterampilan teknologi yang relevan dalam kegiatan akademik.', color: 'bg-primary' },
+          { year: '2020', title: 'Ekspansi divisi', desc: 'Memperluas ruang belajar ke bidang desain grafis, pengeditan video, dan dukungan perangkat digital untuk lebih banyak jurusan.', color: 'bg-secondary' },
+          { year: '2022', title: 'Festival teknologi', desc: 'Mengadakan kegiatan teknologi kampus yang menghadirkan banyak peserta dari berbagai latar belakang, termasuk non-IT.', color: 'bg-accent' },
+          { year: '2024', title: 'Komunitas yang terus tumbuh', desc: 'Menjadi wadah yang semakin banyak diminati mahasiswa dari berbagai fakultas untuk belajar dan berkolaborasi.', color: 'bg-purple-500' },
           ].map((item, index) => (
             <div key={index} className={`relative flex items-center group`}>
               <div className={`absolute -left-6 size-8 rounded-full border-4 border-background ${item.color} neo-shadow-sm`} />
@@ -186,13 +186,13 @@ const About: React.FC = () => {
           
           <div className="relative z-10">
             <h2 className="text-4xl md:text-6xl font-black mb-6 tracking-tighter text-white">
-              Siap seru-seruan bareng?
+              Siap mulai bersama kami?
             </h2>
             <p className="text-xl font-medium mb-10 max-w-2xl mx-auto text-white/90">
-              Gak usah ragu, langsung aja daftar! Kita tunggu kehadiran kamu di Witech.
+              Jangan ragu untuk bergabung. Kami menantikan kehadiranmu di WiTech.
             </p>
             <Link to="/contact" className="inline-flex items-center gap-2 px-10 py-5 bg-background text-foreground text-xl font-black border-2 border-border rounded-2xl neo-shadow-sm hover:-translate-y-2 hover:neo-shadow-md hover:bg-accent transition-all">
-              Gabung Sekarang! <ArrowRight size={24} strokeWidth={3} />
+              Gabung Sekarang <ArrowRight size={24} strokeWidth={3} />
             </Link>
           </div>
         </div>

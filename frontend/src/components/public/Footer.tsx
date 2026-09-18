@@ -20,7 +20,7 @@ const Footer: React.FC = () => {
               <img src="/logo.png" alt="Witech Logo" className="h-10 w-auto group-hover:scale-105 transition-transform" />
             </Link>
             <p className="text-base font-medium text-background/70 max-w-sm mb-8 leading-relaxed">
-              UKM Teknologi untuk semua jurusan! Belajar, berkarya, dan seru-seruan bareng teknologi sejak 2018.
+              UKM Teknologi untuk semua jurusan. Belajar, berkarya, dan berkembang bersama teknologi sejak 2018.
             </p>
             <div className="flex gap-3">
               <a href="#" aria-label="Instagram" className="p-2.5 bg-background/10 text-background rounded-xl hover:bg-primary hover:text-white transition-colors">

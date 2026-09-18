@@ -13,8 +13,8 @@ export default function ProjectDetail() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background font-sans pt-20">
         <div className="text-center space-y-6">
-          <h1 className="text-4xl font-black tracking-tight">Proyek Nggak Ketemu</h1>
-          <p className="text-muted-foreground font-medium">Mungkin salah link atau proyeknya udah dihapus.</p>
+          <h1 className="text-4xl font-black tracking-tight">Proyek tidak ditemukan</h1>
+          <p className="text-muted-foreground font-medium">Tautan mungkin tidak valid atau proyeknya sudah dihapus.</p>
           <Link to="/portfolio" className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-xl border-2 border-border neo-shadow-sm hover:-translate-y-1 transition-transform">
             <ArrowLeft size={18} /> Balik ke Portfolio
           </Link>

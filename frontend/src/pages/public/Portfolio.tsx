@@ -25,11 +25,11 @@ const Portfolio = () => {
           Galeri Inovasi
         </div>
         <h1 className="text-5xl md:text-7xl font-black leading-tight tracking-tighter mb-6">
-          Karya Kita <br />
-          <span className="text-primary">Bareng-Bareng!</span>
+          Karya WiTech <br />
+          <span className="text-primary">yang terus berkembang.</span>
         </h1>
         <p className="text-xl font-medium text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          Nih lihat hasil karya teman-teman Witech dari berbagai jurusan! Ada aplikasi, desain, materi pelatihan Excel, sampai inovasi IoT. Keren abis!
+          Lihat hasil karya teman-teman WiTech dari berbagai jurusan, mulai dari aplikasi, desain, materi pelatihan, hingga inovasi berbasis teknologi.
         </p>
       </section>
 

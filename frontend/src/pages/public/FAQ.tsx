@@ -29,7 +29,7 @@ export default function FAQ() {
             <span className="text-primary">Sering Ditanya</span>
           </h1>
           <p className="text-xl font-medium text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Masih ragu buat join Witech? Cek dulu nih beberapa pertanyaan yang sering banget ditanyain. Spoiler: kamu nggak harus anak IT buat ikutan kok!
+            Masih ragu untuk bergabung dengan WiTech? Cek beberapa pertanyaan yang sering ditanyakan. Spoiler: kamu tidak perlu berasal dari jurusan IT untuk ikut serta.
           </p>
         </div>
       </section>

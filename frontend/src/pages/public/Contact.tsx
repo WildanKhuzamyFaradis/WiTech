@@ -31,7 +31,7 @@ export default function Contact() {
             Yuk Ngobrol! <span>👋</span>
           </h1>
           <p className="text-xl font-medium text-muted-foreground leading-relaxed max-w-2xl">
-            Mau gabung Witech, kolaborasi proyek, atau sekadar nanya-nanya soal teknologi? Kita selalu terbuka buat ngobrol!
+            Mau bergabung dengan WiTech, berkolaborasi dalam proyek, atau sekadar menanyakan hal terkait teknologi? Kami selalu terbuka untuk berdiskusi.
           </p>
         </div>
       </section>
