@@ -1,32 +1,62 @@
 import { useEffect, useRef } from 'react';
 import { Link } from "react-router";
 import { ArrowRight, ArrowUpRight, Code, Smartphone, Brain, Shield, Palette, Cpu, Sparkles } from "lucide-react";
-import { useStore } from "../../lib/store";
+import { usePublicData } from "../../context/PublicDataContext";
+import PublicPageShell from "../../components/public/PublicPageShell";
 import { divisionName, isPublishedProject } from "../../lib/dataContract";
 
-// Scroll-triggered reveal hook using .reveal / .visible CSS classes
-function useReveal() {
+// Scroll-triggered reveal hook using .reveal / .visible CSS classes.
+// It must initialize only after the public data loading phase finishes; otherwise
+// the page mounts while loading=true and the observer never sees the elements that
+// are rendered once loading turns false.
+function useReveal(loading: boolean) {
   const ref = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
+    if (loading) return;
+
     const el = ref.current;
     if (!el) return;
+
     const targets = el.querySelectorAll<HTMLElement>('.reveal');
+
     if (targets.length === 0) {
       const obs = new IntersectionObserver(
-        ([entry]) => { if (entry.isIntersecting) { el.classList.add('visible'); obs.disconnect(); } },
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            el.classList.add('visible');
+            obs.disconnect();
+          }
+        },
         { threshold: 0.12 }
       );
+
       el.classList.add('reveal');
       obs.observe(el);
+
       return () => obs.disconnect();
     }
+
     const obs = new IntersectionObserver(
-      (entries) => entries.forEach(e => { if (e.isIntersecting) (e.target as HTMLElement).classList.add('visible'); }),
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            obs.unobserve(entry.target);
+          }
+        });
+      },
       { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
     );
-    targets.forEach(t => obs.observe(t));
+
+    targets.forEach((target) => {
+      target.classList.remove('visible');
+      obs.observe(target);
+    });
+
     return () => obs.disconnect();
-  }, []);
+  }, [loading]);
+
   return ref;
 }
 
@@ -42,15 +72,18 @@ const stats = [
 ];
 
 export default function Home() {
-  const { divisions, projects } = useStore();
+  const { data, loading, error } = usePublicData();
+  const divisions = data?.divisions ?? [];
+  const projects = data?.projects ?? [];
   const featured = projects.filter((p) => isPublishedProject(p) && p.featured);
-  const statsRef = useReveal();
-  const divisionsRef = useReveal();
-  const projectsRef = useReveal();
-  const ctaRef = useReveal();
+  const statsRef = useReveal(loading);
+  const divisionsRef = useReveal(loading);
+  const projectsRef = useReveal(loading);
+  const ctaRef = useReveal(loading);
 
   return (
-    <div className="bg-background text-foreground font-sans">
+    <PublicPageShell loading={loading} error={error}>
+      <div className="bg-background text-foreground font-sans">
       {/* ── HERO ───────────────────────────────────────────── */}
       <section className="relative min-h-[95vh] flex items-center overflow-hidden mesh-bg border-b-2 border-border">
         {/* Floating Shapes */}
@@ -247,6 +280,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-    </div>
+      </div>
+    </PublicPageShell>
   );
 }

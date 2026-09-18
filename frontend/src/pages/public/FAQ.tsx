@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { ChevronDown, Sparkles, MessageCircle, ArrowRight } from 'lucide-react';
-import { useStore } from '../../lib/store';
+import { usePublicData } from '../../context/PublicDataContext';
+import PublicPageShell from '../../components/public/PublicPageShell';
 import { Link } from 'react-router';
 
 export default function FAQ() {
-  const { faqs } = useStore();
+  const { data, loading, error } = usePublicData();
+  const faqs = data?.faqs ?? [];
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const toggleFaq = (index: number) => {
@@ -12,6 +14,7 @@ export default function FAQ() {
   };
 
   return (
+    <PublicPageShell loading={loading} error={error}>
     <div className="min-h-screen bg-background font-sans pt-32 pb-24 overflow-hidden">
       
       {/* ── HEADER ───────────────────────────────────────────── */}
@@ -113,5 +116,6 @@ export default function FAQ() {
       </section>
 
     </div>
+    </PublicPageShell>
   );
 }

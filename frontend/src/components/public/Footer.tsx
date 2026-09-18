@@ -1,12 +1,13 @@
 import React from 'react';
-import { useStore } from '../../lib/store';
+import { usePublicData } from '../../context/PublicDataContext';
 import { Link } from 'react-router';
 import { Camera, MessageCircle, Briefcase, GitFork, ChevronRight } from 'lucide-react';
 
 const divisionIconColors = ["text-primary", "text-secondary", "text-[#a855f7]", "text-[#ffe66d]", "text-[#10b981]", "text-[#f59e0b]"];
 
 const Footer: React.FC = () => {
-  const { divisions } = useStore();
+  const { data } = usePublicData();
+  const divisions = data?.divisions ?? [];
   return (
     <footer className="relative bg-foreground text-background border-t-2 border-border overflow-hidden font-sans">
       {/* Top subtle gradient line */}

@@ -1,30 +1,31 @@
 import React from 'react';
 import { useParams, Link } from 'react-router';
 import { ArrowLeft, GitFork, ExternalLink, Award, Calendar, Users, Briefcase } from 'lucide-react';
-import { useStore } from '../../lib/store';
+import { usePublicData } from '../../context/PublicDataContext';
+import PublicPageShell from '../../components/public/PublicPageShell';
 import { divisionName, isPublishedProject } from '../../lib/dataContract';
 
 export default function ProjectDetail() {
-  const { projects, divisions } = useStore();
+  const { data, loading, error } = usePublicData();
+  const projects = data?.projects ?? [];
+  const divisions = data?.divisions ?? [];
   const { slug } = useParams();
   const project = projects.find(p => p.slug === slug && isPublishedProject(p));
 
-  if (!project) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background font-sans pt-20">
-        <div className="text-center space-y-6">
-          <h1 className="text-4xl font-black tracking-tight">Proyek tidak ditemukan</h1>
-          <p className="text-muted-foreground font-medium">Tautan mungkin tidak valid atau proyeknya sudah dihapus.</p>
-          <Link to="/portfolio" className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-xl border-2 border-border neo-shadow-sm hover:-translate-y-1 transition-transform">
-            <ArrowLeft size={18} /> Balik ke Portfolio
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-background font-sans pb-24">
+    <PublicPageShell loading={loading} error={error}>
+      {!project ? (
+        <div className="min-h-screen flex items-center justify-center bg-background font-sans pt-20">
+          <div className="text-center space-y-6">
+            <h1 className="text-4xl font-black tracking-tight">Proyek tidak ditemukan</h1>
+            <p className="text-muted-foreground font-medium">Tautan mungkin tidak valid atau proyeknya sudah dihapus.</p>
+            <Link to="/portfolio" className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-xl border-2 border-border neo-shadow-sm hover:-translate-y-1 transition-transform">
+              <ArrowLeft size={18} /> Balik ke Portfolio
+            </Link>
+          </div>
+        </div>
+      ) : (
+        <div className="min-h-screen bg-background font-sans pb-24">
       {/* ── HERO ───────────────────────────────────────────── */}
       <section className="relative w-full min-h-[70vh] flex flex-col justify-end overflow-hidden mb-12 border-b border-border/10">
         <div className="absolute inset-0 bg-muted">
@@ -143,5 +144,7 @@ export default function ProjectDetail() {
         </div>
       </section>
     </div>
+      )}
+    </PublicPageShell>
   );
 }

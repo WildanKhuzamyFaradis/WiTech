@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Calendar, MapPin, Clock, ArrowRight, Sparkles } from 'lucide-react';
-import { useStore } from '../../lib/store';
+import { usePublicData } from '../../context/PublicDataContext';
+import PublicPageShell from '../../components/public/PublicPageShell';
 import type { Event } from '../../lib/types';
 import { formatEventDate, formatEventTime, isEventCompleted } from '../../lib/dataContract';
 const EventCard = ({ event, index }: { event: Event, index: number }) => (
@@ -72,7 +73,8 @@ const EventCard = ({ event, index }: { event: Event, index: number }) => (
 );
 
 export default function Events() {
-  const { events } = useStore();
+  const { data, loading, error } = usePublicData();
+  const events = data?.events ?? [];
   const [filter, setFilter] = useState<"all" | "upcoming" | "past">("all");
 
   // Registration can close before an event ends. Group by the event end time in WIB.
@@ -83,6 +85,7 @@ export default function Events() {
   });
 
   return (
+    <PublicPageShell loading={loading} error={error}>
     <div className="min-h-screen bg-background font-sans pt-32 pb-24 overflow-hidden">
       
       {/* ── HEADER ───────────────────────────────────────────── */}
@@ -177,5 +180,6 @@ export default function Events() {
         )}
       </section>
     </div>
+    </PublicPageShell>
   );
 }

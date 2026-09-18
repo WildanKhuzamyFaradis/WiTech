@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { ExternalLink, GitFork, Trophy, ArrowRight, Sparkles } from 'lucide-react';
-import { useStore } from '../../lib/store';
+import { usePublicData } from '../../context/PublicDataContext';
+import PublicPageShell from '../../components/public/PublicPageShell';
 import { divisionName, isPublishedProject } from '../../lib/dataContract';
 import { Link } from 'react-router';
 
 const Portfolio = () => {
-  const { projects: allProjects, divisions: divisionRecords } = useStore();
+  const { data, loading, error } = usePublicData();
+  const allProjects = data?.projects ?? [];
+  const divisionRecords = data?.divisions ?? [];
   const projects = allProjects.filter(isPublishedProject);
   const [filter, setFilter] = useState('all');
 
@@ -17,6 +20,7 @@ const Portfolio = () => {
   const getDivisionLabel = (id: string) => id === "all" ? "Semua Karya" : divisionName(divisionRecords, id);
 
   return (
+    <PublicPageShell loading={loading} error={error}>
     <div className="bg-background text-foreground pt-32 pb-24 space-y-16 font-sans min-h-screen">
       {/* ── HEADER ───────────────────────────────────────────── */}
       <section className="text-center space-y-6 max-w-4xl mx-auto px-6 relative">
@@ -153,6 +157,7 @@ const Portfolio = () => {
         )}
       </div>
     </div>
+    </PublicPageShell>
   );
 };
 

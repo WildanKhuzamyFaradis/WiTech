@@ -1,11 +1,14 @@
 import React from 'react';
-import { useStore } from '../../lib/store';
+import { usePublicData } from '../../context/PublicDataContext';
+import PublicPageShell from '../../components/public/PublicPageShell';
 import { Link } from 'react-router';
 import { Users, Lightbulb, HeartHandshake, Rocket, Target, Globe, ArrowRight, CheckCircle2 } from 'lucide-react';
 
 const About: React.FC = () => {
-  const { divisions } = useStore();
+  const { data, loading, error } = usePublicData();
+  const divisions = data?.divisions ?? [];
   return (
+    <PublicPageShell loading={loading} error={error}>
     <div className="min-h-screen bg-background text-foreground font-sans pt-32 pb-24 overflow-hidden">
       
       {/* ── HERO ───────────────────────────────────────────── */}
@@ -199,6 +202,7 @@ const About: React.FC = () => {
       </section>
 
     </div>
+    </PublicPageShell>
   );
 };
 

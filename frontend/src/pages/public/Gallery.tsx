@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { X, ChevronLeft, ChevronRight, Camera, Sparkles } from 'lucide-react';
-import { useStore } from '../../lib/store';
+import { usePublicData } from '../../context/PublicDataContext';
+import PublicPageShell from '../../components/public/PublicPageShell';
 import type { Album } from '../../lib/types';
 
 export default function Gallery() {
-  const { albums } = useStore();
+  const { data, loading, error } = usePublicData();
+  const albums = data?.albums ?? [];
   const [selectedAlbumId, setSelectedAlbumId] = useState<string | null>(null);
   const selectedAlbum = albums.find(a => a.id === selectedAlbumId);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
@@ -44,6 +46,7 @@ export default function Gallery() {
   }, [selectedAlbum]);
 
   return (
+    <PublicPageShell loading={loading} error={error}>
     <div className="min-h-screen bg-background font-sans pt-32 pb-24 overflow-hidden">
       
       {/* ── HEADER ───────────────────────────────────────────── */}
@@ -170,6 +173,7 @@ export default function Gallery() {
         </div>
       )}
     </div>
+    </PublicPageShell>
   );
 }
 

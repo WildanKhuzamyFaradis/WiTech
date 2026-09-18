@@ -1,7 +1,8 @@
 import React from 'react';
 import { Smartphone, Palette, Code, Brain, Shield, Cpu, ArrowRight, Sparkles, Users, BookOpen, Zap } from 'lucide-react';
 import { Link } from 'react-router';
-import { useStore } from '../../lib/store';
+import { usePublicData } from '../../context/PublicDataContext';
+import PublicPageShell from '../../components/public/PublicPageShell';
 
 const iconMap: Record<string, React.ElementType> = {
   academy: Smartphone,
@@ -22,8 +23,10 @@ const emojiMap: Record<string, string> = {
 };
 
 const Divisions = () => {
-  const { divisions } = useStore();
+  const { data, loading, error } = usePublicData();
+  const divisions = data?.divisions ?? [];
   return (
+    <PublicPageShell loading={loading} error={error}>
     <div className="bg-background text-foreground pt-32 pb-24 space-y-24 font-sans overflow-hidden">
       
       {/* ── HEADER ───────────────────────────────────────────── */}
@@ -184,6 +187,7 @@ const Divisions = () => {
         </div>
       </section>
     </div>
+    </PublicPageShell>
   );
 };
 

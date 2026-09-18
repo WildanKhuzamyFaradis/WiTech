@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router";
 import Navbar from "../components/public/Navbar";
 import Footer from "../components/public/Footer";
+import { PublicDataProvider } from "../context/PublicDataContext";
 
 // Auto scroll to top on every route change
 function ScrollToTop() {
@@ -14,13 +15,15 @@ function ScrollToTop() {
 
 export default function PublicLayout() {
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
-      <ScrollToTop />
-      <Navbar />
-      <main className="flex-1">
-        <Outlet />
-      </main>
-      <Footer />
-    </div>
+    <PublicDataProvider>
+      <div className="min-h-screen bg-background text-foreground flex flex-col">
+        <ScrollToTop />
+        <Navbar />
+        <main className="flex-1">
+          <Outlet />
+        </main>
+        <Footer />
+      </div>
+    </PublicDataProvider>
   );
 }

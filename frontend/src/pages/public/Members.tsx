@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, Sparkles, Filter, ChevronDown } from 'lucide-react';
-import { useStore } from '../../lib/store';
+import { usePublicData } from '../../context/PublicDataContext';
+import PublicPageShell from '../../components/public/PublicPageShell';
 import type { Division, Member } from '../../lib/types';
 import { divisionName } from '../../lib/dataContract';
 
@@ -59,7 +60,9 @@ const MemberCard = ({ member, divisions }: { member: Member; divisions: Division
 };
 
 export default function Members() {
-  const { members, divisions } = useStore();
+  const { data, loading, error } = usePublicData();
+  const members = data?.members ?? [];
+  const divisions = data?.divisions ?? [];
   const divisionsList = [{ id: "All", name: "All" }, { id: "core", name: "Core" }, ...divisions];
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDivision, setSelectedDivision] = useState("All");
@@ -84,6 +87,7 @@ export default function Members() {
   });
 
   return (
+    <PublicPageShell loading={loading} error={error}>
     <div className="min-h-screen bg-background font-sans pt-32 pb-24 overflow-hidden">
       
       {/* ── HEADER ───────────────────────────────────────────── */}
@@ -199,6 +203,7 @@ export default function Members() {
       </section>
 
     </div>
+    </PublicPageShell>
   );
 }
 
