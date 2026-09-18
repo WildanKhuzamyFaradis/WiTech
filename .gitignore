@@ -35,6 +35,9 @@ logs/
 .agent/
 .agents/
 .gemini/
+.claude/
+.codex/
+.impeccable/
 
 # AI tool machine-local config
 .claude/settings.local.json
