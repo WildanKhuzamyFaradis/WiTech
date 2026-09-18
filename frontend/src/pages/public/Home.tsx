@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Link } from "react-router";
 import { ArrowRight, ArrowUpRight, Code, Smartphone, Brain, Shield, Palette, Cpu, Sparkles } from "lucide-react";
-import { divisions, projects } from "../lib/data";
+import { divisions, projects } from "../../lib/data";
 
 // Scroll-triggered reveal hook using .reveal / .visible CSS classes
 function useReveal() {

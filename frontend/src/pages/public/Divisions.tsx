@@ -1,7 +1,7 @@
 import React from 'react';
 import { Smartphone, Palette, Code, Brain, Shield, Cpu, ArrowRight, Sparkles, Users, BookOpen, Zap } from 'lucide-react';
 import { Link } from 'react-router';
-import { divisions } from '../lib/data';
+import { divisions } from '../../lib/data';
 
 const iconMap: Record<string, React.ElementType> = {
   academy: Smartphone,

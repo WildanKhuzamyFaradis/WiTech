@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, ChevronLeft, ChevronRight, Camera, Sparkles } from 'lucide-react';
-import { albums } from '../lib/data';
+import { albums } from '../../lib/data';
 
 export default function Gallery() {
   const [selectedAlbum, setSelectedAlbum] = useState<any>(null);

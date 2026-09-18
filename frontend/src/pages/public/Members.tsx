@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, Sparkles, Filter, ChevronDown } from 'lucide-react';
-import { members, divisions } from '../lib/data';
+import { members, divisions } from '../../lib/data';
 
 const divisionsList = ["All", ...divisions.map(d => d.name)];
 

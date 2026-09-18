@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router";
 import { Eye, EyeOff, ArrowLeft, Shield } from "lucide-react";
+import { isAdminAuthenticated, setAdminAuthenticated } from "../../auth/adminAuth";
 
 export default function AdminLogin() {
   const [username, setUsername] = useState("");
@@ -10,13 +11,17 @@ export default function AdminLogin() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (isAdminAuthenticated()) navigate("/admin", { replace: true });
+  }, [navigate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
     await new Promise((r) => setTimeout(r, 600));
     if (username.trim().toLowerCase() === "admin" && password.trim() === "witech2024") {
-      localStorage.setItem("witech-admin", "true");
+      setAdminAuthenticated();
       navigate("/admin");
     } else {
       setError("Yah, salah! Coba admin / witech2024");

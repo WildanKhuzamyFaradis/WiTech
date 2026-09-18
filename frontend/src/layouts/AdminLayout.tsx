@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router";
+import { logoutAdmin } from "../auth/adminAuth";
 import {
   LayoutDashboard,
   Building2,
@@ -27,13 +28,8 @@ export default function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const auth = localStorage.getItem("witech-admin");
-    if (!auth) navigate("/admin/login");
-  }, [navigate]);
-
   const handleLogout = () => {
-    localStorage.removeItem("witech-admin");
+    logoutAdmin();
     navigate("/admin/login");
   };
 

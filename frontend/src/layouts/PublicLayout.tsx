@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
+import Navbar from "../components/public/Navbar";
+import Footer from "../components/public/Footer";
 
 // Auto scroll to top on every route change
 function ScrollToTop() {

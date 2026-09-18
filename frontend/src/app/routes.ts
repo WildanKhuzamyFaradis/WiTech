@@ -1,16 +1,17 @@
 import { createBrowserRouter } from "react-router";
 import PublicLayout from "../layouts/PublicLayout";
 import AdminLayout from "../layouts/AdminLayout";
-import Home from "../pages/Home";
-import About from "../pages/About";
-import Divisions from "../pages/Divisions";
-import Portfolio from "../pages/Portfolio";
-import ProjectDetail from "../pages/ProjectDetail";
-import Members from "../pages/Members";
-import Gallery from "../pages/Gallery";
-import Events from "../pages/Events";
-import FAQ from "../pages/FAQ";
-import Contact from "../pages/Contact";
+import AdminRouteGuard from "../auth/AdminRouteGuard";
+import Home from "../pages/public/Home";
+import About from "../pages/public/About";
+import Divisions from "../pages/public/Divisions";
+import Portfolio from "../pages/public/Portfolio";
+import ProjectDetail from "../pages/public/ProjectDetail";
+import Members from "../pages/public/Members";
+import Gallery from "../pages/public/Gallery";
+import Events from "../pages/public/Events";
+import FAQ from "../pages/public/FAQ";
+import Contact from "../pages/public/Contact";
 import AdminLogin from "../pages/admin/AdminLogin";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import AdminDivisions from "../pages/admin/AdminDivisions";
@@ -42,14 +43,17 @@ export const router = createBrowserRouter([
   },
   {
     path: "/admin",
-    Component: AdminLayout,
-    children: [
-      { index: true, Component: AdminDashboard },
-      { path: "divisions", Component: AdminDivisions },
-      { path: "portfolio", Component: AdminPortfolio },
-      { path: "gallery", Component: AdminGallery },
-      { path: "events", Component: AdminEvents },
-      { path: "members", Component: AdminMembers },
-    ],
+    Component: AdminRouteGuard,
+    children: [{
+      Component: AdminLayout,
+      children: [
+        { index: true, Component: AdminDashboard },
+        { path: "divisions", Component: AdminDivisions },
+        { path: "portfolio", Component: AdminPortfolio },
+        { path: "gallery", Component: AdminGallery },
+        { path: "events", Component: AdminEvents },
+        { path: "members", Component: AdminMembers },
+      ],
+    }],
   },
 ]);

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronDown, Sparkles, MessageCircle, ArrowRight } from 'lucide-react';
-import { faqs } from '../lib/data';
+import { faqs } from '../../lib/data';
 import { Link } from 'react-router';
 
 export default function FAQ() {

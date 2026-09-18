@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams, Link } from 'react-router';
 import { ArrowLeft, GitFork, ExternalLink, Award, Calendar, Users, Briefcase } from 'lucide-react';
-import { projects } from '../lib/data';
+import { projects } from '../../lib/data';
 
 export default function ProjectDetail() {
   const { slug } = useParams();

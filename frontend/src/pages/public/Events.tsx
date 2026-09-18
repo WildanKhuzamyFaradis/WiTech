@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Calendar, MapPin, Clock, ArrowRight, Sparkles } from 'lucide-react';
-import { events } from '../lib/data';
+import { events } from '../../lib/data';
 const EventCard = ({ event, index }: { event: any, index: number }) => (
   <div 
     className="group neo-card rounded-3xl overflow-hidden bg-white neo-shadow-sm hover:neo-shadow-md transition-all hover:-translate-y-1 flex flex-col sm:flex-row lg:flex-col xl:flex-row"

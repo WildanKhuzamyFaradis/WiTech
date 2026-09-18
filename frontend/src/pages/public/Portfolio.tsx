@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ExternalLink, GitFork, Trophy, ArrowRight, Sparkles } from 'lucide-react';
-import { projects } from '../lib/data';
+import { projects } from '../../lib/data';
 import { Link } from 'react-router';
 
 const Portfolio = () => {

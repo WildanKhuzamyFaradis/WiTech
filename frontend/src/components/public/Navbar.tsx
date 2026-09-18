@@ -63,7 +63,7 @@ export default function Navbar() {
 
         <div className="hidden lg:flex items-center gap-4 shrink-0">
           <Link
-            to="/admin"
+            to="/admin/login"
             className="text-sm text-foreground font-bold hover:text-primary transition-colors"
           >
             Admin
@@ -105,8 +105,8 @@ export default function Navbar() {
               );
             })}
             <div className="pt-4 border-t-2 border-border mt-2 flex flex-col gap-3">
-              <Link to="/admin" className="px-4 py-3 text-sm text-foreground font-bold rounded-xl hover:bg-muted">
-                Admin Dashboard
+              <Link to="/admin/login" className="px-4 py-3 text-sm text-foreground font-bold rounded-xl hover:bg-muted">
+                Admin
               </Link>
               <Link
                 to="/contact"
