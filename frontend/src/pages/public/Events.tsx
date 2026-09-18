@@ -4,23 +4,22 @@ import { useStore } from '../../lib/store';
 import type { Event } from '../../lib/types';
 import { formatEventDate, formatEventTime, isEventCompleted } from '../../lib/dataContract';
 const EventCard = ({ event, index }: { event: Event, index: number }) => (
-  <div 
-    className="group neo-card rounded-3xl overflow-hidden bg-white neo-shadow-sm hover:neo-shadow-md transition-all hover:-translate-y-1 flex flex-col sm:flex-row lg:flex-col xl:flex-row"
+  <div className="event-entry group neo-card rounded-md overflow-hidden bg-white transition-all flex flex-col sm:flex-row lg:flex-col xl:flex-row"
     style={{ animationDelay: `${index * 0.1}s` }}
   >
-    <div className="sm:w-2/5 lg:w-full xl:w-2/5 relative border-b-2 sm:border-b-0 sm:border-r-2 lg:border-r-0 lg:border-b-2 xl:border-b-0 xl:border-r-2 border-border bg-muted shrink-0">
-      <img 
+    <div className="sm:w-2/5 lg:w-full xl:w-2/5 relative border-b sm:border-b-0 sm:border-r-2 lg:border-r-0 lg:border-b-2 xl:border-b-0 xl:border-r-2 border-border bg-muted shrink-0">
+      <img loading="lazy" 
         src={event.image} 
         alt={event.title} 
-        className="w-full h-full object-cover aspect-video sm:aspect-auto group-hover:scale-105 transition-transform duration-500"
+        className="w-full h-full object-cover aspect-video sm:aspect-auto group-hover:scale-105 transition-transform duration-200"
       />
-      <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-border/20 text-xs font-black uppercase tracking-wider neo-shadow-sm">
+      <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-md border border-border/20 text-xs font-semibold normal-case tracking-wider">
         {event.type}
       </div>
       {isEventCompleted(event) && (
         <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px] flex items-center justify-center">
-          <span className="bg-foreground text-background font-black px-4 py-2 rounded-xl border-2 border-border neo-shadow-sm rotate-[-10deg]">
-            SUDAH SELESAI
+          <span className="bg-foreground text-background font-semibold px-4 py-2 rounded-md border border-border rotate-[-10deg]">
+            Selesai
           </span>
         </div>
       )}
@@ -28,7 +27,7 @@ const EventCard = ({ event, index }: { event: Event, index: number }) => (
     
     <div className="p-6 flex-1 flex flex-col justify-between">
       <div>
-        <h3 className="text-xl font-black mb-3 tracking-tight group-hover:text-primary transition-colors">{event.title}</h3>
+        <h3 className="text-xl font-semibold mb-3 tracking-tight group-hover:text-primary transition-colors">{event.title}</h3>
         
         <div className="space-y-2 mb-4">
           <div className="flex items-center gap-3 text-muted-foreground font-medium text-sm">
@@ -54,16 +53,16 @@ const EventCard = ({ event, index }: { event: Event, index: number }) => (
         {event.registrationOpen && !isEventCompleted(event) ? (
           <a 
             href={event.registrationLink} 
-            className="inline-flex items-center justify-center gap-2 w-full px-5 py-3 bg-primary text-white font-black rounded-xl border-2 border-border neo-shadow-sm hover:neo-shadow-md hover:-translate-y-1 transition-all"
+            className="inline-flex items-center justify-center gap-2 w-full px-5 py-3 bg-primary text-white font-semibold rounded-md border border-border transition-all"
           >
             Daftar <ArrowRight size={18} strokeWidth={3} />
           </a>
         ) : (
           <button 
             disabled
-            className="inline-flex items-center justify-center w-full px-5 py-3 bg-muted text-muted-foreground font-bold rounded-xl border-2 border-transparent cursor-not-allowed"
+            className="inline-flex items-center justify-center w-full px-5 py-3 bg-muted text-muted-foreground font-medium rounded-md border border-transparent cursor-not-allowed"
           >
-            Ditutup
+            Pendaftaran ditutup
           </button>
         )}
       </div>
@@ -83,45 +82,45 @@ export default function Events() {
   });
 
   return (
-    <div className="min-h-screen bg-background font-sans pt-32 pb-24 overflow-hidden">
+    <div className="public-page min-h-screen bg-background font-sans pt-12 pb-24 overflow-hidden">
       
       {/* ── HEADER ───────────────────────────────────────────── */}
       <section className="text-center space-y-6 max-w-4xl mx-auto px-6 mb-16 relative">
-        <div className="absolute top-0 right-10 w-64 h-64 bg-accent/20 blur-[80px] rounded-full pointer-events-none" />
-        <div className="absolute bottom-0 left-10 w-64 h-64 bg-secondary/20 blur-[80px] rounded-full pointer-events-none" />
+        
+        
         
         <div className="relative z-10">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border-2 border-border bg-muted text-xs font-bold uppercase tracking-widest mb-6 neo-shadow-sm mx-auto">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-muted text-xs font-medium normal-case tracking-normal mb-6 mx-auto">
             <Sparkles size={16} className="text-accent" strokeWidth={2.5} />
-            Event Witech
+            Kegiatan WiTECH
           </div>
-          <h1 className="text-5xl md:text-7xl font-black leading-tight tracking-tighter mb-6">
-            Jadwal & <br />
-            <span className="gradient-text">Kegiatan Seru.</span>
+          <h1 className="text-4xl md:text-6xl font-semibold leading-tight tracking-tight mb-6">
+            Jadwal dan <br />
+            <span className="gradient-text">kegiatan.</span>
           </h1>
           <p className="text-xl font-medium text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Jangan sampai ketinggalan! Cek jadwal workshop, kelas, dan event bareng Witech. Terbuka untuk semua jurusan lho!
+            Lihat jadwal, lokasi, dan informasi pendaftaran kegiatan WiTECH yang terbuka untuk mahasiswa semua jurusan.
           </p>
         </div>
       </section>
 
       {/* ── FILTER ───────────────────────────────────────────── */}
       <section className="max-w-7xl mx-auto px-6 mb-12 flex justify-center relative z-10">
-        <div className="inline-flex p-1.5 bg-card border-2 border-border rounded-full neo-shadow-sm">
+        <div className="filter-bar inline-flex p-1.5 bg-card border border-border rounded-full">
           <button 
-            onClick={() => setFilter("all")}
+            aria-pressed={filter === "all"} onClick={() => setFilter("all")}
             className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all ${filter === "all" ? "bg-primary text-white border-2 border-border neo-shadow-sm" : "text-muted-foreground hover:text-foreground border-2 border-transparent"}`}
           >
             Semua
           </button>
           <button 
-            onClick={() => setFilter("upcoming")}
+            aria-pressed={filter === "upcoming"} onClick={() => setFilter("upcoming")}
             className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all ${filter === "upcoming" ? "bg-accent text-foreground border-2 border-border neo-shadow-sm" : "text-muted-foreground hover:text-foreground border-2 border-transparent"}`}
           >
-            Akan Datang
+            Belum selesai
           </button>
           <button 
-            onClick={() => setFilter("past")}
+            aria-pressed={filter === "past"} onClick={() => setFilter("past")}
             className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all ${filter === "past" ? "bg-muted text-foreground border-2 border-border neo-shadow-sm" : "text-muted-foreground hover:text-foreground border-2 border-transparent"}`}
           >
             Selesai
@@ -138,22 +137,22 @@ export default function Events() {
               <>
                 {/* Column 1: Upcoming */}
                 <div className="space-y-8">
-                  <h2 className="text-2xl font-black mb-6 text-foreground flex items-center gap-2">
+                  <h2 className="text-2xl font-semibold mb-6 text-foreground flex items-center gap-2">
                     <Sparkles className="text-primary" size={24} />
-                    Akan Datang
+                    Belum selesai
                   </h2>
                   {filteredEvents.filter(e => !isEventCompleted(e)).map((event, index) => (
                     <EventCard key={event.id} event={event} index={index} />
                   ))}
                   {filteredEvents.filter(e => !isEventCompleted(e)).length === 0 && (
-                    <div className="text-center py-10 neo-card bg-white rounded-3xl opacity-70">
-                      <p className="text-muted-foreground font-medium">Belum ada acara baru.</p>
+                    <div className="text-center py-10 neo-card bg-white rounded-md opacity-70">
+                      <p className="text-muted-foreground font-medium">Belum ada kegiatan yang berlangsung atau akan datang.</p>
                     </div>
                   )}
                 </div>
                 {/* Column 2: Past */}
                 <div className="space-y-8">
-                  <h2 className="text-2xl font-black mb-6 text-foreground/50 flex items-center gap-2">
+                  <h2 className="text-2xl font-semibold mb-6 text-foreground/50 flex items-center gap-2">
                     <Clock className="text-muted-foreground" size={24} />
                     Selesai
                   </h2>
@@ -170,9 +169,9 @@ export default function Events() {
             )}
           </div>
         ) : (
-          <div className="text-center py-20 neo-card bg-white rounded-3xl max-w-3xl mx-auto">
-            <h3 className="text-2xl font-black mb-2">Belum Ada Event</h3>
-            <p className="text-muted-foreground font-medium">Coba cek lagi nanti ya!</p>
+          <div className="text-center py-20 neo-card bg-white rounded-md max-w-3xl mx-auto">
+            <h3 className="text-2xl font-semibold mb-2">Belum ada kegiatan</h3>
+            <p className="text-muted-foreground font-medium">Tidak ada kegiatan untuk pilihan ini. Pilih kategori lain atau periksa kembali nanti.</p>
           </div>
         )}
       </section>

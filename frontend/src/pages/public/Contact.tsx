@@ -16,22 +16,22 @@ export default function Contact() {
   };
 
   return (
-    <div className="bg-background text-foreground font-sans pt-32 pb-24 overflow-hidden min-h-screen">
+    <div className="public-page bg-background text-foreground font-sans pt-12 pb-24 overflow-hidden min-h-screen">
       
       {/* ── HEADER ───────────────────────────────────────────── */}
       <section className="max-w-7xl mx-auto px-6 mb-20 relative">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-secondary/10 blur-[80px] rounded-full pointer-events-none" />
+        
         
         <div className="relative z-10 max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border-2 border-border bg-muted text-xs font-bold uppercase tracking-widest mb-6 neo-shadow-sm">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-muted text-xs font-medium normal-case tracking-normal mb-6">
             <Sparkles size={16} className="text-secondary" strokeWidth={2.5} />
-            Hubungi Kami
+            Hubungi kami
           </div>
-          <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-[1.1] mb-6">
-            Yuk Ngobrol! <span>👋</span>
+          <h1 className="text-4xl md:text-6xl font-semibold tracking-tight leading-[1.1] mb-6">
+            Mari berbincang.
           </h1>
           <p className="text-xl font-medium text-muted-foreground leading-relaxed max-w-2xl">
-            Mau gabung Witech, kolaborasi proyek, atau sekadar nanya-nanya soal teknologi? Kita selalu terbuka buat ngobrol!
+            Hubungi kami untuk informasi pendaftaran, kerja sama, atau pertanyaan tentang kegiatan WiTECH.
           </p>
         </div>
       </section>
@@ -45,28 +45,28 @@ export default function Contact() {
             
             {/* Contact Cards */}
             <div className="space-y-4">
-              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">Info Kontak</p>
+              <p className="text-xs font-medium normal-case tracking-normal text-muted-foreground mb-4">Informasi kontak</p>
               
-              <div className="neo-card rounded-2xl p-6 neo-shadow-sm hover:neo-shadow-md hover:-translate-y-1 transition-all bg-white group">
+              <div className="neo-card rounded-md p-6 transition-all bg-white group">
                 <div className="flex items-start gap-4">
-                  <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                  <div className="size-12 rounded-md bg-primary/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
                     <Mail size={20} className="text-primary" strokeWidth={2.5} />
                   </div>
                   <div>
-                    <p className="font-black text-foreground mb-1">Email</p>
+                    <p className="font-semibold text-foreground mb-1">Email</p>
                     <p className="text-sm font-medium text-muted-foreground">contact@witech.id</p>
                     <p className="text-sm font-medium text-muted-foreground">partnership@witech.id</p>
                   </div>
                 </div>
               </div>
               
-              <div className="neo-card rounded-2xl p-6 neo-shadow-sm hover:neo-shadow-md hover:-translate-y-1 transition-all bg-white group">
+              <div className="neo-card rounded-md p-6 transition-all bg-white group">
                 <div className="flex items-start gap-4">
-                  <div className="size-12 rounded-2xl bg-secondary/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                  <div className="size-12 rounded-md bg-secondary/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
                     <MapPin size={20} className="text-secondary" strokeWidth={2.5} />
                   </div>
                   <div>
-                    <p className="font-black text-foreground mb-1">Alamat</p>
+                    <p className="font-semibold text-foreground mb-1">Alamat</p>
                     <p className="text-sm font-medium text-muted-foreground leading-relaxed">
                       Gedung Student Center Lt. 3<br />
                       Universitas Teknologi Nasional<br />
@@ -79,7 +79,7 @@ export default function Contact() {
 
             {/* Social Media */}
             <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">Sosial Media</p>
+              <p className="text-xs font-medium normal-case tracking-normal text-muted-foreground mb-4">Media sosial</p>
               <div className="flex flex-col gap-3">
                 {[
                   { label: "Instagram", handle: "@witech.unija", icon: Camera, href: "https://www.instagram.com/witech.unija/", color: "var(--color-primary)" },
@@ -92,17 +92,17 @@ export default function Contact() {
                     href={s.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="neo-card flex items-center gap-4 px-5 py-4 rounded-2xl neo-shadow-sm group hover:neo-shadow-md hover:-translate-y-1 transition-all bg-white"
+                    className="neo-card flex items-center gap-4 px-5 py-4 rounded-md group transition-all bg-white"
                   >
                     <div
-                      className="size-10 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform"
+                      className="size-10 rounded-md flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform"
                       style={{ backgroundColor: `${s.color}15` }}
                     >
                       <s.icon size={18} style={{ color: s.color }} strokeWidth={2.5} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{s.label}</p>
-                      <p className="text-sm font-bold text-foreground truncate">{s.handle}</p>
+                      <p className="text-xs font-medium normal-case tracking-wider text-muted-foreground">{s.label}</p>
+                      <p className="text-sm font-medium text-foreground truncate">{s.handle}</p>
                     </div>
                     <ArrowRight size={16} className="text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all shrink-0" strokeWidth={2.5} />
                   </a>
@@ -111,10 +111,10 @@ export default function Contact() {
             </div>
 
             {/* Operating Hours */}
-            <div className="neo-card bg-muted rounded-2xl p-6 neo-shadow-sm">
+            <div className="neo-card bg-muted rounded-md p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Clock size={16} className="text-muted-foreground" strokeWidth={2.5} />
-                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Jam Operasional</p>
+                <p className="text-xs font-medium normal-case tracking-normal text-muted-foreground">Jam operasional</p>
               </div>
               <div className="space-y-3">
                 {[
@@ -123,8 +123,8 @@ export default function Contact() {
                   { day: "Minggu", time: "Libur" },
                 ].map((h) => (
                   <div key={h.day} className="flex justify-between text-sm">
-                    <span className="font-bold">{h.day}</span>
-                    <span className="font-bold text-muted-foreground font-mono">{h.time}</span>
+                    <span className="font-medium">{h.day}</span>
+                    <span className="font-medium text-muted-foreground font-mono">{h.time}</span>
                   </div>
                 ))}
               </div>
@@ -133,39 +133,39 @@ export default function Contact() {
 
           {/* ── RIGHT: Form ───────────────────────────────── */}
           <div className="lg:col-span-3">
-            <div className="neo-card bg-white rounded-3xl p-8 md:p-10 neo-shadow-md sticky top-28">
+            <div className="neo-card bg-white rounded-md p-8 md:p-10 sticky top-28">
               {submitted ? (
                 <div className="text-center py-16 flex flex-col items-center">
                   <div className="size-24 bg-secondary/10 rounded-full flex items-center justify-center text-4xl mb-6">
                     🎉
                   </div>
-                  <h3 className="text-3xl font-black mb-3 tracking-tight">Pesan Belum Dikirim</h3>
+                  <h3 className="text-3xl font-semibold mb-3 tracking-tight">Pesan belum dikirim</h3>
                   <p className="font-medium text-muted-foreground max-w-xs mx-auto leading-relaxed">
-                    Form ini masih berupa demo. Pesan belum dikirim atau disimpan. Silakan hubungi kontak yang tercantum.
+                    Formulir ini masih berupa demo. Pesan belum dikirim atau disimpan. Silakan hubungi kontak yang tercantum.
                   </p>
                   <button
                     onClick={() => setSubmitted(false)}
-                    className="mt-8 px-6 py-3 bg-foreground text-background font-bold rounded-xl border-2 border-border neo-shadow-sm hover:-translate-y-1 transition-transform"
+                    className="mt-8 px-6 py-3 bg-foreground text-background font-medium rounded-md border border-border transition-transform"
                   >
-                    Kembali ke Form
+                    Kembali ke formulir
                   </button>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="size-10 bg-primary/10 rounded-xl flex items-center justify-center">
+                    <div className="size-10 bg-primary/10 rounded-md flex items-center justify-center">
                       <Send size={18} className="text-primary" strokeWidth={2.5} />
                     </div>
                     <div>
-                      <h2 className="font-black text-xl tracking-tight">Kirim Pesan</h2>
-                      <p className="text-xs font-medium text-muted-foreground">Mode demo — form ini belum mengirim atau menyimpan pesan.</p>
+                      <h2 className="font-semibold text-xl tracking-tight">Formulir kontak (demo)</h2>
+                      <p className="text-xs font-medium text-muted-foreground">Mode demo. Formulir ini belum mengirim atau menyimpan pesan.</p>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="name" className="block text-xs font-bold uppercase tracking-wider mb-2 text-muted-foreground">
-                        Nama Lengkap *
+                      <label htmlFor="name" className="block text-xs font-medium normal-case tracking-wider mb-2 text-muted-foreground">
+                        Nama lengkap *
                       </label>
                       <input
                         id="name"
@@ -173,12 +173,12 @@ export default function Contact() {
                         required
                         value={form.name}
                         onChange={(e) => setForm({ ...form, name: e.target.value })}
-                        placeholder="Nama kamu"
-                        className="w-full px-4 py-3.5 bg-muted border-2 border-transparent rounded-xl text-sm font-bold placeholder:text-muted-foreground placeholder:font-medium focus:outline-none focus:border-border transition-colors"
+                        placeholder="Masukkan nama lengkap"
+                        className="w-full px-4 py-3.5 bg-muted border border-transparent rounded-md text-sm font-medium placeholder:text-muted-foreground placeholder:font-medium focus:outline-none focus:border-border transition-colors"
                       />
                     </div>
                     <div>
-                      <label htmlFor="email" className="block text-xs font-bold uppercase tracking-wider mb-2 text-muted-foreground">
+                      <label htmlFor="email" className="block text-xs font-medium normal-case tracking-wider mb-2 text-muted-foreground">
                         Email *
                       </label>
                       <input
@@ -188,32 +188,32 @@ export default function Contact() {
                         value={form.email}
                         onChange={(e) => setForm({ ...form, email: e.target.value })}
                         placeholder="email@university.ac.id"
-                        className="w-full px-4 py-3.5 bg-muted border-2 border-transparent rounded-xl text-sm font-bold placeholder:text-muted-foreground placeholder:font-medium focus:outline-none focus:border-border transition-colors"
+                        className="w-full px-4 py-3.5 bg-muted border border-transparent rounded-md text-sm font-medium placeholder:text-muted-foreground placeholder:font-medium focus:outline-none focus:border-border transition-colors"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label htmlFor="subject" className="block text-xs font-bold uppercase tracking-wider mb-2 text-muted-foreground">
+                    <label htmlFor="subject" className="block text-xs font-medium normal-case tracking-wider mb-2 text-muted-foreground">
                       Subjek *
                     </label>
                     <select
                       id="subject"
                       value={form.subject}
                       onChange={(e) => setForm({ ...form, subject: e.target.value })}
-                      className="w-full px-4 py-3.5 bg-muted border-2 border-transparent rounded-xl text-sm font-bold focus:outline-none focus:border-border transition-colors"
+                      className="w-full px-4 py-3.5 bg-muted border border-transparent rounded-md text-sm font-medium focus:outline-none focus:border-border transition-colors"
                     >
-                      <option value="join">Mau gabung Witech</option>
-                      <option value="belajar">Mau belajar teknologi dasar</option>
-                      <option value="partnership">Kerja sama / Kolaborasi</option>
-                      <option value="sponsorship">Sponsorship</option>
-                      <option value="project">Tanya soal proyek</option>
+                      <option value="join">Pendaftaran anggota WiTECH</option>
+                      <option value="belajar">Belajar teknologi dasar</option>
+                      <option value="partnership">Kerja sama dan kolaborasi</option>
+                      <option value="sponsorship">Dukungan sponsor</option>
+                      <option value="project">Pertanyaan tentang proyek</option>
                       <option value="other">Lainnya</option>
                     </select>
                   </div>
 
                   <div>
-                    <label htmlFor="message" className="block text-xs font-bold uppercase tracking-wider mb-2 text-muted-foreground">
+                    <label htmlFor="message" className="block text-xs font-medium normal-case tracking-wider mb-2 text-muted-foreground">
                       Pesan *
                     </label>
                     <textarea
@@ -222,16 +222,16 @@ export default function Contact() {
                       rows={5}
                       value={form.message}
                       onChange={(e) => setForm({ ...form, message: e.target.value })}
-                      placeholder="Ceritain sedikit tentang kamu dan apa yang kamu cari..."
-                      className="w-full px-4 py-3.5 bg-muted border-2 border-transparent rounded-xl text-sm font-bold placeholder:text-muted-foreground placeholder:font-medium focus:outline-none focus:border-border transition-colors resize-none"
+                      placeholder="Tuliskan pertanyaan atau keperluanmu"
+                      className="w-full px-4 py-3.5 bg-muted border border-transparent rounded-md text-sm font-medium placeholder:text-muted-foreground placeholder:font-medium focus:outline-none focus:border-border transition-colors resize-none"
                     />
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full py-4 bg-primary text-white border-2 border-border rounded-2xl font-black text-base neo-shadow-sm hover:-translate-y-1 hover:neo-shadow-md transition-all flex items-center justify-center gap-2"
+                    className="w-full py-4 bg-primary text-white border border-border rounded-md font-semibold text-base transition-all flex items-center justify-center gap-2"
                   >
-                    Coba Form (Demo) <Send size={18} strokeWidth={3} />
+                    Coba formulir demo <Send size={18} strokeWidth={3} />
                   </button>
                 </form>
               )}

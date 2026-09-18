@@ -88,7 +88,7 @@ test("featured drafts stay visible in admin but absent from all public project s
   assert.doesNotMatch(render(Portfolio, store.data), /Private Draft Marker/);
   assert.doesNotMatch(render(Home, store.data), /Private Draft Marker/);
   const detail = render(ProjectDetail, store.data, `/portfolio/${project.slug}`);
-  assert.match(detail, /Proyek Nggak Ketemu/);
+  assert.match(detail, /Proyek tidak ditemukan/);
   assert.doesNotMatch(detail, /Private Draft Marker/);
   accepted(store.actions.updateProject(project.id, { status: "published" }));
   assert.match(render(Portfolio, store.data), /Private Draft Marker/);
@@ -188,10 +188,10 @@ test("completion uses WIB end time, independently of registration and local mach
   assert.equal(formatEventTime(event), "09:00 - 12:00 WIB");
   const state = structuredClone(initialStoreData);
   state.events = [{ ...event, date: "2099-09-18" }];
-  assert.doesNotMatch(render(Events, state), /SUDAH SELESAI/);
-  assert.match(render(Events, state), /Ditutup/);
+  assert.doesNotMatch(render(Events, state), /Selesai<[/]span>/);
+  assert.match(render(Events, state), /Pendaftaran ditutup/);
   state.events = [{ ...event, date: "2020-09-18", registrationOpen: true }];
-  assert.match(render(Events, state), /SUDAH SELESAI/);
+  assert.match(render(Events, state), /Selesai<[/]span>/);
   assert.doesNotMatch(render(Events, state), />Daftar[\s<]/);
 });
 

@@ -6,85 +6,85 @@ import { Users, Lightbulb, HeartHandshake, Rocket, Target, Globe, ArrowRight, Ch
 const About: React.FC = () => {
   const { divisions } = useStore();
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans pt-32 pb-24 overflow-hidden">
+    <div className="public-page min-h-screen bg-background text-foreground font-sans pt-12 pb-24 overflow-hidden">
       
       {/* ── HERO ───────────────────────────────────────────── */}
-      <section className="relative px-6 mb-32">
-        <div className="absolute top-0 right-0 w-1/3 h-[500px] bg-primary/10 blur-[100px] rounded-full pointer-events-none" />
+      <section className="relative px-6 mb-20">
+        
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
           <div className="relative z-10">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border-2 border-border bg-accent text-xs font-bold uppercase tracking-widest mb-6 neo-shadow-sm">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-accent text-xs font-medium normal-case tracking-normal mb-6">
               <span className="w-2 h-2 rounded-full bg-foreground" />
-              Tentang Kami
+              Tentang WiTECH
             </div>
-            <h1 className="text-5xl md:text-7xl font-black mb-8 tracking-tighter leading-[1.1]">
-              Dibuat mahasiswa. <br />
+            <h1 className="text-4xl md:text-6xl font-semibold mb-8 tracking-tight leading-[1.1]">
+              Dari mahasiswa. <br />
               <span className="gradient-text">Untuk semua.</span>
             </h1>
             <p className="text-xl font-medium text-muted-foreground leading-relaxed mb-10 max-w-xl">
-              Witech bukan cuma buat anak IT! Mau kamu dari sastra, bisnis, pertanian, atau kedokteran, kita semua butuh teknologi.
+              WiTECH adalah UKM bidang teknologi untuk mahasiswa lintas jurusan. Kami belajar bersama, mengembangkan keterampilan, dan mengerjakan proyek yang dapat digunakan dalam kegiatan sehari-hari.
             </p>
             <div className="flex flex-wrap gap-4">
-              <Link to="/contact" className="inline-flex items-center gap-2 px-8 py-4 bg-foreground text-background border-2 border-border rounded-xl text-lg font-bold neo-shadow-sm hover:bg-primary hover:text-white transition-all hover:-translate-y-1">
-                Gabung Witech <ArrowRight size={20} strokeWidth={2.5} />
+              <Link to="/contact" className="inline-flex items-center gap-2 px-8 py-4 bg-foreground text-background border border-border rounded-md text-lg font-medium hover:bg-primary hover:text-white transition-all">
+                Tanyakan pendaftaran <ArrowRight size={20} strokeWidth={2.5} />
               </Link>
             </div>
           </div>
           
-          <div className="relative lg:h-[500px] rounded-3xl border-2 border-border p-8 neo-shadow-lg bg-card flex flex-col justify-center gap-6 group hover:-translate-y-2 transition-transform duration-500">
-            <div className="absolute -right-6 -top-6 size-24 bg-accent rounded-full border-2 border-border flex items-center justify-center neo-shadow-sm anim-wiggle">
+          <div className="relative lg:h-[500px] rounded-md border border-border p-8 bg-card flex flex-col justify-center gap-6 group transition-transform duration-200">
+            <div className="absolute -right-6 -top-6 size-24 bg-accent rounded-full border border-border flex items-center justify-center">
               <Users size={40} className="text-foreground" strokeWidth={2.5} />
             </div>
-            <div className="absolute -left-6 -bottom-6 size-20 bg-secondary rounded-xl border-2 border-border flex items-center justify-center neo-shadow-sm anim-float rotate-12">
+            <div className="absolute -left-6 -bottom-6 size-20 bg-secondary rounded-md border border-border flex items-center justify-center rotate-12">
               <Lightbulb size={32} className="text-foreground" strokeWidth={2.5} />
             </div>
             
-            <div className="bg-muted p-6 rounded-2xl border-2 border-border flex items-center gap-4">
+            <div className="bg-muted p-6 rounded-md border border-border flex items-center gap-4">
               <CheckCircle2 size={32} className="text-primary shrink-0" strokeWidth={2.5} />
-              <p className="font-bold text-lg">Semua jurusan diterima!</p>
+              <p className="font-medium text-lg">Terbuka untuk semua jurusan.</p>
             </div>
-            <div className="bg-muted p-6 rounded-2xl border-2 border-border flex items-center gap-4 ml-8">
+            <div className="bg-muted p-6 rounded-md border border-border flex items-center gap-4 ml-8">
               <CheckCircle2 size={32} className="text-secondary shrink-0" strokeWidth={2.5} />
-              <p className="font-bold text-lg">Mulai dari nol, belajar bareng.</p>
+              <p className="font-medium text-lg">Mulai dari dasar, belajar bersama.</p>
             </div>
-            <div className="bg-muted p-6 rounded-2xl border-2 border-border flex items-center gap-4">
+            <div className="bg-muted p-6 rounded-md border border-border flex items-center gap-4">
               <CheckCircle2 size={32} className="text-accent shrink-0" strokeWidth={2.5} />
-              <p className="font-bold text-lg">Fokus ke skill dunia nyata.</p>
+              <p className="font-medium text-lg">Keterampilan yang bisa diterapkan.</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* ── VISION & MISSION ───────────────────────────────── */}
-      <section className="max-w-7xl mx-auto px-6 mb-32 relative">
+      <section className="max-w-7xl mx-auto px-6 mb-20 relative">
         <div className="grid md:grid-cols-2 gap-8">
-          <div className="neo-card rounded-3xl p-10 lg:p-12 neo-shadow-md hover:-translate-y-2 transition-transform bg-white">
-            <div className="size-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-8 border-2 border-primary/20">
+          <div className="neo-card rounded-md p-10 lg:p-12 transition-transform bg-white">
+            <div className="size-16 rounded-md bg-primary/10 flex items-center justify-center mb-8 border border-primary/20">
               <Target size={32} className="text-primary" strokeWidth={2.5} />
             </div>
-            <h2 className="text-4xl font-black mb-6 tracking-tight">Visi Kita</h2>
+            <h2 className="text-4xl font-semibold mb-6 tracking-tight">Visi kami</h2>
             <p className="text-lg font-medium text-muted-foreground leading-relaxed">
-              Mewujudkan lingkungan kampus yang melek teknologi di semua disiplin ilmu. Kita percaya teknologi adalah alat bantu, dan setiap mahasiswa berhak belajar cara memanfaatkannya tanpa merasa terintimidasi.
+              Mewujudkan lingkungan kampus yang melek teknologi di semua disiplin ilmu. Setiap mahasiswa berhak belajar memanfaatkan teknologi dengan percaya diri.
             </p>
           </div>
           
-          <div className="neo-card rounded-3xl p-10 lg:p-12 neo-shadow-md hover:-translate-y-2 transition-transform bg-white text-foreground">
-            <div className="size-16 rounded-2xl bg-secondary/10 flex items-center justify-center mb-8 border-2 border-secondary/20">
+          <div className="neo-card rounded-md p-10 lg:p-12 transition-transform bg-white text-foreground">
+            <div className="size-16 rounded-md bg-secondary/10 flex items-center justify-center mb-8 border border-secondary/20">
               <Rocket size={32} className="text-secondary" strokeWidth={2.5} />
             </div>
-            <h2 className="text-4xl font-black mb-6 tracking-tight">Misi Kita</h2>
+            <h2 className="text-4xl font-semibold mb-6 tracking-tight">Misi kami</h2>
             <ul className="text-lg font-medium text-muted-foreground space-y-4">
               <li className="flex items-start gap-3">
                 <span className="mt-1.5 size-2 rounded-full bg-secondary shrink-0" />
-                Menyediakan wadah belajar Word, Excel, PowerPoint, sampai coding & AI.
+                Menyediakan ruang belajar Word, Excel, PowerPoint, pemrograman, dan kecerdasan buatan (AI).
               </li>
               <li className="flex items-start gap-3">
                 <span className="mt-1.5 size-2 rounded-full bg-secondary shrink-0" />
-                Membangun kolaborasi antar jurusan melalui proyek berbasis teknologi.
+                Membangun kolaborasi antarjurusan melalui proyek berbasis teknologi.
               </li>
               <li className="flex items-start gap-3">
                 <span className="mt-1.5 size-2 rounded-full bg-secondary shrink-0" />
-                Memberikan edukasi teknologi yang seru, asik, dan mudah dipahami.
+                Menyelenggarakan pembelajaran teknologi yang interaktif dan mudah dipahami.
               </li>
             </ul>
           </div>
@@ -92,83 +92,83 @@ const About: React.FC = () => {
       </section>
 
       {/* ── STATS ───────────────────────────────────────────── */}
-      <section className="max-w-7xl mx-auto px-6 mb-32">
+      <section className="max-w-7xl mx-auto px-6 mb-20">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {[
-            { label: 'Anggota Aktif', value: '120+', color: 'text-primary', bg: 'bg-primary/10' },
+            { label: 'Anggota aktif', value: '120+', color: 'text-primary', bg: 'bg-primary/10' },
             { label: 'Divisi', value: String(divisions.length), color: 'text-secondary', bg: 'bg-secondary/10' },
-            { label: 'Event Tahunan', value: '10+', color: 'text-purple-500', bg: 'bg-purple-500/10' },
-            { label: 'Alumni Sukses', value: '50+', color: 'text-foreground', bg: 'bg-muted' },
+            { label: 'Kegiatan tahunan', value: '10+', color: 'text-purple-500', bg: 'bg-purple-500/10' },
+            { label: 'Alumni', value: '50+', color: 'text-foreground', bg: 'bg-muted' },
           ].map((stat, i) => (
-            <div key={i} className="neo-card rounded-2xl p-8 text-center neo-shadow-sm hover:neo-shadow-md hover:-translate-y-1 transition-all">
+            <div key={i} className="neo-card rounded-md p-8 text-center transition-all">
               <div className={`mx-auto size-16 rounded-xl ${stat.bg} flex items-center justify-center mb-6`}>
                 <h3 className={`text-3xl font-black ${stat.color}`}>{stat.value}</h3>
               </div>
-              <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground">{stat.label}</p>
+              <p className="text-sm font-medium normal-case tracking-normal text-muted-foreground">{stat.label}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* ── VALUES ──────────────────────────────────────────── */}
-      <section className="max-w-7xl mx-auto px-6 mb-32">
+      <section className="max-w-7xl mx-auto px-6 mb-20">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-black tracking-tighter mb-4">Nilai-Nilai Kita</h2>
-          <p className="text-xl text-muted-foreground font-medium max-w-2xl mx-auto">Prinsip yang bikin Witech beda dari komunitas lain.</p>
+          <h2 className="text-4xl md:text-5xl font-semibold tracking-tight mb-4">Nilai yang kami pegang</h2>
+          <p className="text-xl text-muted-foreground font-medium max-w-2xl mx-auto">Prinsip kami dalam belajar dan bekerja bersama.</p>
         </div>
         <div className="grid md:grid-cols-3 gap-8">
-          <div className="neo-card rounded-3xl p-8 pt-12 relative hover:-translate-y-2 transition-transform bg-white">
-            <div className="absolute -top-8 left-8 size-16 bg-accent border-2 border-border rounded-2xl flex items-center justify-center neo-shadow-sm">
+          <div className="neo-card rounded-md p-8 pt-12 relative transition-transform bg-white">
+            <div className="absolute -top-8 left-8 size-16 bg-accent border border-border rounded-md flex items-center justify-center">
               <HeartHandshake size={32} strokeWidth={2.5} />
             </div>
-            <h3 className="text-2xl font-black mb-4 tracking-tight">Open & Inclusive</h3>
+            <h3 className="text-2xl font-semibold mb-4 tracking-tight">Terbuka untuk semua</h3>
             <p className="text-base text-muted-foreground font-medium leading-relaxed">
-              Gak peduli kamu anak IT atau bukan, jago komputer atau gaptek. Kalau kamu mau belajar ngetik cepet, desain poster, atau ngoding robot, pintu kita selalu terbuka!
+              Kamu tidak perlu memiliki latar belakang teknologi untuk bergabung. Mulai dari mengetik, mendesain poster, hingga memprogram robot, setiap anggota punya ruang untuk belajar.
             </p>
           </div>
           
-          <div className="neo-card rounded-3xl p-8 pt-12 relative hover:-translate-y-2 transition-transform bg-white">
-            <div className="absolute -top-8 left-8 size-16 bg-primary border-2 border-border rounded-2xl flex items-center justify-center neo-shadow-sm">
+          <div className="neo-card rounded-md p-8 pt-12 relative transition-transform bg-white">
+            <div className="absolute -top-8 left-8 size-16 bg-primary border border-border rounded-md flex items-center justify-center">
               <Lightbulb size={32} className="text-white" strokeWidth={2.5} />
             </div>
-            <h3 className="text-2xl font-black mb-4 tracking-tight">Creative & Fun</h3>
+            <h3 className="text-2xl font-semibold mb-4 tracking-tight">Belajar secara interaktif</h3>
             <p className="text-base text-muted-foreground font-medium leading-relaxed">
-              Belajar teknologi gak boleh bosen! Kita bikin acara yang interaktif, dari bedah laptop bareng sampai turnamen e-sports, biar semuanya enjoy.
+              Kegiatan interaktif memberi ruang untuk mencoba dan bertukar pengalaman, dari membongkar laptop bersama hingga turnamen e-sports.
             </p>
           </div>
 
-          <div className="neo-card rounded-3xl p-8 pt-12 relative hover:-translate-y-2 transition-transform bg-white">
-            <div className="absolute -top-8 left-8 size-16 bg-secondary border-2 border-border rounded-2xl flex items-center justify-center neo-shadow-sm">
+          <div className="neo-card rounded-md p-8 pt-12 relative transition-transform bg-white">
+            <div className="absolute -top-8 left-8 size-16 bg-secondary border border-border rounded-md flex items-center justify-center">
               <Globe size={32} className="text-foreground" strokeWidth={2.5} />
             </div>
-            <h3 className="text-2xl font-black mb-4 tracking-tight">Impactful</h3>
+            <h3 className="text-2xl font-semibold mb-4 tracking-tight">Bisa diterapkan</h3>
             <p className="text-base text-muted-foreground font-medium leading-relaxed">
-              Skill yang kamu pelajari di sini harus bisa dipakai di dunia nyata. Entah itu buat ngerjain skripsi lebih cepet atau buka usaha online.
+              Keterampilan yang dipelajari dapat digunakan untuk kebutuhan sehari-hari, termasuk mengerjakan skripsi atau menjalankan usaha daring.
             </p>
           </div>
         </div>
       </section>
 
       {/* ── TIMELINE ────────────────────────────────────────── */}
-      <section className="max-w-4xl mx-auto px-6 mb-32">
+      <section className="max-w-4xl mx-auto px-6 mb-20">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-black tracking-tighter mb-4">Perjalanan Kita</h2>
-          <p className="text-xl text-muted-foreground font-medium max-w-2xl mx-auto">Dari kumpul-kumpul kecil sampai jadi UKM terbesar.</p>
+          <h2 className="text-4xl md:text-5xl font-semibold tracking-tight mb-4">Perjalanan WiTECH</h2>
+          <p className="text-xl text-muted-foreground font-medium max-w-2xl mx-auto">Perkembangan WiTECH sejak berdiri pada 2018.</p>
         </div>
         <div className="relative border-l-2 border-border ml-4 space-y-12">
           {[
-            { year: '2018', title: 'Witech Berdiri', desc: 'Dibentuk oleh sekumpulan mahasiswa yang resah melihat banyak temannya yang kesulitan menggunakan software dasar kampus.', color: 'bg-primary' },
-            { year: '2020', title: 'Ekspansi Divisi', desc: 'Mulai merangkul desain grafis, video editing, dan tips smartphone untuk menjangkau lebih banyak jurusan.', color: 'bg-secondary' },
-            { year: '2022', title: 'Tech for All Festival', desc: 'Mengadakan festival teknologi kampus pertama yang pesertanya 70% non-IT!', color: 'bg-accent' },
-            { year: '2024', title: 'UKM Terbesar', desc: 'Menjadi salah satu UKM paling diminati di kampus dengan anggota dari seluruh fakultas.', color: 'bg-purple-500' },
+            { year: '2018', title: 'WiTECH berdiri', desc: 'Dibentuk oleh mahasiswa untuk membantu teman-teman yang kesulitan menggunakan perangkat lunak dasar dalam kegiatan kampus.', color: 'bg-primary' },
+            { year: '2020', title: 'Pengembangan divisi', desc: 'Memperluas bidang belajar ke desain grafis, penyuntingan video, dan penggunaan ponsel untuk menjangkau lebih banyak jurusan.', color: 'bg-secondary' },
+            { year: '2022', title: 'Tech for All Festival', desc: 'Mengadakan festival teknologi kampus pertama dengan 70% peserta dari jurusan non-IT.', color: 'bg-accent' },
+            { year: '2024', title: 'Anggota lintas fakultas', desc: 'Menghimpun anggota dari seluruh fakultas.', color: 'bg-purple-500' },
           ].map((item, index) => (
             <div key={index} className={`relative flex items-center group`}>
               <div className={`absolute -left-6 size-8 rounded-full border-4 border-background ${item.color} neo-shadow-sm`} />
               <div className={`w-full pl-8`}>
-                <div className="neo-card p-6 rounded-2xl bg-white hover:-translate-y-1 transition-transform neo-shadow-sm group-hover:neo-shadow-md">
+                <div className="neo-card p-6 rounded-md bg-white transition-transform">
                   <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-                    <h3 className="font-black text-xl tracking-tight">{item.title}</h3>
-                    <span className="font-bold px-3 py-1 bg-muted rounded-lg text-sm">{item.year}</span>
+                    <h3 className="font-semibold text-xl tracking-tight">{item.title}</h3>
+                    <span className="font-medium px-3 py-1 bg-muted rounded-lg text-sm">{item.year}</span>
                   </div>
                   <p className="font-medium text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
                 </div>
@@ -180,19 +180,19 @@ const About: React.FC = () => {
 
       {/* ── CTA ─────────────────────────────────────────────── */}
       <section className="max-w-5xl mx-auto px-6">
-        <div className="text-center bg-primary border-2 border-border rounded-[2rem] p-12 md:p-20 neo-shadow-lg relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/20 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl" />
+        <div className="text-center bg-primary border border-border rounded-md p-12 md:p-20 relative overflow-hidden">
+          
+          
           
           <div className="relative z-10">
-            <h2 className="text-4xl md:text-6xl font-black mb-6 tracking-tighter text-white">
-              Siap seru-seruan bareng?
+            <h2 className="text-4xl md:text-5xl font-semibold mb-6 tracking-tight text-white">
+              Ingin bergabung?
             </h2>
             <p className="text-xl font-medium mb-10 max-w-2xl mx-auto text-white/90">
-              Gak usah ragu, langsung aja daftar! Kita tunggu kehadiran kamu di Witech.
+              Hubungi pengurus untuk mengetahui jadwal dan proses pendaftaran anggota WiTECH.
             </p>
-            <Link to="/contact" className="inline-flex items-center gap-2 px-10 py-5 bg-background text-foreground text-xl font-black border-2 border-border rounded-2xl neo-shadow-sm hover:-translate-y-2 hover:neo-shadow-md hover:bg-accent transition-all">
-              Gabung Sekarang! <ArrowRight size={24} strokeWidth={3} />
+            <Link to="/contact" className="inline-flex items-center gap-2 px-10 py-5 bg-background text-foreground text-xl font-semibold border border-border rounded-md hover:bg-accent transition-all">
+              Tanyakan pendaftaran <ArrowRight size={24} strokeWidth={3} />
             </Link>
           </div>
         </div>
