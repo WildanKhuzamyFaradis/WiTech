@@ -36,6 +36,10 @@ logs/
 .agents/
 .gemini/
 
+# AI tool machine-local config
+.claude/settings.local.json
+.impeccable/config.local.json
+
 # Platform-local state not needed by this repository
 .plugins/
 .opencode-skills/
