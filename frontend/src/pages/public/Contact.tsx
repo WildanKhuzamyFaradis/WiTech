@@ -139,15 +139,15 @@ export default function Contact() {
                   <div className="size-24 bg-secondary/10 rounded-full flex items-center justify-center text-4xl mb-6">
                     🎉
                   </div>
-                  <h3 className="text-3xl font-black mb-3 tracking-tight">Pesan Terkirim!</h3>
+                  <h3 className="text-3xl font-black mb-3 tracking-tight">Pesan Belum Dikirim</h3>
                   <p className="font-medium text-muted-foreground max-w-xs mx-auto leading-relaxed">
-                    Makasih udah hubungi kita! Kita bakal bales dalam 1–2 hari kerja ya.
+                    Form ini masih berupa demo. Pesan belum dikirim atau disimpan. Silakan hubungi kontak yang tercantum.
                   </p>
                   <button
-                    onClick={() => { setSubmitted(false); setForm({ name: "", email: "", subject: "join", message: "" }); }}
+                    onClick={() => setSubmitted(false)}
                     className="mt-8 px-6 py-3 bg-foreground text-background font-bold rounded-xl border-2 border-border neo-shadow-sm hover:-translate-y-1 transition-transform"
                   >
-                    Kirim pesan lagi
+                    Kembali ke Form
                   </button>
                 </div>
               ) : (
@@ -158,7 +158,7 @@ export default function Contact() {
                     </div>
                     <div>
                       <h2 className="font-black text-xl tracking-tight">Kirim Pesan</h2>
-                      <p className="text-xs font-medium text-muted-foreground">Isi form di bawah, kita bales secepetnya!</p>
+                      <p className="text-xs font-medium text-muted-foreground">Mode demo — form ini belum mengirim atau menyimpan pesan.</p>
                     </div>
                   </div>
 
@@ -231,7 +231,7 @@ export default function Contact() {
                     type="submit"
                     className="w-full py-4 bg-primary text-white border-2 border-border rounded-2xl font-black text-base neo-shadow-sm hover:-translate-y-1 hover:neo-shadow-md transition-all flex items-center justify-center gap-2"
                   >
-                    Kirim Pesan <Send size={18} strokeWidth={3} />
+                    Coba Form (Demo) <Send size={18} strokeWidth={3} />
                   </button>
                 </form>
               )}

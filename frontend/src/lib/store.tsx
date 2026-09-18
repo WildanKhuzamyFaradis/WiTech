@@ -1,117 +1,64 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
-import {
-  divisions as initialDivisions,
-  projects as initialProjects,
-  members as initialMembers,
-  albums as initialAlbums,
-  events as initialEvents,
-  faqs as initialFaqs,
-  type Division,
-  type Project,
-  type Member,
-  type Album,
-  type Event,
-  type FAQ,
-} from "./data";
+import { createContext, useContext, useRef, useState, type ReactNode } from "react";
+import { divisions, projects, members, albums, events, faqs } from "./data";
+import type { Division, Project, Member, Album, Event, FAQ } from "./types";
+import { validateStoreData, withDerivedCounts, type MutationResult, type StoreData } from "./dataContract";
 
-interface StoreContextValue {
-  divisions: Division[];
-  projects: Project[];
-  members: Member[];
-  albums: Album[];
-  events: Event[];
-  faqs: FAQ[];
+export const initialStoreData: StoreData = { divisions, projects, members, albums, events, faqs };
 
-  addDivision: (d: Omit<Division, "id">) => void;
-  updateDivision: (id: string, d: Partial<Division>) => void;
-  removeDivision: (id: string) => void;
+// Synchronous local mutations. Rejections never commit a partial change.
+export function createStoreActions(read: () => StoreData, write: (next: StoreData) => void) {
+  function change(transform: (current: StoreData) => StoreData): MutationResult {
+    const next = transform(read());
+    const error = validateStoreData(next);
+    if (error) return { ok: false, error };
+    write(withDerivedCounts(next));
+    return { ok: true };
+  }
 
-  addProject: (p: Omit<Project, "id">) => void;
-  updateProject: (id: string, p: Partial<Project>) => void;
-  removeProject: (id: string) => void;
+  function resource<T extends { id: string }>(
+    get: (data: StoreData) => T[],
+    set: (data: StoreData, rows: T[]) => StoreData,
+  ) {
+    return {
+      add: (value: Omit<T, "id">) => change(data => set(data, [{ ...value, id: crypto.randomUUID() } as T, ...get(data)])),
+      update: (id: string, patch: Partial<Omit<T, "id">>): MutationResult => {
+        if (!get(read()).some(row => row.id === id)) return { ok: false, error: "Data tidak ditemukan." };
+        return change(data => set(data, get(data).map(row => row.id === id ? { ...row, ...patch, id: row.id } : row)));
+      },
+      remove: (id: string) => change(data => set(data, get(data).filter(row => row.id !== id))),
+    };
+  }
+  const divisions = resource<Division>(s => s.divisions, (s, rows) => ({ ...s, divisions: rows }));
+  const projects = resource<Project>(s => s.projects, (s, rows) => ({ ...s, projects: rows }));
+  const members = resource<Member>(s => s.members, (s, rows) => ({ ...s, members: rows }));
+  const albums = resource<Album>(s => s.albums, (s, rows) => ({ ...s, albums: rows }));
+  const events = resource<Event>(s => s.events, (s, rows) => ({ ...s, events: rows }));
+  const faqs = resource<FAQ>(s => s.faqs, (s, rows) => ({ ...s, faqs: rows }));
 
-  addMember: (m: Omit<Member, "id">) => void;
-  updateMember: (id: string, m: Partial<Member>) => void;
-  removeMember: (id: string) => void;
-
-  addAlbum: (a: Omit<Album, "id">) => void;
-  updateAlbum: (id: string, a: Partial<Album>) => void;
-  removeAlbum: (id: string) => void;
-
-  addEvent: (e: Omit<Event, "id">) => void;
-  updateEvent: (id: string, e: Partial<Event>) => void;
-  removeEvent: (id: string) => void;
-
-  addFAQ: (f: Omit<FAQ, "id">) => void;
-  updateFAQ: (id: string, f: Partial<FAQ>) => void;
-  removeFAQ: (id: string) => void;
+  return {
+    addDivision: divisions.add, updateDivision: divisions.update, removeDivision: divisions.remove,
+    addProject: projects.add, updateProject: projects.update, removeProject: projects.remove,
+    addMember: members.add, updateMember: members.update, removeMember: members.remove,
+    addAlbum: albums.add, updateAlbum: albums.update, removeAlbum: albums.remove,
+    addEvent: events.add, updateEvent: events.update, removeEvent: events.remove,
+    addFAQ: faqs.add, updateFAQ: faqs.update, removeFAQ: faqs.remove,
+  };
 }
 
+type StoreContextValue = StoreData & ReturnType<typeof createStoreActions>;
 const StoreContext = createContext<StoreContextValue | null>(null);
 
-export function StoreProvider({ children }: { children: ReactNode }) {
-  const [divisions, setDivisions] = useState<Division[]>(initialDivisions);
-  const [projects, setProjects] = useState<Project[]>(initialProjects);
-  const [members, setMembers] = useState<Member[]>(initialMembers);
-  const [albums, setAlbums] = useState<Album[]>(initialAlbums);
-  const [events, setEvents] = useState<Event[]>(initialEvents);
-  const [faqs, setFaqs] = useState<FAQ[]>(initialFaqs);
-
-  const value: StoreContextValue = {
-    divisions,
-    projects,
-    members,
-    albums,
-    events,
-    faqs,
-
-    addDivision: (d) =>
-      setDivisions((prev) => [{ ...d, id: crypto.randomUUID() }, ...prev]),
-    updateDivision: (id, d) =>
-      setDivisions((prev) => prev.map((x) => (x.id === id ? { ...x, ...d } : x))),
-    removeDivision: (id) =>
-      setDivisions((prev) => prev.filter((x) => x.id !== id)),
-
-    addProject: (p) =>
-      setProjects((prev) => [{ ...p, id: crypto.randomUUID() }, ...prev]),
-    updateProject: (id, p) =>
-      setProjects((prev) => prev.map((x) => (x.id === id ? { ...x, ...p } : x))),
-    removeProject: (id) =>
-      setProjects((prev) => prev.filter((x) => x.id !== id)),
-
-    addMember: (m) =>
-      setMembers((prev) => [{ ...m, id: crypto.randomUUID() }, ...prev]),
-    updateMember: (id, m) =>
-      setMembers((prev) => prev.map((x) => (x.id === id ? { ...x, ...m } : x))),
-    removeMember: (id) =>
-      setMembers((prev) => prev.filter((x) => x.id !== id)),
-
-    addAlbum: (a) =>
-      setAlbums((prev) => [{ ...a, id: crypto.randomUUID() }, ...prev]),
-    updateAlbum: (id, a) =>
-      setAlbums((prev) => prev.map((x) => (x.id === id ? { ...x, ...a } : x))),
-    removeAlbum: (id) =>
-      setAlbums((prev) => prev.filter((x) => x.id !== id)),
-
-    addEvent: (e) =>
-      setEvents((prev) => [{ ...e, id: crypto.randomUUID() }, ...prev]),
-    updateEvent: (id, e) =>
-      setEvents((prev) => prev.map((x) => (x.id === id ? { ...x, ...e } : x))),
-    removeEvent: (id) =>
-      setEvents((prev) => prev.filter((x) => x.id !== id)),
-
-    addFAQ: (f) =>
-      setFaqs((prev) => [{ ...f, id: crypto.randomUUID() }, ...prev]),
-    updateFAQ: (id, f) =>
-      setFaqs((prev) => prev.map((x) => (x.id === id ? { ...x, ...f } : x))),
-    removeFAQ: (id) =>
-      setFaqs((prev) => prev.filter((x) => x.id !== id)),
-  };
-
-  return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
+export function StoreProvider({ children, initialData = initialStoreData }: { children: ReactNode; initialData?: StoreData }) {
+  const [data, setData] = useState(() => withDerivedCounts(structuredClone(initialData)));
+  const current = useRef(data);
+  const actions = createStoreActions(() => current.current, next => {
+    // Keep consecutive mutations in the same event consistent before React re-renders.
+    current.current = next;
+    setData(next);
+  });
+  return <StoreContext.Provider value={{ ...data, ...actions }}>{children}</StoreContext.Provider>;
 }
 
-// ponytail: client-side only state; swap for API calls when backend is ready
 export function useStore() {
   const ctx = useContext(StoreContext);
   if (!ctx) throw new Error("useStore must be used within StoreProvider");

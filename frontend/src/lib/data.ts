@@ -1,75 +1,8 @@
-export interface Division {
-  id: string;
-  name: string;
-  shortName: string;
-  description: string;
-  icon: string;
-  memberCount: number;
-  color: string;
-  technologies: string[];
-}
+import type { Division, Project, Member, Album, FAQ, Event } from "./types";
 
-export interface Project {
-  id: string;
-  slug: string;
-  title: string;
-  subtitle: string;
-  description: string;
-  division: string;
-  divisionId: string;
-  tags: string[];
-  year: number;
-  status: "published" | "draft";
-  featured: boolean;
-  image: string;
-  members: string[];
-  award: string;
-  githubUrl?: string;
-  liveUrl?: string;
-}
-
-export interface Member {
-  id: string;
-  name: string;
-  role: string;
-  division: string;
-  year: string;
-  avatar: string;
-  github: string;
-  linkedin: string;
-  active: boolean;
-}
-
-export interface Album {
-  id: string;
-  slug: string;
-  title: string;
-  description: string;
-  coverImage: string;
-  date: string;
-  photoCount: number;
-  photos: string[];
-}
-
-export interface FAQ {
-  id: string;
-  question: string;
-  answer: string;
-}
-
-export interface Event {
-  id: string;
-  title: string;
-  date: string;
-  time: string;
-  location: string;
-  type: "Workshop" | "Bootcamp" | "Seminar" | "Sharing Session";
-  description: string;
-  image: string;
-  isOpen: boolean;
-  registrationLink?: string;
-}
-
+// Temporary fixtures. UI reads these through StoreProvider only.
+// Legacy project mapping: webapp/hardware/cybernet -> lab; digilit -> academy.
+// Credits remain historical display names; they are not fabricated Member IDs.
 export const divisions: Division[] = [
   {
     id: "academy",
@@ -130,8 +63,7 @@ export const projects: Project[] = [
     title: "WiLearn",
     subtitle: "Campus E-Learning Platform",
     description: "A comprehensive e-learning platform serving 5,000+ students with live classes, course management, and AI-powered progress tracking.",
-    division: "Web & App Development",
-    divisionId: "webapp",
+    divisionId: "lab",
     tags: ["React", "Node.js", "PostgreSQL", "WebRTC"],
     year: 2024,
     status: "published",
@@ -146,8 +78,7 @@ export const projects: Project[] = [
     title: "CampusNav",
     subtitle: "Smart Campus Navigation",
     description: "An indoor-outdoor navigation app for university campuses using AR wayfinding and real-time crowd density mapping via BLE beacons.",
-    division: "Web & App Development",
-    divisionId: "webapp",
+    divisionId: "lab",
     tags: ["Flutter", "ARKit", "BLE", "Firebase"],
     year: 2024,
     status: "published",
@@ -162,8 +93,7 @@ export const projects: Project[] = [
     title: "Workshop Excel & Data",
     subtitle: "Staff & Student Training Materials",
     description: "Membuat materi pembelajaran interaktif Excel untuk mempermudah staf kampus dan mahasiswa non-IT dalam mengolah data sehari-hari.",
-    division: "Digital Literacy",
-    divisionId: "digilit",
+    divisionId: "academy",
     tags: ["Excel", "Google Workspace", "Training"],
     year: 2024,
     status: "published",
@@ -178,7 +108,6 @@ export const projects: Project[] = [
     title: "Campus Event Poster Design",
     subtitle: "Creative Assets for University Events",
     description: "Mendesain berbagai kebutuhan publikasi seperti poster, banner, dan aset media sosial untuk acara tahunan kampus dan UKM lain.",
-    division: "Creative & Design",
     divisionId: "creative",
     tags: ["Figma", "Canva", "Photoshop", "Illustrator"],
     year: 2023,
@@ -194,8 +123,7 @@ export const projects: Project[] = [
     title: "PC Clinic",
     subtitle: "Free Troubleshooting Service",
     description: "Layanan perbaikan laptop dan HP gratis untuk mahasiswa. Dari install ulang OS, bersihin virus, sampai konsultasi upgrade hardware.",
-    division: "Hardware & IoT",
-    divisionId: "hardware",
+    divisionId: "lab",
     tags: ["PC Building", "Repair", "Windows", "Hardware"],
     year: 2024,
     status: "published",
@@ -210,8 +138,7 @@ export const projects: Project[] = [
     title: "WiSec Toolkit",
     subtitle: "Security Awareness Platform",
     description: "An interactive cybersecurity training platform with simulated phishing campaigns, CTF challenges, dan panduan aman berselancar.",
-    division: "Cybersecurity & Networking",
-    divisionId: "cybernet",
+    divisionId: "lab",
     tags: ["Python", "Django", "Docker", "Security"],
     year: 2023,
     status: "published",
@@ -224,46 +151,46 @@ export const projects: Project[] = [
 
 export const members: Member[] = [
   // Core
-  { id: "1", name: "IDDRUS, M.Kom", role: "Pembina", division: "Core", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=IDDRUS", github: "", linkedin: "", active: true },
-  { id: "2", name: "Sulfa eka safira", role: "Ketua", division: "Core", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sulfa", github: "", linkedin: "", active: true },
-  { id: "3", name: "Gibran aljilani", role: "Wakil Ketua", division: "Core", year: "2024", avatar: "/foto-angota/ghibrancakep.jpeg", github: "", linkedin: "", active: true },
-  { id: "4", name: "Zhubdatul fadhilah", role: "Sekretaris", division: "Core", year: "2024", avatar: "/foto-angota/zhuu.jpeg", github: "", linkedin: "", active: true },
-  { id: "5", name: "Oktari fitriani anwar", role: "Wakil Sekretaris", division: "Core", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Oktari", github: "", linkedin: "", active: true },
-  { id: "6", name: "Rumsil lailiyatun nuraini", role: "Bendahara", division: "Core", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Rumsil", github: "", linkedin: "", active: true },
-  { id: "7", name: "Nurul intan aulia H", role: "Wakil Bendahara", division: "Core", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Nurul", github: "", linkedin: "", active: true },
+  { id: "1", name: "IDDRUS, M.Kom", role: "Pembina", divisionId: null, year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=IDDRUS", github: "", linkedin: "", active: true },
+  { id: "2", name: "Sulfa eka safira", role: "Ketua", divisionId: null, year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sulfa", github: "", linkedin: "", active: true },
+  { id: "3", name: "Gibran aljilani", role: "Wakil Ketua", divisionId: null, year: "2024", avatar: "/foto-angota/ghibrancakep.jpeg", github: "", linkedin: "", active: true },
+  { id: "4", name: "Zhubdatul fadhilah", role: "Sekretaris", divisionId: null, year: "2024", avatar: "/foto-angota/zhuu.jpeg", github: "", linkedin: "", active: true },
+  { id: "5", name: "Oktari fitriani anwar", role: "Wakil Sekretaris", divisionId: null, year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Oktari", github: "", linkedin: "", active: true },
+  { id: "6", name: "Rumsil lailiyatun nuraini", role: "Bendahara", divisionId: null, year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Rumsil", github: "", linkedin: "", active: true },
+  { id: "7", name: "Nurul intan aulia H", role: "Wakil Bendahara", divisionId: null, year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Nurul", github: "", linkedin: "", active: true },
   
   // WiTECH Academy
-  { id: "8", name: "Muhammad Jasuli", role: "Ketua Divisi", division: "WiTECH Academy", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jasuli", github: "", linkedin: "", active: true },
-  { id: "9", name: "Ach. Faiz mahmudi", role: "Anggota", division: "WiTECH Academy", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Faiz", github: "", linkedin: "", active: true },
-  { id: "10", name: "Dina Safitri", role: "Anggota", division: "WiTECH Academy", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Dina", github: "", linkedin: "", active: true },
-  { id: "11", name: "Lailatul Hasanah", role: "Anggota", division: "WiTECH Academy", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Lailatul", github: "", linkedin: "", active: true },
+  { id: "8", name: "Muhammad Jasuli", role: "Ketua Divisi", divisionId: "academy", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jasuli", github: "", linkedin: "", active: true },
+  { id: "9", name: "Ach. Faiz mahmudi", role: "Anggota", divisionId: "academy", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Faiz", github: "", linkedin: "", active: true },
+  { id: "10", name: "Dina Safitri", role: "Anggota", divisionId: "academy", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Dina", github: "", linkedin: "", active: true },
+  { id: "11", name: "Lailatul Hasanah", role: "Anggota", divisionId: "academy", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Lailatul", github: "", linkedin: "", active: true },
 
   // WiTECH Lab
-  { id: "12", name: "Wildan khuzamy faradis", role: "Ketua Divisi", division: "WiTECH Lab", year: "2024", avatar: "/foto-angota/wildanz.jpeg", github: "", linkedin: "", active: true },
-  { id: "13", name: "Nofan nelandi R", role: "Anggota", division: "WiTECH Lab", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Nofan", github: "", linkedin: "", active: true },
-  { id: "14", name: "Nur Hartatik", role: "Anggota", division: "WiTECH Lab", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Hartatik", github: "", linkedin: "", active: true },
-  { id: "15", name: "Wafika Jamila hadi", role: "Anggota", division: "WiTECH Lab", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Wafika", github: "", linkedin: "", active: true },
+  { id: "12", name: "Wildan khuzamy faradis", role: "Ketua Divisi", divisionId: "lab", year: "2024", avatar: "/foto-angota/wildanz.jpeg", github: "", linkedin: "", active: true },
+  { id: "13", name: "Nofan nelandi R", role: "Anggota", divisionId: "lab", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Nofan", github: "", linkedin: "", active: true },
+  { id: "14", name: "Nur Hartatik", role: "Anggota", divisionId: "lab", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Hartatik", github: "", linkedin: "", active: true },
+  { id: "15", name: "Wafika Jamila hadi", role: "Anggota", divisionId: "lab", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Wafika", github: "", linkedin: "", active: true },
 
   // WiTECH Creative
-  { id: "16", name: "Mukhlishatul afifah", role: "Ketua Divisi", division: "WiTECH Creative", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mukhlishatul", github: "", linkedin: "", active: true },
-  { id: "17", name: "Moh Hazmi Farhadinoto", role: "Anggota", division: "WiTECH Creative", year: "2024", avatar: "/foto-angota/hazmigantengbanget.jpeg", github: "", linkedin: "", active: true },
-  { id: "18", name: "Irfan Haryanto", role: "Anggota", division: "WiTECH Creative", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Irfan", github: "", linkedin: "", active: true },
-  { id: "19", name: "Zian ayu fitri R", role: "Anggota", division: "WiTECH Creative", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Zian", github: "", linkedin: "", active: true },
-  { id: "20", name: "Alya faradiana", role: "Anggota", division: "WiTECH Creative", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alya", github: "", linkedin: "", active: true },
+  { id: "16", name: "Mukhlishatul afifah", role: "Ketua Divisi", divisionId: "creative", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Mukhlishatul", github: "", linkedin: "", active: true },
+  { id: "17", name: "Moh Hazmi Farhadinoto", role: "Anggota", divisionId: "creative", year: "2024", avatar: "/foto-angota/hazmigantengbanget.jpeg", github: "", linkedin: "", active: true },
+  { id: "18", name: "Irfan Haryanto", role: "Anggota", divisionId: "creative", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Irfan", github: "", linkedin: "", active: true },
+  { id: "19", name: "Zian ayu fitri R", role: "Anggota", divisionId: "creative", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Zian", github: "", linkedin: "", active: true },
+  { id: "20", name: "Alya faradiana", role: "Anggota", divisionId: "creative", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Alya", github: "", linkedin: "", active: true },
 
   // WiTECH Connect
-  { id: "21", name: "Trio lestari rais sobri", role: "Ketua Divisi", division: "WiTECH Connect", year: "2024", avatar: "/foto-angota/dio.jpeg", github: "", linkedin: "", active: true },
-  { id: "22", name: "Moh Jufri", role: "Anggota", division: "WiTECH Connect", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jufri", github: "", linkedin: "", active: true },
-  { id: "23", name: "Liana Intan Prastika", role: "Anggota", division: "WiTECH Connect", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Liana", github: "", linkedin: "", active: true },
-  { id: "24", name: "Dzul kifli", role: "Anggota", division: "WiTECH Connect", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Dzul", github: "", linkedin: "", active: true },
-  { id: "25", name: "Robitul auliya' alfayedz", role: "Anggota", division: "WiTECH Connect", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Robitul", github: "", linkedin: "", active: true },
+  { id: "21", name: "Trio lestari rais sobri", role: "Ketua Divisi", divisionId: "connect", year: "2024", avatar: "/foto-angota/dio.jpeg", github: "", linkedin: "", active: true },
+  { id: "22", name: "Moh Jufri", role: "Anggota", divisionId: "connect", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jufri", github: "", linkedin: "", active: true },
+  { id: "23", name: "Liana Intan Prastika", role: "Anggota", divisionId: "connect", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Liana", github: "", linkedin: "", active: true },
+  { id: "24", name: "Dzul kifli", role: "Anggota", divisionId: "connect", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Dzul", github: "", linkedin: "", active: true },
+  { id: "25", name: "Robitul auliya' alfayedz", role: "Anggota", divisionId: "connect", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Robitul", github: "", linkedin: "", active: true },
 
   // WiTECH Research
-  { id: "26", name: "Adelia mahardika puteri", role: "Ketua Divisi", division: "WiTECH Research", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Adelia", github: "", linkedin: "", active: true },
-  { id: "27", name: "Dewa putra kusuma", role: "Anggota", division: "WiTECH Research", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Dewa", github: "", linkedin: "", active: true },
-  { id: "28", name: "Utami Tri Hapsari", role: "Anggota", division: "WiTECH Research", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Utami", github: "", linkedin: "", active: true },
-  { id: "29", name: "Ach Fikri Maulana Putra", role: "Anggota", division: "WiTECH Research", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Fikri", github: "", linkedin: "", active: true },
-  { id: "30", name: "Balwanindyta Akrida Putri", role: "Anggota", division: "WiTECH Research", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Balwanindyta", github: "", linkedin: "", active: true },
+  { id: "26", name: "Adelia mahardika puteri", role: "Ketua Divisi", divisionId: "research", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Adelia", github: "", linkedin: "", active: true },
+  { id: "27", name: "Dewa putra kusuma", role: "Anggota", divisionId: "research", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Dewa", github: "", linkedin: "", active: true },
+  { id: "28", name: "Utami Tri Hapsari", role: "Anggota", divisionId: "research", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Utami", github: "", linkedin: "", active: true },
+  { id: "29", name: "Ach Fikri Maulana Putra", role: "Anggota", divisionId: "research", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Fikri", github: "", linkedin: "", active: true },
+  { id: "30", name: "Balwanindyta Akrida Putri", role: "Anggota", divisionId: "research", year: "2024", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Balwanindyta", github: "", linkedin: "", active: true },
 ];
 
 export const albums: Album[] = [
@@ -384,36 +311,39 @@ export const events: Event[] = [
   {
     id: "evt-1",
     title: "Workshop UI/UX Design Figma",
-    date: "12 Oktober 2024",
-    time: "09:00 - 12:00 WIB",
+    date: "2024-10-12",
+    startTime: "09:00",
+    endTime: "12:00",
     location: "Lab Komputer Utama",
     type: "Workshop",
     description: "Belajar bikin desain aplikasi kece pakai Figma dari nol! Cocok buat kamu yang pengen jadi UI/UX Designer.",
     image: "https://images.unsplash.com/photo-1541462608143-67571c6738dd",
-    isOpen: true,
+    registrationOpen: true,
     registrationLink: "#"
   },
   {
     id: "evt-2",
     title: "Ngoding Bareng Web Dev",
-    date: "20 Oktober 2024",
-    time: "13:00 - 16:00 WIB",
+    date: "2024-10-20",
+    startTime: "13:00",
+    endTime: "16:00",
     location: "Student Center Lt. 3",
     type: "Bootcamp",
     description: "Bikin website portofolio pertamamu pakai HTML & CSS. Gak perlu bingung, kita pandu step by step.",
     image: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97",
-    isOpen: true,
+    registrationOpen: true,
     registrationLink: "#"
   },
   {
     id: "evt-3",
     title: "Sharing Session: Tips Juara Gemastik",
-    date: "2 November 2024",
-    time: "19:00 - 21:00 WIB",
+    date: "2024-11-02",
+    startTime: "19:00",
+    endTime: "21:00",
     location: "Online via Zoom",
     type: "Sharing Session",
     description: "Ngobrol santai bareng kakak tingkat yang menang lomba Gemastik. Bongkar rahasia dan tips dari mereka!",
     image: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0",
-    isOpen: false
+    registrationOpen: false
   }
 ];

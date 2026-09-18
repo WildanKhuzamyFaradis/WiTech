@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Search, Plus, Edit, Trash, X, Building2 } from "lucide-react";
 import { useStore } from "../../lib/store";
-import type { Division } from "../../lib/data";
+import type { Division } from "../../lib/types";
 
 const emptyForm: Omit<Division, "id"> = {
   name: "",
@@ -43,11 +43,8 @@ export default function AdminDivisions() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (editId) {
-      updateDivision(editId, form);
-    } else {
-      addDivision(form);
-    }
+    const result = editId ? updateDivision(editId, form) : addDivision(form);
+    if (!result.ok) { alert(result.error); return; }
     setShowModal(false);
   };
 
@@ -144,7 +141,10 @@ export default function AdminDivisions() {
                       </button>
                       <button
                         onClick={() => {
-                          if (confirm(`Hapus divisi "${d.name}"?`)) removeDivision(d.id);
+                          if (confirm(`Hapus divisi "${d.name}"?`)) {
+                            const result = removeDivision(d.id);
+                            if (!result.ok) alert(result.error);
+                          }
                         }}
                         className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
                         title="Hapus"

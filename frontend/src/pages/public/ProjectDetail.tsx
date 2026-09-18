@@ -1,11 +1,13 @@
 import React from 'react';
 import { useParams, Link } from 'react-router';
 import { ArrowLeft, GitFork, ExternalLink, Award, Calendar, Users, Briefcase } from 'lucide-react';
-import { projects } from '../../lib/data';
+import { useStore } from '../../lib/store';
+import { divisionName, isPublishedProject } from '../../lib/dataContract';
 
 export default function ProjectDetail() {
+  const { projects, divisions } = useStore();
   const { slug } = useParams();
-  const project = projects.find(p => p.slug === slug);
+  const project = projects.find(p => p.slug === slug && isPublishedProject(p));
 
   if (!project) {
     return (
@@ -40,7 +42,7 @@ export default function ProjectDetail() {
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-4 flex-wrap">
                 <span className="text-xs font-black uppercase tracking-widest px-4 py-1.5 bg-primary text-white rounded-full">
-                  {project.division}
+                  {divisionName(divisions, project.divisionId)}
                 </span>
                 {project.featured && (
                   <span className="text-xs font-black uppercase tracking-widest px-4 py-1.5 bg-accent text-foreground rounded-full flex items-center gap-1.5">
@@ -108,7 +110,7 @@ export default function ProjectDetail() {
                 <Briefcase size={18} className="text-secondary shrink-0 mt-0.5" strokeWidth={2.5} />
                 <div>
                   <p className="text-xs font-bold text-muted-foreground mb-0.5">Divisi</p>
-                  <p className="font-bold text-foreground">{project.division}</p>
+                  <p className="font-bold text-foreground">{divisionName(divisions, project.divisionId)}</p>
                 </div>
               </div>
               

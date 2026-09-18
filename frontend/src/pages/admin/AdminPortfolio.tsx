@@ -1,14 +1,13 @@
 import { useState } from "react";
 import { Search, Plus, Edit, Trash, X, Folder, Eye } from "lucide-react";
 import { useStore } from "../../lib/store";
-import type { Project } from "../../lib/data";
+import type { Project } from "../../lib/types";
 
 const emptyForm: Omit<Project, "id"> = {
   slug: "",
   title: "",
   subtitle: "",
   description: "",
-  division: "",
   divisionId: "",
   tags: [],
   year: new Date().getFullYear(),
@@ -58,11 +57,8 @@ export default function AdminPortfolio() {
       alert("Judul dan Divisi harus diisi");
       return;
     }
-    if (editId) {
-      updateProject(editId, form);
-    } else {
-      addProject(form);
-    }
+    const result = editId ? updateProject(editId, form) : addProject(form);
+    if (!result.ok) { alert(result.error); return; }
     setShowModal(false);
   };
 
@@ -93,11 +89,11 @@ export default function AdminPortfolio() {
   const toggleStatus = (id: string) => {
     const p = projects.find((x) => x.id === id);
     if (p) {
-      updateProject(id, { ...p, status: p.status === "published" ? "draft" : "published" });
+      const result = updateProject(id, { status: p.status === "published" ? "draft" : "published" });
+      if (!result.ok) alert(result.error);
     }
   };
 
-  const selectedDivision = divisions.find((d) => d.id === form.divisionId);
 
   return (
     <div className="anim-fade-up">
@@ -274,7 +270,7 @@ export default function AdminPortfolio() {
                     value={form.divisionId}
                     onChange={(e) => {
                       const div = divisions.find((d) => d.id === e.target.value);
-                      if (div) setForm({ ...form, divisionId: e.target.value, division: div.name });
+                      if (div) setForm({ ...form, divisionId: div.id });
                     }}
                     className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors"
                   >

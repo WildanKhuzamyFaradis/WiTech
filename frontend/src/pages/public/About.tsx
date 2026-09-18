@@ -1,8 +1,10 @@
 import React from 'react';
+import { useStore } from '../../lib/store';
 import { Link } from 'react-router';
 import { Users, Lightbulb, HeartHandshake, Rocket, Target, Globe, ArrowRight, CheckCircle2 } from 'lucide-react';
 
 const About: React.FC = () => {
+  const { divisions } = useStore();
   return (
     <div className="min-h-screen bg-background text-foreground font-sans pt-32 pb-24 overflow-hidden">
       
@@ -94,7 +96,7 @@ const About: React.FC = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {[
             { label: 'Anggota Aktif', value: '120+', color: 'text-primary', bg: 'bg-primary/10' },
-            { label: 'Divisi', value: '6', color: 'text-secondary', bg: 'bg-secondary/10' },
+            { label: 'Divisi', value: String(divisions.length), color: 'text-secondary', bg: 'bg-secondary/10' },
             { label: 'Event Tahunan', value: '10+', color: 'text-purple-500', bg: 'bg-purple-500/10' },
             { label: 'Alumni Sukses', value: '50+', color: 'text-foreground', bg: 'bg-muted' },
           ].map((stat, i) => (

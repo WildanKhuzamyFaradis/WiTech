@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { ExternalLink, GitFork, Trophy, ArrowRight, Sparkles } from 'lucide-react';
-import { projects } from '../../lib/data';
+import { useStore } from '../../lib/store';
+import { divisionName, isPublishedProject } from '../../lib/dataContract';
 import { Link } from 'react-router';
 
 const Portfolio = () => {
+  const { projects: allProjects, divisions: divisionRecords } = useStore();
+  const projects = allProjects.filter(isPublishedProject);
   const [filter, setFilter] = useState('all');
 
   // get unique division ids from projects
@@ -11,18 +14,7 @@ const Portfolio = () => {
   
   const filteredProjects = filter === 'all' ? projects : projects.filter(p => p.divisionId === filter);
 
-  const getDivisionLabel = (id: string) => {
-    switch(id) {
-      case 'all': return 'Semua Karya';
-      case 'digilit': return 'Digital Literacy';
-      case 'creative': return 'Creative & Design';
-      case 'webapp': return 'Web & App';
-      case 'dataai': return 'Data & AI';
-      case 'cybernet': return 'Cybersecurity';
-      case 'hardware': return 'Hardware & IoT';
-      default: return id;
-    }
-  };
+  const getDivisionLabel = (id: string) => id === "all" ? "Semua Karya" : divisionName(divisionRecords, id);
 
   return (
     <div className="bg-background text-foreground pt-32 pb-24 space-y-16 font-sans min-h-screen">

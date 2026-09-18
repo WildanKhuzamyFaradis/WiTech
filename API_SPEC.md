@@ -119,7 +119,7 @@ Mengambil daftar anggota.
 **Query**
 | Nama | Tipe | Default | Keterangan |
 | --- | --- | --- | --- |
-| `division` | string | - | Filter ID divisi |
+| `divisionId` | string | - | Filter ID divisi; nilai `null` untuk Core |
 | `active` | boolean | - | `true` / `false` |
 | `year` | string | - | Filter angkatan, e.g. `2024` |
 | `page` | number | 1 | Halaman |
@@ -134,7 +134,7 @@ Mengambil daftar anggota.
       "id": "m-001",
       "name": "Rizky Pratama",
       "role": "Lead Developer",
-      "division": "lab",
+      "divisionId": "lab",
       "year": "2023",
       "avatar": "https://cdn.witech.example.com/members/m-001.jpg",
       "github": "rizkypratama",
@@ -162,7 +162,7 @@ Mengambil daftar project/portfolio.
 | Nama | Tipe | Default | Keterangan |
 | --- | --- | --- | --- |
 | `divisionId` | string | - | Filter ID divisi |
-| `status` | string | `published` | `published` atau `draft` |
+| `status` | string | `published` | Publik hanya menerima `published`; filter `draft` hanya untuk daftar admin |
 | `featured` | boolean | - | Hanya project unggulan |
 | `year` | number | - | Filter tahun |
 | `tag` | string | - | Filter salah satu tag |
@@ -181,17 +181,14 @@ Mengambil daftar project/portfolio.
       "title": "WiLearn",
       "subtitle": "Campus E-Learning Platform",
       "description": "A comprehensive e-learning platform...",
-      "division": "Web & App Development",
-      "divisionId": "webapp",
+      "divisionId": "lab",
       "tags": ["React", "Node.js", "PostgreSQL", "WebRTC"],
       "year": 2024,
       "status": "published",
       "featured": true,
       "image": "https://images.unsplash.com/...",
       "members": ["Rizky Pratama", "Ahmad Fauzi"],
-      "award": "1st Place — National Tech Competition 2024",
-      "githubUrl": null,
-      "liveUrl": null
+      "award": "1st Place — National Tech Competition 2024"
     }
   ],
   "meta": { "page": 1, "limit": 20, "total": 12 }
@@ -200,7 +197,7 @@ Mengambil daftar project/portfolio.
 
 #### `GET /projects/:slug`
 
-Mengambil detail satu project berdasarkan slug.
+Mengambil detail satu project **published** berdasarkan slug. Slug draft menghasilkan 404 pada endpoint publik, termasuk ketika `featured: true`. Admin tetap dapat melihat dan mengedit draft.
 
 **Response 200** — sama dengan item di atas.
 **Response 404** — `Project not found`.
@@ -266,7 +263,7 @@ Daftar event yang akan datang dan lampau.
 | Nama | Tipe | Default | Keterangan |
 | --- | --- | --- | --- |
 | `type` | string | - | `Workshop`, `Bootcamp`, `Seminar`, `Sharing Session` |
-| `upcoming` | boolean | - | `true` untuk event yang akan datang |
+| `upcoming` | boolean | - | `true` untuk event belum selesai (termasuk sedang berlangsung), berdasarkan date + endTime WIB, bukan status registrasi |
 | `page` | number | 1 | - |
 | `limit` | number | 20 | - |
 
@@ -279,12 +276,13 @@ Daftar event yang akan datang dan lampau.
       "id": "evt-001",
       "title": "Web Development Bootcamp",
       "date": "2026-09-15",
-      "time": "09:00",
+      "startTime": "09:00",
+      "endTime": "12:00",
       "location": "Lab Komputer 3, Gedung Teknik",
       "type": "Bootcamp",
       "description": "Bootcamp intensif membangun web modern dengan React.",
       "image": "https://cdn.witech.example.com/events/evt-001.jpg",
-      "isOpen": true,
+      "registrationOpen": true,
       "registrationLink": "https://forms.witech.example.com/evt-001"
     }
   ]
@@ -474,15 +472,29 @@ X-RateLimit-Remaining: 0
 
 ## Skema Data
 
+### Aturan kontrak lokal (Tahap 2)
+
+- Nama divisi di-resolve dari `divisionId`; rename tidak mengubah ID atau relasi.
+- `Member.divisionId` wajib hadir: ID divisi valid atau `null` untuk Core/pengurus. Core bukan divisi keenam; `role` tetap menyimpan jabatan.
+- `Project.divisionId` wajib menunjuk divisi yang ada. Penghapusan divisi yang masih dirujuk member/proyek ditolak; tidak ada cascade atau soft-delete lokal.
+- `Project.slug` wajib nonkosong, kebab-case huruf kecil, dan unik di antara draft maupun published.
+- `status: "published" | "draft"` tetap menjadi satu-satunya status publikasi; tidak ada boolean `published` duplikat. `featured` tidak memberi izin publikasi.
+- `githubUrl`, `liveUrl`, dan `registrationLink` adalah optional string, bukan nullable. Field boleh dihilangkan; string kosong dari form lokal berarti belum diisi.
+- Tanggal event/album memakai `YYYY-MM-DD` valid; jam event memakai `HH:mm` WIB. Event satu hari harus memiliki `endTime > startTime`.
+- Event selesai ketika waktu sekarang >= `date + endTime` dalam WIB. Registrasi tertutup tidak berarti selesai; event selesai tidak menampilkan aksi daftar meskipun flag registrasi masih true.
+- Fixture mempertahankan tanggal historis 2024. Mapping divisi proyek sementara: `webapp/hardware/cybernet -> lab`, `digilit -> academy`; perlu konfirmasi pemilik konten.
+
+Aturan ini menyelaraskan frontend lokal dan kontrak target; backend skeleton belum mengimplementasikannya. Rencana soft-delete/upload/auth pada bagian lain tetap merupakan pekerjaan tahap berikutnya.
+
 ### `Division`
 ```ts
 interface Division {
-  id: string;            // slug-style identifier
+  id: string;            // stable identifier; tidak berubah saat rename
   name: string;
   shortName: string;
   description: string;
   icon: string;          // Lucide icon name
-  memberCount: number;
+  memberCount: number;   // dihitung dari member aktif dengan divisionId ini
   color: string;         // hex color, e.g. "#ff5e5b"
   technologies: string[];
 }
@@ -496,14 +508,13 @@ interface Project {
   title: string;
   subtitle: string;
   description: string;
-  division: string;       // nama divisi (display)
   divisionId: string;     // foreign key ke Division
   tags: string[];
   year: number;           // 4 digit
   status: "published" | "draft";
   featured: boolean;
   image: string;          // URL
-  members: string[];      // nama member
+  members: string[];      // kredit nama kontributor; bukan foreign key Member
   award: string;
   githubUrl?: string;
   liveUrl?: string;
@@ -516,7 +527,7 @@ interface Member {
   id: string;
   name: string;
   role: string;
-  division: string;       // foreign key ke Division.id
+  divisionId: string | null; // foreign key ke Division.id; null = Core/pengurus
   year: string;           // angkatan, e.g. "2023"
   avatar: string;         // URL
   github: string;
@@ -534,7 +545,7 @@ interface Album {
   description: string;
   coverImage: string;
   date: string;           // ISO date
-  photoCount: number;
+  photoCount: number;    // jumlah foto aktual, bukan input terpisah
   photos: string[];       // URL foto
 }
 ```
@@ -545,12 +556,13 @@ interface Event {
   id: string;
   title: string;
   date: string;           // ISO date
-  time: string;           // "HH:mm"
+  startTime: string;      // "HH:mm", WIB
+  endTime: string;        // "HH:mm", setelah startTime pada hari yang sama
   location: string;
   type: "Workshop" | "Bootcamp" | "Seminar" | "Sharing Session";
   description: string;
   image: string;
-  isOpen: boolean;
+  registrationOpen: boolean; // independen dari status selesai
   registrationLink?: string;
 }
 ```

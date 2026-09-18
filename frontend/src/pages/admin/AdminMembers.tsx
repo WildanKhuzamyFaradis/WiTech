@@ -1,16 +1,13 @@
 import { useState } from "react";
 import { Search, Plus, Edit, Trash, GitFork, Briefcase, X, Users } from "lucide-react";
 import { useStore } from "../../lib/store";
-import type { Member } from "../../lib/data";
-
-const divisionColor: Record<string, string> = {
-  "Core": "#ffe66d",
-};
+import type { Member } from "../../lib/types";
+import { divisionName } from "../../lib/dataContract";
 
 const emptyForm: Omit<Member, "id"> = {
   name: "",
   role: "Anggota",
-  division: "",
+  divisionId: null,
   year: "2024",
   avatar: "",
   github: "",
@@ -26,16 +23,11 @@ export default function AdminMembers() {
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState<Omit<Member, "id">>(emptyForm);
 
-  // Initialize division colors from store
-  const dynamicDivisionColor = divisionColor;
-  divisions.forEach((d) => {
-    dynamicDivisionColor[d.name] = d.color;
-  });
 
   const filtered = members.filter((m) => {
     const matchDiv =
       divFilter === "all" ||
-      (divFilter === "core" ? m.division === "Core" : m.division === divisions.find((d) => d.id === divFilter)?.name);
+      (divFilter === "core" ? m.divisionId === null : m.divisionId === divFilter);
     const matchSearch =
       search === "" ||
       m.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -44,7 +36,7 @@ export default function AdminMembers() {
   });
 
   const openAdd = () => {
-    setForm({ ...emptyForm, division: divisions.length > 0 ? divisions[0].name : "" });
+    setForm({ ...emptyForm, divisionId: divisions[0]?.id ?? null });
     setEditId(null);
     setShowModal(true);
   };
@@ -57,18 +49,14 @@ export default function AdminMembers() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name || !form.division) {
-      alert("Nama dan Divisi harus diisi");
+    if (!form.name.trim()) {
+      alert("Nama harus diisi");
       return;
     }
     
-    if (editId) {
-      updateMember(editId, form);
-    } else {
-      // Generate avatar if not provided
-      const avatar = form.avatar || `https://api.dicebear.com/7.x/notionists/svg?seed=${form.name.replace(/\s+/g, '')}&backgroundColor=transparent`;
-      addMember({ ...form, avatar });
-    }
+    const avatar = form.avatar || `https://api.dicebear.com/7.x/notionists/svg?seed=${form.name.replace(/\s+/g, '')}&backgroundColor=transparent`;
+    const result = editId ? updateMember(editId, form) : addMember({ ...form, avatar });
+    if (!result.ok) { alert(result.error); return; }
     setShowModal(false);
     setForm(emptyForm);
   };
@@ -160,7 +148,7 @@ export default function AdminMembers() {
             </thead>
             <tbody className="divide-y divide-border/10">
               {filtered.map((member) => {
-                const color = dynamicDivisionColor[member.division] || "#6366f1";
+                const color = member.divisionId === null ? "#ffe66d" : divisions.find(d => d.id === member.divisionId)?.color || "#6366f1";
                 return (
                   <tr key={member.id} className="hover:bg-muted/20 transition-colors group">
                     <td className="px-6 py-4">
@@ -185,7 +173,7 @@ export default function AdminMembers() {
                         className="text-xs font-black px-3 py-1.5 rounded-full inline-block"
                         style={{ backgroundColor: color + "15", color: color }}
                       >
-                        {member.division}
+                        {divisionName(divisions, member.divisionId)}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm font-black text-muted-foreground hidden xl:table-cell">
@@ -267,10 +255,9 @@ export default function AdminMembers() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">Divisi</label>
-                  <select required value={form.division} onChange={e => setForm({ ...form, division: e.target.value })} className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors">
-                    <option value="">Pilih Divisi</option>
-                    <option value="Core">Core (Pengurus)</option>
-                    {divisions.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}
+                  <select required value={form.divisionId ?? "core"} onChange={e => setForm({ ...form, divisionId: e.target.value === "core" ? null : e.target.value })} className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors">
+                    <option value="core">Core (Pengurus)</option>
+                    {divisions.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                   </select>
                 </div>
                 <div>

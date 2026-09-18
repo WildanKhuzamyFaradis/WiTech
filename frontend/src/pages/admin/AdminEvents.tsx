@@ -1,17 +1,19 @@
 import { useState } from "react";
 import { Search, Plus, Edit, Trash, X, Calendar, LockOpen } from "lucide-react";
 import { useStore } from "../../lib/store";
-import type { Event } from "../../lib/data";
+import type { Event } from "../../lib/types";
+import { formatEventDate, formatEventTime, todayInJakarta } from "../../lib/dataContract";
 
 const emptyForm: Omit<Event, "id"> = {
   title: "",
-  date: new Date().toISOString().split("T")[0],
-  time: "09:00",
+  date: todayInJakarta(),
+  startTime: "09:00",
+  endTime: "12:00",
   location: "",
   type: "Workshop",
   description: "",
   image: "",
-  isOpen: true,
+  registrationOpen: true,
   registrationLink: "",
 };
 
@@ -29,7 +31,7 @@ export default function AdminEvents() {
   );
 
   const openAdd = () => {
-    setForm(emptyForm);
+    setForm({ ...emptyForm, date: todayInJakarta() });
     setEditId(null);
     setShowModal(true);
   };
@@ -46,18 +48,16 @@ export default function AdminEvents() {
       alert("Judul dan Lokasi harus diisi");
       return;
     }
-    if (editId) {
-      updateEvent(editId, form);
-    } else {
-      addEvent(form);
-    }
+    const result = editId ? updateEvent(editId, form) : addEvent(form);
+    if (!result.ok) { alert(result.error); return; }
     setShowModal(false);
   };
 
   const toggleRegistration = (id: string) => {
     const e = events.find((x) => x.id === id);
     if (e) {
-      updateEvent(id, { ...e, isOpen: !e.isOpen });
+      const result = updateEvent(id, { registrationOpen: !e.registrationOpen });
+      if (!result.ok) alert(result.error);
     }
   };
 
@@ -112,7 +112,7 @@ export default function AdminEvents() {
                       </div>
                       <div>
                         <p className="font-black text-base text-foreground tracking-tight">{e.title}</p>
-                        <p className="text-xs font-bold text-muted-foreground">{e.time}</p>
+                        <p className="text-xs font-bold text-muted-foreground">{formatEventTime(e)}</p>
                       </div>
                     </div>
                   </td>
@@ -122,7 +122,7 @@ export default function AdminEvents() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm font-bold text-muted-foreground hidden lg:table-cell">
-                    {new Date(e.date).toLocaleDateString("id-ID")}
+                    {formatEventDate(e.date)}
                   </td>
                   <td className="px-6 py-4 text-sm font-bold text-muted-foreground hidden sm:table-cell line-clamp-1">
                     {e.location}
@@ -132,7 +132,7 @@ export default function AdminEvents() {
                       <button
                         onClick={() => toggleRegistration(e.id)}
                         className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                        title={e.isOpen ? "Tutup Pendaftaran" : "Buka Pendaftaran"}
+                        title={e.registrationOpen ? "Tutup Pendaftaran" : "Buka Pendaftaran"}
                       >
                         <LockOpen size={16} strokeWidth={2.5} />
                       </button>
@@ -203,8 +203,10 @@ export default function AdminEvents() {
                   <input required type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">Jam</label>
-                  <input required type="time" value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })} className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors" />
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">Jam Mulai</label>
+                  <input required type="time" value={form.startTime} onChange={(e) => setForm({ ...form, startTime: e.target.value })} className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors" />
+                  <label className="block text-xs font-bold uppercase tracking-wider mt-2 mb-1.5 text-muted-foreground">Jam Selesai</label>
+                  <input required type="time" value={form.endTime} onChange={(e) => setForm({ ...form, endTime: e.target.value })} className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors" />
                 </div>
               </div>
 
@@ -218,7 +220,7 @@ export default function AdminEvents() {
                 <select
                   required
                   value={form.type}
-                  onChange={(e) => setForm({ ...form, type: e.target.value as any })}
+                  onChange={(e) => setForm({ ...form, type: e.target.value as Event["type"] })}
                   className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors"
                 >
                   <option value="Workshop">Workshop</option>
@@ -246,8 +248,8 @@ export default function AdminEvents() {
               <label className="flex items-center gap-2 px-4 py-3 bg-muted border-2 border-transparent rounded-xl font-bold cursor-pointer hover:border-border transition-colors">
                 <input
                   type="checkbox"
-                  checked={form.isOpen}
-                  onChange={(e) => setForm({ ...form, isOpen: e.target.checked })}
+                  checked={form.registrationOpen}
+                  onChange={(e) => setForm({ ...form, registrationOpen: e.target.checked })}
                   className="size-5 rounded border-2 border-border cursor-pointer"
                 />
                 <span className="text-sm">Pendaftaran Buka</span>

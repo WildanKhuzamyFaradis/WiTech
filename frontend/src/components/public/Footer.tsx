@@ -1,8 +1,12 @@
 import React from 'react';
+import { useStore } from '../../lib/store';
 import { Link } from 'react-router';
 import { Camera, MessageCircle, Briefcase, GitFork, ChevronRight } from 'lucide-react';
 
+const divisionIconColors = ["text-primary", "text-secondary", "text-[#a855f7]", "text-[#ffe66d]", "text-[#10b981]", "text-[#f59e0b]"];
+
 const Footer: React.FC = () => {
+  const { divisions } = useStore();
   return (
     <footer className="relative bg-foreground text-background border-t-2 border-border overflow-hidden font-sans">
       {/* Top subtle gradient line */}
@@ -44,12 +48,9 @@ const Footer: React.FC = () => {
               Divisi Witech
             </h3>
             <ul className="space-y-3 font-medium text-sm text-background/70">
-              <li><Link to="/divisions" className="hover:text-white transition-colors flex items-center gap-1 group"><ChevronRight size={14} className="opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all text-primary" /> Digital Literacy</Link></li>
-              <li><Link to="/divisions" className="hover:text-white transition-colors flex items-center gap-1 group"><ChevronRight size={14} className="opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all text-secondary" /> Creative & Design</Link></li>
-              <li><Link to="/divisions" className="hover:text-white transition-colors flex items-center gap-1 group"><ChevronRight size={14} className="opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all text-[#a855f7]" /> Web & App Dev</Link></li>
-              <li><Link to="/divisions" className="hover:text-white transition-colors flex items-center gap-1 group"><ChevronRight size={14} className="opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all text-[#ffe66d]" /> Data & AI</Link></li>
-              <li><Link to="/divisions" className="hover:text-white transition-colors flex items-center gap-1 group"><ChevronRight size={14} className="opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all text-[#10b981]" /> Cyber & Networking</Link></li>
-              <li><Link to="/divisions" className="hover:text-white transition-colors flex items-center gap-1 group"><ChevronRight size={14} className="opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all text-[#f59e0b]" /> Hardware & IoT</Link></li>
+              {divisions.map((division, index) => (
+                <li key={division.id}><Link to="/divisions" className="hover:text-white transition-colors flex items-center gap-1 group"><ChevronRight size={14} className={`opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all ${divisionIconColors[index % divisionIconColors.length]}`} /> {division.name}</Link></li>
+              ))}
             </ul>
           </div>
 

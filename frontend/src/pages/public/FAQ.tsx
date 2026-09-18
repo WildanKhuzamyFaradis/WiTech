@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { ChevronDown, Sparkles, MessageCircle, ArrowRight } from 'lucide-react';
-import { faqs } from '../../lib/data';
+import { useStore } from '../../lib/store';
 import { Link } from 'react-router';
 
 export default function FAQ() {
+  const { faqs } = useStore();
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const toggleFaq = (index: number) => {

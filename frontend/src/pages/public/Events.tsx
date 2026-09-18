@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Calendar, MapPin, Clock, ArrowRight, Sparkles } from 'lucide-react';
-import { events } from '../../lib/data';
-const EventCard = ({ event, index }: { event: any, index: number }) => (
+import { useStore } from '../../lib/store';
+import type { Event } from '../../lib/types';
+import { formatEventDate, formatEventTime, isEventCompleted } from '../../lib/dataContract';
+const EventCard = ({ event, index }: { event: Event, index: number }) => (
   <div 
     className="group neo-card rounded-3xl overflow-hidden bg-white neo-shadow-sm hover:neo-shadow-md transition-all hover:-translate-y-1 flex flex-col sm:flex-row lg:flex-col xl:flex-row"
     style={{ animationDelay: `${index * 0.1}s` }}
@@ -15,7 +17,7 @@ const EventCard = ({ event, index }: { event: any, index: number }) => (
       <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-border/20 text-xs font-black uppercase tracking-wider neo-shadow-sm">
         {event.type}
       </div>
-      {!event.isOpen && (
+      {isEventCompleted(event) && (
         <div className="absolute inset-0 bg-background/60 backdrop-blur-[2px] flex items-center justify-center">
           <span className="bg-foreground text-background font-black px-4 py-2 rounded-xl border-2 border-border neo-shadow-sm rotate-[-10deg]">
             SUDAH SELESAI
@@ -31,11 +33,11 @@ const EventCard = ({ event, index }: { event: any, index: number }) => (
         <div className="space-y-2 mb-4">
           <div className="flex items-center gap-3 text-muted-foreground font-medium text-sm">
             <Calendar size={16} strokeWidth={2.5} className="text-primary" />
-            <span>{event.date}</span>
+            <span>{formatEventDate(event.date)}</span>
           </div>
           <div className="flex items-center gap-3 text-muted-foreground font-medium text-sm">
             <Clock size={16} strokeWidth={2.5} className="text-secondary" />
-            <span>{event.time}</span>
+            <span>{formatEventTime(event)}</span>
           </div>
           <div className="flex items-center gap-3 text-muted-foreground font-medium text-sm">
             <MapPin size={16} strokeWidth={2.5} className="text-accent" />
@@ -49,7 +51,7 @@ const EventCard = ({ event, index }: { event: any, index: number }) => (
       </div>
       
       <div>
-        {event.isOpen ? (
+        {event.registrationOpen && !isEventCompleted(event) ? (
           <a 
             href={event.registrationLink} 
             className="inline-flex items-center justify-center gap-2 w-full px-5 py-3 bg-primary text-white font-black rounded-xl border-2 border-border neo-shadow-sm hover:neo-shadow-md hover:-translate-y-1 transition-all"
@@ -70,12 +72,13 @@ const EventCard = ({ event, index }: { event: any, index: number }) => (
 );
 
 export default function Events() {
+  const { events } = useStore();
   const [filter, setFilter] = useState<"all" | "upcoming" | "past">("all");
 
-  // Mocking past/upcoming based on isOpen status for this example
+  // Registration can close before an event ends. Group by the event end time in WIB.
   const filteredEvents = events.filter(e => {
-    if (filter === "upcoming") return e.isOpen;
-    if (filter === "past") return !e.isOpen;
+    if (filter === "upcoming") return !isEventCompleted(e);
+    if (filter === "past") return isEventCompleted(e);
     return true;
   });
 
@@ -139,10 +142,10 @@ export default function Events() {
                     <Sparkles className="text-primary" size={24} />
                     Akan Datang
                   </h2>
-                  {filteredEvents.filter(e => e.isOpen).map((event, index) => (
+                  {filteredEvents.filter(e => !isEventCompleted(e)).map((event, index) => (
                     <EventCard key={event.id} event={event} index={index} />
                   ))}
-                  {filteredEvents.filter(e => e.isOpen).length === 0 && (
+                  {filteredEvents.filter(e => !isEventCompleted(e)).length === 0 && (
                     <div className="text-center py-10 neo-card bg-white rounded-3xl opacity-70">
                       <p className="text-muted-foreground font-medium">Belum ada acara baru.</p>
                     </div>
@@ -154,7 +157,7 @@ export default function Events() {
                     <Clock className="text-muted-foreground" size={24} />
                     Selesai
                   </h2>
-                  {filteredEvents.filter(e => !e.isOpen).map((event, index) => (
+                  {filteredEvents.filter(e => isEventCompleted(e)).map((event, index) => (
                     <EventCard key={event.id} event={event} index={index} />
                   ))}
                 </div>

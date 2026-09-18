@@ -1,16 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, Sparkles, Filter, ChevronDown } from 'lucide-react';
-import { members, divisions } from '../../lib/data';
+import { useStore } from '../../lib/store';
+import type { Division, Member } from '../../lib/types';
+import { divisionName } from '../../lib/dataContract';
 
-const divisionsList = ["All", ...divisions.map(d => d.name)];
-
-const MemberCard = ({ member }: { member: any }) => {
-  const divColorMap: Record<string, string> = {
-    "Core": "#ffe66d",
-    ...Object.fromEntries(divisions.map(d => [d.name, d.color]))
-  };
-
-  const badgeColor = divColorMap[member.division] || "var(--color-foreground)";
+const MemberCard = ({ member, divisions }: { member: Member; divisions: Division[] }) => {
+  const division = divisions.find(d => d.id === member.divisionId);
+  const label = divisionName(divisions, member.divisionId);
+  const badgeColor = member.divisionId === null ? "#ffe66d" : division?.color || "var(--color-foreground)";
 
   return (
     <div className="group neo-card rounded-3xl p-8 flex flex-col items-center text-center neo-shadow-sm hover:neo-shadow-md transition-all hover:-translate-y-2 bg-white relative overflow-hidden">
@@ -25,11 +22,11 @@ const MemberCard = ({ member }: { member: any }) => {
         style={{ border: `3px solid ${badgeColor}` }}
       >
         <img 
-          src={member.avatar || member.image || member.imageUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=random`} 
+          src={member.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=random`}
           alt={member.name} 
           className="w-full h-full object-cover rounded-full border-2 border-transparent" 
         />
-        {member.division === "Core" && (
+        {member.divisionId === null && (
           <div className="absolute -bottom-2 -right-2 bg-accent text-foreground size-8 rounded-full border-2 border-border flex items-center justify-center neo-shadow-sm">
             ⭐
           </div>
@@ -43,18 +40,18 @@ const MemberCard = ({ member }: { member: any }) => {
           <span className="text-xs font-bold border-2 border-border bg-muted px-3 py-1 rounded-full uppercase tracking-widest text-muted-foreground">
             {member.role}
           </span>
-          {member.division && (
+          {label && (
             <span 
               className="text-xs font-bold border-2 border-border px-3 py-1 rounded-full uppercase tracking-widest text-white neo-shadow-sm" 
               style={{ backgroundColor: badgeColor }}
             >
-              {member.division}
+              {label}
             </span>
           )}
         </div>
         
         <p className="text-sm font-medium text-muted-foreground flex-grow line-clamp-3">
-          {member.bio || "Selalu semangat belajar dan eksplorasi hal baru di Witech!"}
+          Selalu semangat belajar dan eksplorasi hal baru di Witech!
         </p>
       </div>
     </div>
@@ -62,8 +59,11 @@ const MemberCard = ({ member }: { member: any }) => {
 };
 
 export default function Members() {
+  const { members, divisions } = useStore();
+  const divisionsList = [{ id: "All", name: "All" }, { id: "core", name: "Core" }, ...divisions];
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDivision, setSelectedDivision] = useState("All");
+  const selectedDivisionLabel = divisionsList.find(d => d.id === selectedDivision)?.name ?? "Filter";
   const [filterOpen, setFilterOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
 
@@ -77,9 +77,9 @@ export default function Members() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const filteredMembers = members.filter((member: any) => {
+  const filteredMembers = members.filter((member) => {
     const matchesSearch = member.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesDivision = selectedDivision === "All" || member.division === selectedDivision;
+    const matchesDivision = selectedDivision === "All" || (selectedDivision === "core" ? member.divisionId === null : member.divisionId === selectedDivision);
     return matchesSearch && matchesDivision;
   });
 
@@ -132,7 +132,7 @@ export default function Members() {
               }`}
             >
               <Filter size={16} strokeWidth={2.5} />
-              <span className="hidden sm:inline">{selectedDivision === "All" ? "Filter" : selectedDivision}</span>
+              <span className="hidden sm:inline">{selectedDivision === "All" ? "Filter" : selectedDivisionLabel}</span>
               <ChevronDown size={14} className={`transition-transform ${filterOpen ? "rotate-180" : ""}`} />
             </button>
 
@@ -141,15 +141,15 @@ export default function Members() {
               <div className="absolute right-0 top-full mt-2 w-56 bg-card border border-border rounded-xl shadow-lg overflow-hidden z-50">
                 {divisionsList.map((div) => (
                   <button
-                    key={div}
-                    onClick={() => { setSelectedDivision(div); setFilterOpen(false); }}
+                    key={div.id}
+                    onClick={() => { setSelectedDivision(div.id); setFilterOpen(false); }}
                     className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-colors ${
-                      selectedDivision === div
+                      selectedDivision === div.id
                         ? "bg-primary text-white"
                         : "text-foreground hover:bg-muted"
                     }`}
                   >
-                    {div}
+                    {div.name}
                   </button>
                 ))}
               </div>
@@ -162,7 +162,7 @@ export default function Members() {
           <div className="flex items-center gap-2 mt-3">
             <span className="text-xs text-muted-foreground font-medium">Filter aktif:</span>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold">
-              {selectedDivision}
+              {selectedDivisionLabel}
               <button onClick={() => setSelectedDivision("All")} className="hover:text-primary/70 transition-colors">✕</button>
             </span>
           </div>
@@ -173,9 +173,9 @@ export default function Members() {
       <section className="max-w-7xl mx-auto px-6 relative z-10">
         {filteredMembers.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredMembers.map((member: any, index: number) => (
+            {filteredMembers.map((member, index) => (
               <div key={member.id || index} className="anim-fade-up" style={{ animationDelay: `${(index % 9) * 0.1}s`, animationFillMode: 'both' }}>
-                <MemberCard member={member} />
+                <MemberCard member={member} divisions={divisions} />
               </div>
             ))}
           </div>

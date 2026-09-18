@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Search, Plus, Edit, Trash, X, Image as ImageIcon } from "lucide-react";
 import { useStore } from "../../lib/store";
-import type { Album } from "../../lib/data";
+import type { Album } from "../../lib/types";
 
 const emptyForm: Omit<Album, "id"> = {
   slug: "",
@@ -48,11 +48,8 @@ export default function AdminGallery() {
       return;
     }
     const updated = { ...form, photoCount: form.photos.length };
-    if (editId) {
-      updateAlbum(editId, updated);
-    } else {
-      addAlbum(updated);
-    }
+    const result = editId ? updateAlbum(editId, updated) : addAlbum(updated);
+    if (!result.ok) { alert(result.error); return; }
     setShowModal(false);
   };
 

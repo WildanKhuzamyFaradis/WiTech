@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import { FolderOpen, Users, Image, ArrowRight, Award, TrendingUp, Zap, Building2, Calendar } from "lucide-react";
 import { useStore } from "../../lib/store";
+import { divisionName } from "../../lib/dataContract";
 
 export default function AdminDashboard() {
   const { projects, members, divisions, albums, events } = useStore();
@@ -26,7 +27,7 @@ export default function AdminDashboard() {
     { 
       label: "Total Event", 
       value: events.length.toString(), 
-      delta: `+${events.filter(e => e.isOpen).length} terbuka`, 
+      delta: `+${events.filter(e => e.registrationOpen).length} terbuka`,
       icon: Calendar, 
       href: "/admin/events", 
       color: "#f97316" 
@@ -108,7 +109,7 @@ export default function AdminDashboard() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-base font-black text-foreground truncate mb-0.5 tracking-tight">{project.title}</p>
-                  <p className="text-xs font-bold text-muted-foreground uppercase">{project.division}</p>
+                  <p className="text-xs font-bold text-muted-foreground uppercase">{divisionName(divisions, project.divisionId)}</p>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   <span className="text-sm font-bold text-muted-foreground">{project.year}</span>

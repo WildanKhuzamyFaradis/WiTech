@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { Link } from "react-router";
 import { ArrowRight, ArrowUpRight, Code, Smartphone, Brain, Shield, Palette, Cpu, Sparkles } from "lucide-react";
-import { divisions, projects } from "../../lib/data";
+import { useStore } from "../../lib/store";
+import { divisionName, isPublishedProject } from "../../lib/dataContract";
 
 // Scroll-triggered reveal hook using .reveal / .visible CSS classes
 function useReveal() {
@@ -41,7 +42,8 @@ const stats = [
 ];
 
 export default function Home() {
-  const featured = projects.filter((p) => p.featured);
+  const { divisions, projects } = useStore();
+  const featured = projects.filter((p) => isPublishedProject(p) && p.featured);
   const statsRef = useReveal();
   const divisionsRef = useReveal();
   const projectsRef = useReveal();
@@ -83,7 +85,7 @@ export default function Home() {
             {stats.map((stat, i) => (
               <div key={stat.label} className="reveal py-16 px-8 flex flex-col items-center text-center group hover:bg-background transition-colors" style={{ transitionDelay: `${i * 0.1}s` }}>
                 <p className="text-5xl md:text-6xl font-black text-foreground mb-3 group-hover:scale-110 transition-transform duration-300">
-                  {stat.value}
+                  {stat.label === "Divisi Kece" ? divisions.length : stat.value}
                 </p>
                 <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground">{stat.label}</p>
               </div>
@@ -196,7 +198,7 @@ export default function Home() {
                 </div>
                 <div className="p-8 flex-1 flex flex-col">
                   <div className="flex items-center justify-between mb-4">
-                    <span className="text-xs font-bold uppercase tracking-wider text-primary">{project.division}</span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-primary">{divisionName(divisions, project.divisionId)}</span>
                     <span className="text-sm font-bold text-muted-foreground">{project.year}</span>
                   </div>
                   <h3 className="font-black text-2xl mb-3 group-hover:text-primary transition-colors">{project.title}</h3>
