@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Search, Plus, Edit, Trash, X, Image as ImageIcon } from "lucide-react";
-import { useStore } from "../../lib/store";
+import { useAdminData } from "../../context/AdminDataContext";
 import type { Album } from "../../lib/types";
 
 const emptyForm: Omit<Album, "id"> = {
@@ -14,12 +14,13 @@ const emptyForm: Omit<Album, "id"> = {
 };
 
 export default function AdminGallery() {
-  const { albums, addAlbum, updateAlbum, removeAlbum } = useStore();
+  const { albums, addAlbum, updateAlbum, removeAlbum, loading } = useAdminData();
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState<Omit<Album, "id">>(emptyForm);
   const [photoInput, setPhotoInput] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const filtered = albums.filter(
     (a) =>
@@ -41,16 +42,22 @@ export default function AdminGallery() {
     setShowModal(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title || !form.slug) {
       alert("Judul dan Slug harus diisi");
       return;
     }
-    const updated = { ...form, photoCount: form.photos.length };
-    const result = editId ? updateAlbum(editId, updated) : addAlbum(updated);
-    if (!result.ok) { alert(result.error); return; }
-    setShowModal(false);
+    if (submitting) return;
+    try {
+      setSubmitting(true);
+      const updated = { ...form, photoCount: form.photos.length };
+      const result = editId ? await updateAlbum(editId, updated) : await addAlbum(updated);
+      if (!result.ok) { alert(result.error); return; }
+      setShowModal(false);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const addPhoto = () => {
@@ -137,8 +144,11 @@ export default function AdminGallery() {
                     Edit
                   </button>
                   <button
-                    onClick={() => {
-                      if (confirm(`Hapus album "${album.title}"?`)) removeAlbum(album.id);
+                    onClick={async () => {
+                      if (confirm(`Hapus album "${album.title}"?`)) {
+                        const result = await removeAlbum(album.id);
+                        if (!result.ok) alert(result.error);
+                      }
                     }}
                     className="flex-1 py-2.5 px-3 rounded-lg bg-muted text-muted-foreground hover:text-primary hover:bg-primary/10 font-bold text-sm transition-colors flex items-center justify-center gap-2"
                     title="Hapus"
@@ -241,8 +251,12 @@ export default function AdminGallery() {
                 </div>
               </div>
 
-              <button type="submit" className="w-full mt-4 py-4 bg-primary text-white border-2 border-border rounded-2xl font-black text-lg neo-shadow-sm hover:-translate-y-1 hover:neo-shadow-md transition-all">
-                {editId ? "Simpan Perubahan" : "Tambah Album"}
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full mt-4 py-4 bg-primary text-white border-2 border-border rounded-2xl font-black text-lg neo-shadow-sm hover:-translate-y-1 hover:neo-shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {submitting ? "Menyimpan..." : editId ? "Simpan Perubahan" : "Tambah Album"}
               </button>
             </form>
           </div>

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Search, Plus, Edit, Trash, X, Folder, Eye } from "lucide-react";
-import { useStore } from "../../lib/store";
+import { useAdminData } from "../../context/AdminDataContext";
 import type { Project } from "../../lib/types";
 
 const emptyForm: Omit<Project, "id"> = {
@@ -21,13 +21,14 @@ const emptyForm: Omit<Project, "id"> = {
 };
 
 export default function AdminPortfolio() {
-  const { projects, divisions, addProject, updateProject, removeProject } = useStore();
+  const { projects, divisions, addProject, updateProject, removeProject, loading } = useAdminData();
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState<Omit<Project, "id">>(emptyForm);
   const [tagInput, setTagInput] = useState("");
   const [memberInput, setMemberInput] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const filtered = projects.filter(
     (p) =>
@@ -51,15 +52,21 @@ export default function AdminPortfolio() {
     setShowModal(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title || !form.divisionId) {
       alert("Judul dan Divisi harus diisi");
       return;
     }
-    const result = editId ? updateProject(editId, form) : addProject(form);
-    if (!result.ok) { alert(result.error); return; }
-    setShowModal(false);
+    if (submitting) return;
+    try {
+      setSubmitting(true);
+      const result = editId ? await updateProject(editId, form) : await addProject(form);
+      if (!result.ok) { alert(result.error); return; }
+      setShowModal(false);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const addTag = () => {
@@ -86,10 +93,10 @@ export default function AdminPortfolio() {
     setForm({ ...form, members: form.members.filter((x) => x !== m) });
   };
 
-  const toggleStatus = (id: string) => {
+  const toggleStatus = async (id: string) => {
     const p = projects.find((x) => x.id === id);
     if (p) {
-      const result = updateProject(id, { status: p.status === "published" ? "draft" : "published" });
+      const result = await updateProject(id, { status: p.status === "published" ? "draft" : "published" });
       if (!result.ok) alert(result.error);
     }
   };
@@ -187,8 +194,11 @@ export default function AdminPortfolio() {
                         <Edit size={16} strokeWidth={2.5} />
                       </button>
                       <button
-                        onClick={() => {
-                          if (confirm(`Hapus proyek "${p.title}"?`)) removeProject(p.id);
+                        onClick={async () => {
+                          if (confirm(`Hapus proyek "${p.title}"?`)) {
+                            const result = await removeProject(p.id);
+                            if (!result.ok) alert(result.error);
+                          }
                         }}
                         className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
                         title="Hapus"
@@ -391,8 +401,12 @@ export default function AdminPortfolio() {
                 </div>
               </div>
 
-              <button type="submit" className="w-full mt-3 py-3 bg-primary text-white border-2 border-border rounded-2xl font-black text-base neo-shadow-sm hover:-translate-y-1 hover:neo-shadow-md transition-all">
-                {editId ? "Simpan Perubahan" : "Tambah Proyek"}
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full mt-3 py-3 bg-primary text-white border-2 border-border rounded-2xl font-black text-base neo-shadow-sm hover:-translate-y-1 hover:neo-shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {submitting ? "Menyimpan..." : editId ? "Simpan Perubahan" : "Tambah Proyek"}
               </button>
             </form>
           </div>

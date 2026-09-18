@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Search, Plus, Edit, Trash, X, Building2 } from "lucide-react";
-import { useStore } from "../../lib/store";
+import { useAdminData } from "../../context/AdminDataContext";
 import type { Division } from "../../lib/types";
 
 const emptyForm: Omit<Division, "id"> = {
@@ -14,12 +14,13 @@ const emptyForm: Omit<Division, "id"> = {
 };
 
 export default function AdminDivisions() {
-  const { divisions, addDivision, updateDivision, removeDivision } = useStore();
+  const { divisions, addDivision, updateDivision, removeDivision, loading } = useAdminData();
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState<Omit<Division, "id">>(emptyForm);
   const [techInput, setTechInput] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const filtered = divisions.filter(
     (d) =>
@@ -41,11 +42,20 @@ export default function AdminDivisions() {
     setShowModal(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = editId ? updateDivision(editId, form) : addDivision(form);
-    if (!result.ok) { alert(result.error); return; }
-    setShowModal(false);
+    if (submitting) return;
+    try {
+      setSubmitting(true);
+      const result = editId ? await updateDivision(editId, form) : await addDivision(form);
+      if (!result.ok) {
+        alert(result.error);
+        return;
+      }
+      setShowModal(false);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const addTech = () => {
@@ -140,9 +150,9 @@ export default function AdminDivisions() {
                         <Edit size={16} strokeWidth={2.5} />
                       </button>
                       <button
-                        onClick={() => {
+                        onClick={async () => {
                           if (confirm(`Hapus divisi "${d.name}"?`)) {
-                            const result = removeDivision(d.id);
+                            const result = await removeDivision(d.id);
                             if (!result.ok) alert(result.error);
                           }
                         }}
@@ -252,8 +262,12 @@ export default function AdminDivisions() {
                   ))}
                 </div>
               </div>
-              <button type="submit" className="w-full mt-3 py-3 bg-primary text-white border-2 border-border rounded-2xl font-black text-base neo-shadow-sm hover:-translate-y-1 hover:neo-shadow-md transition-all">
-                {editId ? "Simpan Perubahan" : "Tambah Divisi"}
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full mt-3 py-3 bg-primary text-white border-2 border-border rounded-2xl font-black text-base neo-shadow-sm hover:-translate-y-1 hover:neo-shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {submitting ? "Menyimpan..." : editId ? "Simpan Perubahan" : "Tambah Divisi"}
               </button>
             </form>
           </div>

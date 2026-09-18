@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router";
 import { signOutAdmin } from "../auth/adminAuth";
+import { AdminDataProvider } from "../context/AdminDataContext";
 import {
   LayoutDashboard,
   Building2,
@@ -49,7 +50,8 @@ export default function AdminLayout() {
   const currentPage = sidebarLinks.find((l) => isActive(l))?.label ?? "Admin";
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex font-sans">
+    <AdminDataProvider>
+      <div className="min-h-screen bg-background text-foreground flex font-sans">
 
       {/* ── Sidebar ───────────────────────────────────── */}
       <aside
@@ -175,5 +177,6 @@ export default function AdminLayout() {
         </main>
       </div>
     </div>
+    </AdminDataProvider>
   );
 }

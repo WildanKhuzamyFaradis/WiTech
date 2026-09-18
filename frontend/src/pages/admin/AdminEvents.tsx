@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Search, Plus, Edit, Trash, X, Calendar, LockOpen } from "lucide-react";
-import { useStore } from "../../lib/store";
+import { useAdminData } from "../../context/AdminDataContext";
 import type { Event } from "../../lib/types";
 import { formatEventDate, formatEventTime, todayInJakarta } from "../../lib/dataContract";
 
@@ -18,11 +18,12 @@ const emptyForm: Omit<Event, "id"> = {
 };
 
 export default function AdminEvents() {
-  const { events, addEvent, updateEvent, removeEvent } = useStore();
+  const { events, addEvent, updateEvent, removeEvent, loading } = useAdminData();
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState<Omit<Event, "id">>(emptyForm);
+  const [submitting, setSubmitting] = useState(false);
 
   const filtered = events.filter(
     (e) =>
@@ -42,21 +43,27 @@ export default function AdminEvents() {
     setShowModal(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title || !form.location) {
       alert("Judul dan Lokasi harus diisi");
       return;
     }
-    const result = editId ? updateEvent(editId, form) : addEvent(form);
-    if (!result.ok) { alert(result.error); return; }
-    setShowModal(false);
+    if (submitting) return;
+    try {
+      setSubmitting(true);
+      const result = editId ? await updateEvent(editId, form) : await addEvent(form);
+      if (!result.ok) { alert(result.error); return; }
+      setShowModal(false);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const toggleRegistration = (id: string) => {
+  const toggleRegistration = async (id: string) => {
     const e = events.find((x) => x.id === id);
     if (e) {
-      const result = updateEvent(id, { registrationOpen: !e.registrationOpen });
+      const result = await updateEvent(id, { registrationOpen: !e.registrationOpen });
       if (!result.ok) alert(result.error);
     }
   };
@@ -140,8 +147,11 @@ export default function AdminEvents() {
                         <Edit size={16} strokeWidth={2.5} />
                       </button>
                       <button
-                        onClick={() => {
-                          if (confirm(`Hapus event "${e.title}"?`)) removeEvent(e.id);
+                        onClick={async () => {
+                          if (confirm(`Hapus event "${e.title}"?`)) {
+                            const result = await removeEvent(e.id);
+                            if (!result.ok) alert(result.error);
+                          }
                         }}
                         className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
                         title="Hapus"
@@ -255,8 +265,12 @@ export default function AdminEvents() {
                 <span className="text-sm">Pendaftaran Buka</span>
               </label>
 
-              <button type="submit" className="w-full mt-3 py-3 bg-primary text-white border-2 border-border rounded-2xl font-black text-base neo-shadow-sm hover:-translate-y-1 hover:neo-shadow-md transition-all">
-                {editId ? "Simpan Perubahan" : "Tambah Event"}
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full mt-3 py-3 bg-primary text-white border-2 border-border rounded-2xl font-black text-base neo-shadow-sm hover:-translate-y-1 hover:neo-shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {submitting ? "Menyimpan..." : editId ? "Simpan Perubahan" : "Tambah Event"}
               </button>
             </form>
           </div>

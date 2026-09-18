@@ -1,10 +1,10 @@
 import { Link } from "react-router";
 import { FolderOpen, Users, Image, ArrowRight, Award, TrendingUp, Zap, Building2, Calendar } from "lucide-react";
-import { useStore } from "../../lib/store";
+import { useAdminData } from "../../context/AdminDataContext";
 import { divisionName } from "../../lib/dataContract";
 
 export default function AdminDashboard() {
-  const { projects, members, divisions, albums, events } = useStore();
+  const { projects, members, divisions, albums, events, loading } = useAdminData();
   const publishedProjects = projects.filter((p) => p.status === "published");
 
   const stats = [
@@ -41,6 +41,14 @@ export default function AdminDashboard() {
       color: "#06b6d4" 
     },
   ];
+
+  if (loading) {
+    return (
+      <div className="py-20 flex items-center justify-center text-muted-foreground font-bold text-sm">
+        Memuat data dashboard...
+      </div>
+    );
+  }
 
   return (
     <div className="anim-fade-up">

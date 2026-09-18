@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Search, Plus, Edit, Trash, GitFork, Briefcase, X, Users } from "lucide-react";
-import { useStore } from "../../lib/store";
+import { useAdminData } from "../../context/AdminDataContext";
 import type { Member } from "../../lib/types";
 import { divisionName } from "../../lib/dataContract";
 
@@ -16,12 +16,13 @@ const emptyForm: Omit<Member, "id"> = {
 };
 
 export default function AdminMembers() {
-  const { members, divisions, addMember, updateMember, removeMember } = useStore();
+  const { members, divisions, addMember, updateMember, removeMember, loading } = useAdminData();
   const [search, setSearch] = useState("");
   const [divFilter, setDivFilter] = useState("all");
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState<Omit<Member, "id">>(emptyForm);
+  const [submitting, setSubmitting] = useState(false);
 
 
   const filtered = members.filter((m) => {
@@ -47,18 +48,23 @@ export default function AdminMembers() {
     setShowModal(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim()) {
       alert("Nama harus diisi");
       return;
     }
-    
-    const avatar = form.avatar || `https://api.dicebear.com/7.x/notionists/svg?seed=${form.name.replace(/\s+/g, '')}&backgroundColor=transparent`;
-    const result = editId ? updateMember(editId, form) : addMember({ ...form, avatar });
-    if (!result.ok) { alert(result.error); return; }
-    setShowModal(false);
-    setForm(emptyForm);
+    if (submitting) return;
+    try {
+      setSubmitting(true);
+      const avatar = form.avatar || `https://api.dicebear.com/7.x/notionists/svg?seed=${form.name.replace(/\s+/g, '')}&backgroundColor=transparent`;
+      const result = editId ? await updateMember(editId, form) : await addMember({ ...form, avatar });
+      if (!result.ok) { alert(result.error); return; }
+      setShowModal(false);
+      setForm(emptyForm);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -194,8 +200,11 @@ export default function AdminMembers() {
                         <button onClick={() => openEdit(member)} className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" title="Edit">
                           <Edit size={16} strokeWidth={2.5} />
                         </button>
-                        <button onClick={() => {
-                          if (confirm(`Hapus member "${member.name}"?`)) removeMember(member.id);
+                        <button onClick={async () => {
+                          if (confirm(`Hapus member "${member.name}"?`)) {
+                            const result = await removeMember(member.id);
+                            if (!result.ok) alert(result.error);
+                          }
                         }} className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors" title="Remove">
                           <Trash size={16} strokeWidth={2.5} />
                         </button>
@@ -275,8 +284,12 @@ export default function AdminMembers() {
                   <input type="text" value={form.linkedin} onChange={e => setForm({ ...form, linkedin: e.target.value })} placeholder="username" className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors" />
                 </div>
               </div>
-              <button type="submit" className="w-full mt-3 py-3 bg-primary text-white border-2 border-border rounded-2xl font-black text-base neo-shadow-sm hover:-translate-y-1 hover:neo-shadow-md transition-all">
-                {editId ? "Simpan Perubahan" : "Simpan"}
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full mt-3 py-3 bg-primary text-white border-2 border-border rounded-2xl font-black text-base neo-shadow-sm hover:-translate-y-1 hover:neo-shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {submitting ? "Menyimpan..." : editId ? "Simpan Perubahan" : "Simpan"}
               </button>
             </form>
           </div>
