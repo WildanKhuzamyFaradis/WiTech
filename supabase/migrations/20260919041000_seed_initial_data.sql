@@ -63,7 +63,7 @@ INSERT INTO public.divisions (
     '#8b5cf6',
     ARRAY['Riset Ilmiah', 'Analisis Data', 'Publikasi', 'Inovasi Teknologi'],
     4
-  )
+  );
 
 INSERT INTO public.projects (
   id,
@@ -190,7 +190,7 @@ INSERT INTO public.projects (
     NULL,
     NULL,
     5
-  )
+  );
 
 INSERT INTO public.members (
   id,
@@ -233,7 +233,7 @@ INSERT INTO public.members (
   ('27', 'Dewa putra kusuma', 'Anggota', 'research', '2024', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Dewa', '', '', true, 26),
   ('28', 'Utami Tri Hapsari', 'Anggota', 'research', '2024', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Utami', '', '', true, 27),
   ('29', 'Ach Fikri Maulana Putra', 'Anggota', 'research', '2024', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Fikri', '', '', true, 28),
-  ('30', 'Balwanindyta Akrida Putri', 'Anggota', 'research', '2024', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Balwanindyta', '', '', true, 29)
+  ('30', 'Balwanindyta Akrida Putri', 'Anggota', 'research', '2024', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Balwanindyta', '', '', true, 29);
 
 INSERT INTO public.albums (
   id,
@@ -279,7 +279,7 @@ INSERT INTO public.albums (
     'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800&h=500&fit=crop&auto=format',
     '2024-07-12',
     3
-  )
+  );
 
 INSERT INTO public.album_photos (album_id, image_url, sort_order) VALUES
   ('1', 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&h=800&fit=crop&auto=format', 1),
@@ -305,7 +305,7 @@ INSERT INTO public.album_photos (album_id, image_url, sort_order) VALUES
   ('4', 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1200&h=800&fit=crop&auto=format', 3),
   ('4', 'https://images.unsplash.com/photo-1484417894907-623942c8ee29?w=1200&h=800&fit=crop&auto=format', 4),
   ('4', 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=1200&h=800&fit=crop&auto=format', 5),
-  ('4', 'https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1200&h=800&fit=crop&auto=format', 6)
+  ('4', 'https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1200&h=800&fit=crop&auto=format', 6);
 
 INSERT INTO public.events (
   id,
@@ -358,7 +358,7 @@ INSERT INTO public.events (
     'https://images.unsplash.com/photo-1542744173-8e7e53415bb0',
     false,
     NULL
-  )
+  );
 
 INSERT INTO public.faqs (
   id,
@@ -373,6 +373,6 @@ INSERT INTO public.faqs (
   ('5', 'Apa manfaat mengikuti WiTech?', 'Manfaatnya cukup besar. Kamu dapat mengembangkan keterampilan yang relevan dengan dunia kerja, memperluas jaringan, dan memiliki pengalaman dalam mengerjakan proyek nyata.', 4),
   ('6', 'Kalau saya benar-benar pemula, divisi mana yang cocok?', 'Semua divisi terbuka untuk pemula. Jika kamu ingin memulai dari dasar, pilih divisi yang fokus pada pembelajaran dan praktik dasar terlebih dahulu, lalu berkembang sesuai minat.', 5),
   ('7', 'Apakah WiTech menerima kerja sama atau kolaborasi proyek?', 'Tentu. Kami terbuka untuk kolaborasi dengan organisasi lain, dosen, maupun mitra eksternal. Silakan hubungi email partnership@witech.id atau akun media sosial resmi WiTech.', 6),
-  ('8', 'Di mana saya bisa melihat karya WiTech?', 'Kamu bisa melihatnya di halaman Portfolio website ini. Di sana tersedia contoh karya dari berbagai divisi, mulai dari desain, pengembangan web, hingga karya berbasis teknologi lainnya.', 7)
+  ('8', 'Di mana saya bisa melihat karya WiTech?', 'Kamu bisa melihatnya di halaman Portfolio website ini. Di sana tersedia contoh karya dari berbagai divisi, mulai dari desain, pengembangan web, hingga karya berbasis teknologi lainnya.', 7);
 
 COMMIT;

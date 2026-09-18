@@ -46,3 +46,4 @@ logs/
 # Platform-local state not needed by this repository
 .plugins/
 .opencode-skills/
+supabase/.temp/
