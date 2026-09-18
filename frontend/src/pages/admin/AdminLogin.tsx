@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router";
 import { Eye, EyeOff, ArrowLeft, Shield } from "lucide-react";
-import { isAdminAuthenticated, setAdminAuthenticated } from "../../auth/adminAuth";
+import { getAdminSession, signInAdmin } from "../../auth/adminAuth";
 
 export default function AdminLogin() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
@@ -12,21 +12,39 @@ export default function AdminLogin() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAdminAuthenticated()) navigate("/admin", { replace: true });
+    let mounted = true;
+
+    getAdminSession()
+      .then((session) => {
+        if (mounted && session) navigate("/admin", { replace: true });
+      })
+      .catch(() => {
+        // A failed session lookup leaves the login form available.
+      });
+
+    return () => {
+      mounted = false;
+    };
   }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 600));
-    if (username.trim().toLowerCase() === "admin" && password.trim() === "witech2024") {
-      setAdminAuthenticated();
-      navigate("/admin");
-    } else {
-      setError("Yah, salah! Coba admin / witech2024");
+
+    try {
+      const { error: signInError } = await signInAdmin(email.trim(), password);
+
+      if (signInError) {
+        setError("Email atau password salah. Silakan coba lagi.");
+      } else {
+        navigate("/admin", { replace: true });
+      }
+    } catch (error) {
+      setError("Login tidak tersedia saat ini. Silakan coba lagi.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -61,16 +79,16 @@ export default function AdminLogin() {
           <div className="neo-card bg-white rounded-3xl p-8 neo-shadow-md">
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label htmlFor="username" className="block text-xs font-bold uppercase tracking-wider mb-2 text-muted-foreground">
-                  Username
+                <label htmlFor="email" className="block text-xs font-bold uppercase tracking-wider mb-2 text-muted-foreground">
+                  Email
                 </label>
                 <input
-                  id="username"
-                  type="text"
+                  id="email"
+                  type="email"
                   required
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="admin"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="admin@witech.id"
                   className="w-full px-4 py-3.5 bg-muted border-2 border-transparent rounded-xl text-base font-bold placeholder:text-muted-foreground placeholder:font-medium focus:outline-none focus:border-border transition-colors"
                 />
               </div>
@@ -115,11 +133,6 @@ export default function AdminLogin() {
               </button>
             </form>
 
-            <div className="mt-6 pt-6 border-t-2 border-border/10 text-center">
-              <p className="text-sm font-bold text-muted-foreground bg-muted inline-block px-4 py-1.5 rounded-full">
-                Demo: admin / witech2024
-              </p>
-            </div>
           </div>
         </div>
       </div>

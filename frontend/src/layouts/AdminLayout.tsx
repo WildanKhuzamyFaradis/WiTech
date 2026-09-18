@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router";
-import { logoutAdmin } from "../auth/adminAuth";
+import { signOutAdmin } from "../auth/adminAuth";
 import {
   LayoutDashboard,
   Building2,
@@ -25,12 +25,20 @@ const sidebarLinks = [
 
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [logoutError, setLogoutError] = useState("");
   const location = useLocation();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logoutAdmin();
-    navigate("/admin/login");
+  const handleLogout = async () => {
+    setLogoutError("");
+    const { error } = await signOutAdmin();
+
+    if (error) {
+      setLogoutError("Gagal keluar. Silakan coba lagi.");
+      return;
+    }
+
+    navigate("/admin/login", { replace: true });
   };
 
   const isActive = (link: { to: string; exact?: boolean }) => {
@@ -123,6 +131,7 @@ export default function AdminLayout() {
             <LogOut size={16} strokeWidth={2.5} />
             Keluar
           </button>
+          {logoutError && <p className="text-xs font-bold text-destructive">{logoutError}</p>}
         </div>
       </aside>
 
