@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router";
 import { signOutAdmin } from "../auth/adminAuth";
+import { AdminDataProvider } from "../context/AdminDataContext";
 import {
   LayoutDashboard,
   Building2,
@@ -8,6 +9,7 @@ import {
   Images,
   CalendarDays,
   Users,
+  HelpCircle,
   LogOut,
   Menu,
   X,
@@ -21,6 +23,7 @@ const sidebarLinks = [
   { label: "Galeri", to: "/admin/gallery", icon: Images, color: "#00cecb", group: "Konten" },
   { label: "Event", to: "/admin/events", icon: CalendarDays, color: "#10b981", group: "Konten" },
   { label: "Member", to: "/admin/members", icon: Users, color: "#f59e0b", group: "Konten" },
+  { label: "FAQ", to: "/admin/faq", icon: HelpCircle, color: "#ec4899", group: "Konten" },
 ];
 
 export default function AdminLayout() {
@@ -49,7 +52,8 @@ export default function AdminLayout() {
   const currentPage = sidebarLinks.find((l) => isActive(l))?.label ?? "Admin";
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex font-sans">
+    <AdminDataProvider>
+      <div className="min-h-screen bg-background text-foreground flex font-sans">
 
       {/* ── Sidebar ───────────────────────────────────── */}
       <aside
@@ -175,5 +179,6 @@ export default function AdminLayout() {
         </main>
       </div>
     </div>
+    </AdminDataProvider>
   );
 }

@@ -1,25 +1,46 @@
 import { useState } from "react";
-import { Search, Plus, Edit, Trash, X, Building2 } from "lucide-react";
-import { useStore } from "../../lib/store";
+import { Search, Plus, Edit, Trash, X, Building2, AlertCircle } from "lucide-react";
+import { useAdminData } from "../../context/AdminDataContext";
 import type { Division } from "../../lib/types";
 
-const emptyForm: Omit<Division, "id"> = {
+export const SUPPORTED_DIVISION_ICONS = [
+  { value: "Code", label: "Code (Software / Pemrograman)" },
+  { value: "Smartphone", label: "Smartphone (Mobile / Academy)" },
+  { value: "Brain", label: "Brain (AI / Research)" },
+  { value: "Shield", label: "Shield (Security / Network)" },
+  { value: "Palette", label: "Palette (Design / Creative)" },
+  { value: "Cpu", label: "Cpu (Hardware / IoT)" },
+] as const;
+
+interface DivisionFormData {
+  name: string;
+  shortName: string;
+  description: string;
+  icon: string;
+  color: string;
+  technologies: string[];
+  sortOrder: number;
+}
+
+const emptyForm: DivisionFormData = {
   name: "",
   shortName: "",
   description: "",
   icon: "Code",
-  memberCount: 0,
   color: "#6366f1",
   technologies: [],
+  sortOrder: 0,
 };
 
 export default function AdminDivisions() {
-  const { divisions, addDivision, updateDivision, removeDivision } = useStore();
+  const { divisions, addDivision, updateDivision, removeDivision, loading } = useAdminData();
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState<Omit<Division, "id">>(emptyForm);
+  const [form, setForm] = useState<DivisionFormData>(emptyForm);
   const [techInput, setTechInput] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const filtered = divisions.filter(
     (d) =>
@@ -28,24 +49,59 @@ export default function AdminDivisions() {
   );
 
   const openAdd = () => {
-    setForm(emptyForm);
+    const nextOrder = divisions.length > 0 ? Math.max(...divisions.map((d) => d.sortOrder ?? 0)) + 1 : 0;
+    setForm({ ...emptyForm, sortOrder: nextOrder });
     setEditId(null);
     setTechInput("");
+    setFormError(null);
     setShowModal(true);
   };
 
   const openEdit = (d: Division) => {
-    setForm({ ...d });
+    setForm({
+      name: d.name,
+      shortName: d.shortName,
+      description: d.description,
+      icon: d.icon || "Code",
+      color: d.color,
+      technologies: [...d.technologies],
+      sortOrder: d.sortOrder ?? 0,
+    });
     setEditId(d.id);
     setTechInput("");
+    setFormError(null);
     setShowModal(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = editId ? updateDivision(editId, form) : addDivision(form);
-    if (!result.ok) { alert(result.error); return; }
-    setShowModal(false);
+    if (!form.name.trim() || !form.shortName.trim() || !form.description.trim()) {
+      setFormError("Nama divisi, nama singkat, dan deskripsi wajib diisi.");
+      return;
+    }
+    if (submitting) return;
+    try {
+      setSubmitting(true);
+      setFormError(null);
+      const payload = {
+        name: form.name.trim(),
+        shortName: form.shortName.trim(),
+        description: form.description.trim(),
+        icon: form.icon,
+        color: form.color,
+        technologies: form.technologies,
+        sortOrder: Math.max(0, Math.floor(form.sortOrder)),
+      };
+
+      const result = editId ? await updateDivision(editId, payload) : await addDivision({ ...payload, memberCount: 0 });
+      if (!result.ok) {
+        setFormError(result.error);
+        return;
+      }
+      setShowModal(false);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const addTech = () => {
@@ -140,9 +196,9 @@ export default function AdminDivisions() {
                         <Edit size={16} strokeWidth={2.5} />
                       </button>
                       <button
-                        onClick={() => {
+                        onClick={async () => {
                           if (confirm(`Hapus divisi "${d.name}"?`)) {
-                            const result = removeDivision(d.id);
+                            const result = await removeDivision(d.id);
                             if (!result.ok) alert(result.error);
                           }
                         }}
@@ -194,6 +250,13 @@ export default function AdminDivisions() {
               <h2 className="text-2xl font-black tracking-tight">{editId ? "Edit Divisi" : "Tambah Divisi"}</h2>
             </div>
 
+            {formError && (
+              <div className="mb-4 p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm font-bold flex items-center gap-2">
+                <AlertCircle size={16} className="shrink-0" />
+                <span>{formError}</span>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -211,8 +274,18 @@ export default function AdminDivisions() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">Icon (Lucide)</label>
-                  <input type="text" value={form.icon} onChange={(e) => setForm({ ...form, icon: e.target.value })} className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors" />
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">Icon</label>
+                  <select
+                    value={form.icon}
+                    onChange={(e) => setForm({ ...form, icon: e.target.value })}
+                    className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors"
+                  >
+                    {SUPPORTED_DIVISION_ICONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">Warna</label>
@@ -223,8 +296,15 @@ export default function AdminDivisions() {
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">Jumlah Member</label>
-                <input type="number" min={0} value={form.memberCount} onChange={(e) => setForm({ ...form, memberCount: Number(e.target.value) })} className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors" />
+                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">Urutan Tampilan</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={form.sortOrder}
+                  onChange={(e) => setForm({ ...form, sortOrder: Number(e.target.value) })}
+                  className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Nilai lebih kecil akan tampil lebih dulu.</p>
               </div>
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">Teknologi</label>
@@ -252,8 +332,12 @@ export default function AdminDivisions() {
                   ))}
                 </div>
               </div>
-              <button type="submit" className="w-full mt-3 py-3 bg-primary text-white border-2 border-border rounded-2xl font-black text-base neo-shadow-sm hover:-translate-y-1 hover:neo-shadow-md transition-all">
-                {editId ? "Simpan Perubahan" : "Tambah Divisi"}
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full mt-3 py-3 bg-primary text-white border-2 border-border rounded-2xl font-black text-base neo-shadow-sm hover:-translate-y-1 hover:neo-shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {submitting ? "Menyimpan..." : editId ? "Simpan Perubahan" : "Tambah Divisi"}
               </button>
             </form>
           </div>

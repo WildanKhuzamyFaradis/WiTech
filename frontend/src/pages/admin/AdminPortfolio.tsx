@@ -1,9 +1,22 @@
 import { useState } from "react";
-import { Search, Plus, Edit, Trash, X, Folder, Eye } from "lucide-react";
-import { useStore } from "../../lib/store";
+import { Search, Plus, Edit, Trash, X, Folder, Eye, AlertCircle } from "lucide-react";
+import { useAdminData } from "../../context/AdminDataContext";
 import type { Project } from "../../lib/types";
+import {
+  resolveMediaUrl,
+  generateStoragePath,
+  uploadMediaFile,
+  deleteMediaFiles,
+  isManagedStoragePath,
+} from "../../lib/storage";
+import MediaUploadInput from "../../components/admin/MediaUploadInput";
 
-const emptyForm: Omit<Project, "id"> = {
+interface ProjectFormData extends Omit<Project, "id" | "image"> {
+  sortOrder: number;
+  image: string | File;
+}
+
+const emptyForm: ProjectFormData = {
   slug: "",
   title: "",
   subtitle: "",
@@ -18,16 +31,21 @@ const emptyForm: Omit<Project, "id"> = {
   award: "",
   githubUrl: "",
   liveUrl: "",
+  sortOrder: 0,
 };
 
 export default function AdminPortfolio() {
-  const { projects, divisions, addProject, updateProject, removeProject } = useStore();
+  const { projects, divisions, addProject, updateProject, removeProject, loading } = useAdminData();
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState<Omit<Project, "id">>(emptyForm);
+  const [form, setForm] = useState<ProjectFormData>(emptyForm);
   const [tagInput, setTagInput] = useState("");
   const [memberInput, setMemberInput] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [originalImagePath, setOriginalImagePath] = useState("");
 
   const filtered = projects.filter(
     (p) =>
@@ -36,30 +54,103 @@ export default function AdminPortfolio() {
   );
 
   const openAdd = () => {
-    setForm(emptyForm);
+    const nextOrder = projects.length > 0 ? Math.max(...projects.map((p) => p.sortOrder ?? 0)) + 1 : 0;
+    setForm({ ...emptyForm, sortOrder: nextOrder });
     setEditId(null);
     setTagInput("");
     setMemberInput("");
+    setOriginalImagePath("");
+    setFormError(null);
     setShowModal(true);
   };
 
   const openEdit = (p: Project) => {
-    setForm({ ...p });
+    setForm({
+      slug: p.slug,
+      title: p.title,
+      subtitle: p.subtitle,
+      description: p.description,
+      divisionId: p.divisionId,
+      tags: [...p.tags],
+      year: p.year,
+      status: p.status,
+      featured: p.featured,
+      image: p.image,
+      members: [...p.members],
+      award: p.award,
+      githubUrl: p.githubUrl ?? "",
+      liveUrl: p.liveUrl ?? "",
+      sortOrder: p.sortOrder ?? 0,
+    });
     setEditId(p.id);
     setTagInput("");
     setMemberInput("");
+    setOriginalImagePath(p.image);
+    setFormError(null);
     setShowModal(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.title || !form.divisionId) {
-      alert("Judul dan Divisi harus diisi");
+    if (!form.title.trim() || !form.divisionId || !form.slug.trim()) {
+      setFormError("Judul, Slug, dan Divisi harus diisi.");
       return;
     }
-    const result = editId ? updateProject(editId, form) : addProject(form);
-    if (!result.ok) { alert(result.error); return; }
-    setShowModal(false);
+    if (form.year < 1900 || form.year > 2100) {
+      setFormError("Tahun harus antara 1900 dan 2100.");
+      return;
+    }
+    if (submitting) return;
+
+    try {
+      setSubmitting(true);
+      setFormError(null);
+
+      let imageValue: string;
+      let newlyUploadedPath = "";
+
+      if (form.image instanceof File) {
+        const storagePath = generateStoragePath("project", form.image.type);
+        const uploadResult = await uploadMediaFile(form.image, storagePath);
+        if (!uploadResult.ok) {
+          setFormError(uploadResult.error);
+          return;
+        }
+        imageValue = uploadResult.path;
+        newlyUploadedPath = uploadResult.path;
+      } else {
+        imageValue = form.image.trim();
+      }
+
+      const payload = {
+        ...form,
+        image: imageValue,
+        title: form.title.trim(),
+        slug: form.slug.trim().toLowerCase(),
+        subtitle: form.subtitle.trim(),
+        description: form.description.trim(),
+        award: form.award.trim(),
+        githubUrl: form.githubUrl?.trim() || undefined,
+        liveUrl: form.liveUrl?.trim() || undefined,
+        sortOrder: Math.max(0, Math.floor(form.sortOrder)),
+      };
+
+      const result = editId ? await updateProject(editId, payload) : await addProject(payload);
+
+      if (!result.ok) {
+        if (newlyUploadedPath) await deleteMediaFiles([newlyUploadedPath]);
+        setFormError(result.error);
+        return;
+      }
+
+      if (editId && newlyUploadedPath && isManagedStoragePath(originalImagePath)) {
+        await deleteMediaFiles([originalImagePath]);
+      }
+
+      setShowModal(false);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const addTag = () => {
@@ -86,11 +177,17 @@ export default function AdminPortfolio() {
     setForm({ ...form, members: form.members.filter((x) => x !== m) });
   };
 
-  const toggleStatus = (id: string) => {
+  const toggleStatus = async (id: string) => {
+    if (togglingId === id) return;
     const p = projects.find((x) => x.id === id);
     if (p) {
-      const result = updateProject(id, { status: p.status === "published" ? "draft" : "published" });
-      if (!result.ok) alert(result.error);
+      try {
+        setTogglingId(id);
+        const result = await updateProject(id, { status: p.status === "published" ? "draft" : "published" });
+        if (!result.ok) alert(result.error);
+      } finally {
+        setTogglingId(null);
+      }
     }
   };
 
@@ -141,14 +238,14 @@ export default function AdminPortfolio() {
                 <tr key={p.id} className="hover:bg-muted/20 transition-colors group">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-4">
-                      {p.image && (
+                      {p.image ? (
                         <img
-                          src={p.image}
+                          src={resolveMediaUrl(p.image)}
                           alt={p.title}
                           className="size-12 rounded-xl object-cover border-2 border-border group-hover:scale-105 transition-transform"
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = "0.3"; }}
                         />
-                      )}
-                      {!p.image && (
+                      ) : (
                         <div className="size-12 rounded-xl border-2 border-border flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform bg-muted">
                           <Folder size={20} className="text-muted-foreground" strokeWidth={2.5} />
                         </div>
@@ -187,8 +284,11 @@ export default function AdminPortfolio() {
                         <Edit size={16} strokeWidth={2.5} />
                       </button>
                       <button
-                        onClick={() => {
-                          if (confirm(`Hapus proyek "${p.title}"?`)) removeProject(p.id);
+                        onClick={async () => {
+                          if (confirm(`Hapus proyek "${p.title}"?`)) {
+                            const result = await removeProject(p.id);
+                            if (!result.ok) alert(result.error);
+                          }
                         }}
                         className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
                         title="Hapus"
@@ -223,7 +323,7 @@ export default function AdminPortfolio() {
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-8">
           <div className="absolute inset-0 bg-foreground/40 backdrop-blur-md" onClick={() => setShowModal(false)} />
-          <div className="relative w-full max-w-2xl neo-card bg-white rounded-3xl p-6 neo-shadow-lg anim-pop">
+          <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto neo-card bg-white rounded-3xl p-6 neo-shadow-lg anim-pop">
             <button
               onClick={() => setShowModal(false)}
               className="absolute top-4 right-4 p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
@@ -237,6 +337,13 @@ export default function AdminPortfolio() {
               </div>
               <h2 className="text-2xl font-black tracking-tight">{editId ? "Edit Proyek" : "Tambah Proyek"}</h2>
             </div>
+
+            {formError && (
+              <div className="mb-4 p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm font-bold flex items-center gap-2">
+                <AlertCircle size={16} className="shrink-0" />
+                <span>{formError}</span>
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-3">
               {/* Basic Info */}
@@ -276,22 +383,37 @@ export default function AdminPortfolio() {
                   >
                     <option value="">Pilih Divisi</option>
                     {divisions.map((d) => (
-                      <option key={d.id} value={d.id}>
-                        {d.name}
-                      </option>
+                      <option key={d.id} value={d.id}>{d.name}</option>
                     ))}
                   </select>
                 </div>
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">Tahun</label>
-                  <input required type="number" min={2000} value={form.year} onChange={(e) => setForm({ ...form, year: Number(e.target.value) })} className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors" />
+                  <input required type="number" min={1900} max={2100} value={form.year} onChange={(e) => setForm({ ...form, year: Number(e.target.value) })} className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors" />
                 </div>
               </div>
 
-              {/* Image URL */}
+              {/* Image — dual-mode upload */}
+              <MediaUploadInput
+                label="Gambar Proyek"
+                value={typeof form.image === "string" ? form.image : ""}
+                onChange={(v) => setForm({ ...form, image: v })}
+                maxSizeMB={5}
+                previewClassName="size-14"
+                placeholder="https://... atau /foto-proyek/image.jpg"
+              />
+
+              {/* Sort Order */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">URL Gambar</label>
-                <input type="url" value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} placeholder="https://..." className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors" />
+                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">Urutan Tampilan</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={form.sortOrder}
+                  onChange={(e) => setForm({ ...form, sortOrder: Number(e.target.value) })}
+                  className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Nilai lebih kecil akan tampil lebih dulu.</p>
               </div>
 
               {/* Tags */}
@@ -391,8 +513,12 @@ export default function AdminPortfolio() {
                 </div>
               </div>
 
-              <button type="submit" className="w-full mt-3 py-3 bg-primary text-white border-2 border-border rounded-2xl font-black text-base neo-shadow-sm hover:-translate-y-1 hover:neo-shadow-md transition-all">
-                {editId ? "Simpan Perubahan" : "Tambah Proyek"}
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full mt-3 py-3 bg-primary text-white border-2 border-border rounded-2xl font-black text-base neo-shadow-sm hover:-translate-y-1 hover:neo-shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {submitting ? "Menyimpan..." : editId ? "Simpan Perubahan" : "Tambah Proyek"}
               </button>
             </form>
           </div>

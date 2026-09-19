@@ -11,6 +11,12 @@ const iconMap: Record<string, React.ElementType> = {
   research: Brain,
   connect: Shield,
   hardware: Cpu,
+  Code,
+  Smartphone,
+  Brain,
+  Shield,
+  Palette,
+  Cpu,
 };
 
 const emojiMap: Record<string, string> = {
@@ -54,7 +60,7 @@ const Divisions = () => {
       <section className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {divisions.map((division, i) => {
-            const Icon = iconMap[division.id] || Code;
+            const Icon = iconMap[division.icon] || iconMap[division.id] || Code;
             const emoji = emojiMap[division.id] || "⚡";
             
             return (
