@@ -109,6 +109,18 @@ function normalizeTime(t: string): string {
   return t;
 }
 
+function computeNextSortOrder(
+  explicitOrder: number | undefined,
+  existingItems: { sortOrder?: number }[]
+): number {
+  if (typeof explicitOrder === "number" && !Number.isNaN(explicitOrder) && explicitOrder >= 0) {
+    return Math.floor(explicitOrder);
+  }
+  if (existingItems.length === 0) return 0;
+  const maxOrder = Math.max(...existingItems.map((item) => item.sortOrder ?? 0));
+  return maxOrder + 1;
+}
+
 function mapDivision(row: DivisionRow): Omit<Division, "memberCount"> {
   return {
     id: row.id,
@@ -118,6 +130,7 @@ function mapDivision(row: DivisionRow): Omit<Division, "memberCount"> {
     icon: row.icon,
     color: row.color,
     technologies: row.technologies ?? [],
+    sortOrder: row.sort_order,
   };
 }
 
@@ -138,6 +151,7 @@ function mapProject(row: ProjectRow): Project {
     award: row.award ?? "",
     githubUrl: row.github_url ?? undefined,
     liveUrl: row.live_url ?? undefined,
+    sortOrder: row.sort_order,
   };
 }
 
@@ -152,6 +166,7 @@ function mapMember(row: MemberRow): Member {
     github: row.github ?? "",
     linkedin: row.linkedin ?? "",
     active: row.active,
+    sortOrder: row.sort_order,
   };
 }
 
@@ -165,6 +180,7 @@ function mapAlbum(row: AlbumRow, photos: string[]): Album {
     date: row.date,
     photos,
     photoCount: photos.length,
+    sortOrder: row.sort_order,
   };
 }
 
@@ -189,6 +205,7 @@ function mapFaq(row: FaqRow): FAQ {
     id: row.id,
     question: row.question,
     answer: row.answer,
+    sortOrder: row.sort_order,
   };
 }
 
@@ -341,9 +358,7 @@ export async function createDivision(
   existingDivisions: Division[]
 ): Promise<MutationResult> {
   try {
-    const nextSort = existingDivisions.length > 0
-      ? Math.max(...existingDivisions.map((_, i) => i)) + 1
-      : 0;
+    const nextSort = computeNextSortOrder(data.sortOrder, existingDivisions);
 
     const { error } = await supabase.from("divisions").insert({
       name: data.name.trim(),
@@ -374,6 +389,7 @@ export async function updateDivision(
     if (patch.icon !== undefined) updatePayload.icon = patch.icon;
     if (patch.color !== undefined) updatePayload.color = patch.color;
     if (patch.technologies !== undefined) updatePayload.technologies = patch.technologies;
+    if (patch.sortOrder !== undefined) updatePayload.sort_order = Math.max(0, Math.floor(patch.sortOrder));
 
     const { error } = await supabase.from("divisions").update(updatePayload).eq("id", id);
     if (error) return { ok: false, error: formatAdminError(error, "Gagal memperbarui divisi.") };
@@ -400,9 +416,7 @@ export async function createProject(
   existingProjects: Project[]
 ): Promise<MutationResult> {
   try {
-    const nextSort = existingProjects.length > 0
-      ? Math.max(...existingProjects.map((_, i) => i)) + 1
-      : 0;
+    const nextSort = computeNextSortOrder(data.sortOrder, existingProjects);
 
     const { error } = await supabase.from("projects").insert({
       slug: data.slug.trim().toLowerCase(),
@@ -449,6 +463,7 @@ export async function updateProject(
     if (patch.award !== undefined) updatePayload.award = patch.award.trim();
     if (patch.githubUrl !== undefined) updatePayload.github_url = patch.githubUrl?.trim() || null;
     if (patch.liveUrl !== undefined) updatePayload.live_url = patch.liveUrl?.trim() || null;
+    if (patch.sortOrder !== undefined) updatePayload.sort_order = Math.max(0, Math.floor(patch.sortOrder));
 
     const { error } = await supabase.from("projects").update(updatePayload).eq("id", id);
     if (error) return { ok: false, error: formatAdminError(error, "Gagal memperbarui proyek.") };
@@ -475,9 +490,7 @@ export async function createMember(
   existingMembers: Member[]
 ): Promise<MutationResult> {
   try {
-    const nextSort = existingMembers.length > 0
-      ? Math.max(...existingMembers.map((_, i) => i)) + 1
-      : 0;
+    const nextSort = computeNextSortOrder(data.sortOrder, existingMembers);
 
     // divisionId === null or "core" must write SQL NULL
     const divisionId = !data.divisionId || data.divisionId === "core" ? null : data.divisionId;
@@ -517,6 +530,7 @@ export async function updateMember(
     if (patch.github !== undefined) updatePayload.github = patch.github.trim();
     if (patch.linkedin !== undefined) updatePayload.linkedin = patch.linkedin.trim();
     if (patch.active !== undefined) updatePayload.active = patch.active;
+    if (patch.sortOrder !== undefined) updatePayload.sort_order = Math.max(0, Math.floor(patch.sortOrder));
 
     const { error } = await supabase.from("members").update(updatePayload).eq("id", id);
     if (error) return { ok: false, error: formatAdminError(error, "Gagal memperbarui anggota.") };
@@ -543,9 +557,7 @@ export async function createAlbum(
   existingAlbums: Album[]
 ): Promise<MutationResult> {
   try {
-    const nextSort = existingAlbums.length > 0
-      ? Math.max(...existingAlbums.map((_, i) => i)) + 1
-      : 0;
+    const nextSort = computeNextSortOrder(data.sortOrder, existingAlbums);
 
     // Step 1: Insert album record and get generated ID
     const { data: insertedAlbum, error: albumError } = await supabase
@@ -589,6 +601,12 @@ export async function createAlbum(
   }
 }
 
+/**
+ * Updates an album's metadata and synchronizes its photos.
+ * NOTE: Multi-step browser requests cannot form an atomic database transaction in Supabase client-side.
+ * This operation implements a best-effort recovery: if inserting new photos fails after deletion,
+ * it attempts to restore the previous photo rows in memory.
+ */
 export async function updateAlbum(
   id: string,
   patch: Partial<Omit<Album, "id">>
@@ -601,15 +619,23 @@ export async function updateAlbum(
     if (patch.description !== undefined) updatePayload.description = patch.description.trim();
     if (patch.coverImage !== undefined) updatePayload.cover_image = patch.coverImage.trim();
     if (patch.date !== undefined) updatePayload.date = patch.date;
+    if (patch.sortOrder !== undefined) updatePayload.sort_order = Math.max(0, Math.floor(patch.sortOrder));
 
     if (Object.keys(updatePayload).length > 0) {
       const { error: albumError } = await supabase.from("albums").update(updatePayload).eq("id", id);
       if (albumError) return { ok: false, error: formatAdminError(albumError, "Gagal memperbarui data album.") };
     }
 
-    // Step 2: If photos array is modified, synchronize album_photos
+    // Step 2: If photos array is modified, synchronize album_photos with best-effort restore
     if (patch.photos !== undefined) {
       const photos = patch.photos.filter((p) => p.trim().length > 0);
+
+      // Fetch and backup existing photo rows before deletion
+      const { data: previousPhotos } = await supabase
+        .from("album_photos")
+        .select("image_url, sort_order")
+        .eq("album_id", id)
+        .order("sort_order", { ascending: true });
 
       // Remove existing photo rows
       const { error: deleteError } = await supabase.from("album_photos").delete().eq("album_id", id);
@@ -627,7 +653,23 @@ export async function updateAlbum(
 
         const { error: insertError } = await supabase.from("album_photos").insert(photoRows);
         if (insertError) {
-          return { ok: false, error: formatAdminError(insertError, "Gagal memperbarui daftar foto album.") };
+          // Best-effort restore of previous photos
+          console.error("Failed to insert new album photos. Attempting best-effort restore...", insertError);
+          if (previousPhotos && previousPhotos.length > 0) {
+            const restoreRows = previousPhotos.map((p) => ({
+              album_id: id,
+              image_url: p.image_url,
+              sort_order: p.sort_order,
+            }));
+            await supabase.from("album_photos").insert(restoreRows);
+          }
+          return {
+            ok: false,
+            error: formatAdminError(
+              insertError,
+              "Gagal memperbarui daftar foto album. Pemulihan foto sebelumnya telah dicoba."
+            ),
+          };
         }
       }
     }
@@ -713,5 +755,55 @@ export async function deleteEvent(id: string): Promise<MutationResult> {
     return { ok: true };
   } catch (err) {
     return { ok: false, error: formatAdminError(err, "Gagal menghapus event.") };
+  }
+}
+
+// ─── FAQ CRUD ────────────────────────────────────────────────────────────────
+
+export async function createFaq(
+  data: Omit<FAQ, "id">,
+  existingFaqs: FAQ[]
+): Promise<MutationResult> {
+  try {
+    const nextSort = computeNextSortOrder(data.sortOrder, existingFaqs);
+
+    const { error } = await supabase.from("faqs").insert({
+      question: data.question.trim(),
+      answer: data.answer.trim(),
+      sort_order: nextSort,
+    });
+
+    if (error) return { ok: false, error: formatAdminError(error, "Gagal menambah FAQ.") };
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: formatAdminError(err, "Gagal menambah FAQ.") };
+  }
+}
+
+export async function updateFaq(
+  id: string,
+  patch: Partial<Omit<FAQ, "id">>
+): Promise<MutationResult> {
+  try {
+    const updatePayload: Record<string, unknown> = {};
+    if (patch.question !== undefined) updatePayload.question = patch.question.trim();
+    if (patch.answer !== undefined) updatePayload.answer = patch.answer.trim();
+    if (patch.sortOrder !== undefined) updatePayload.sort_order = Math.max(0, Math.floor(patch.sortOrder));
+
+    const { error } = await supabase.from("faqs").update(updatePayload).eq("id", id);
+    if (error) return { ok: false, error: formatAdminError(error, "Gagal memperbarui FAQ.") };
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: formatAdminError(err, "Gagal memperbarui FAQ.") };
+  }
+}
+
+export async function deleteFaq(id: string): Promise<MutationResult> {
+  try {
+    const { error } = await supabase.from("faqs").delete().eq("id", id);
+    if (error) return { ok: false, error: formatAdminError(error, "Gagal menghapus FAQ.") };
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: formatAdminError(err, "Gagal menghapus FAQ.") };
   }
 }

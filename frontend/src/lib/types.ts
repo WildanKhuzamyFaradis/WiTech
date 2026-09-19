@@ -7,6 +7,7 @@ export interface Division {
   memberCount: number;
   color: string;
   technologies: string[];
+  sortOrder?: number;
 }
 
 export interface Project {
@@ -26,6 +27,7 @@ export interface Project {
   award: string;
   githubUrl?: string;
   liveUrl?: string;
+  sortOrder?: number;
 }
 
 export interface Member {
@@ -39,6 +41,7 @@ export interface Member {
   github: string;
   linkedin: string;
   active: boolean;
+  sortOrder?: number;
 }
 
 export interface Album {
@@ -50,12 +53,14 @@ export interface Album {
   date: string;
   photoCount: number;
   photos: string[];
+  sortOrder?: number;
 }
 
 export interface FAQ {
   id: string;
   question: string;
   answer: string;
+  sortOrder?: number;
 }
 
 export interface Event {

@@ -19,6 +19,7 @@ import AdminPortfolio from "../pages/admin/AdminPortfolio";
 import AdminGallery from "../pages/admin/AdminGallery";
 import AdminEvents from "../pages/admin/AdminEvents";
 import AdminMembers from "../pages/admin/AdminMembers";
+import AdminFAQ from "../pages/admin/AdminFAQ";
 
 export const router = createBrowserRouter([
   {
@@ -53,6 +54,7 @@ export const router = createBrowserRouter([
         { path: "gallery", Component: AdminGallery },
         { path: "events", Component: AdminEvents },
         { path: "members", Component: AdminMembers },
+        { path: "faq", Component: AdminFAQ },
       ],
     }],
   },

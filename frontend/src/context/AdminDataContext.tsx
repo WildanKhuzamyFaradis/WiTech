@@ -36,6 +36,9 @@ import {
   createEvent,
   updateEvent as apiUpdateEvent,
   deleteEvent as apiDeleteEvent,
+  createFaq,
+  updateFaq as apiUpdateFaq,
+  deleteFaq as apiDeleteFaq,
 } from "../lib/adminData";
 
 export interface AdminDataContextValue {
@@ -63,6 +66,9 @@ export interface AdminDataContextValue {
   addEvent: (data: Omit<Event, "id">) => Promise<MutationResult>;
   updateEvent: (id: string, patch: Partial<Omit<Event, "id">>) => Promise<MutationResult>;
   removeEvent: (id: string) => Promise<MutationResult>;
+  addFaq: (data: Omit<FAQ, "id">) => Promise<MutationResult>;
+  updateFaq: (id: string, patch: Partial<Omit<FAQ, "id">>) => Promise<MutationResult>;
+  removeFaq: (id: string) => Promise<MutationResult>;
 }
 
 const AdminDataContext = createContext<AdminDataContextValue | null>(null);
@@ -227,6 +233,33 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
     [loadData]
   );
 
+  const addFaq = useCallback(
+    async (faqData: Omit<FAQ, "id">): Promise<MutationResult> => {
+      const result = await createFaq(faqData, data?.faqs ?? []);
+      if (result.ok) await loadData();
+      return result;
+    },
+    [data?.faqs, loadData]
+  );
+
+  const updateFaq = useCallback(
+    async (id: string, patch: Partial<Omit<FAQ, "id">>): Promise<MutationResult> => {
+      const result = await apiUpdateFaq(id, patch);
+      if (result.ok) await loadData();
+      return result;
+    },
+    [loadData]
+  );
+
+  const removeFaq = useCallback(
+    async (id: string): Promise<MutationResult> => {
+      const result = await apiDeleteFaq(id);
+      if (result.ok) await loadData();
+      return result;
+    },
+    [loadData]
+  );
+
   const value: AdminDataContextValue = {
     divisions: data?.divisions ?? [],
     projects: data?.projects ?? [],
@@ -252,6 +285,9 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
     addEvent,
     updateEvent,
     removeEvent,
+    addFaq,
+    updateFaq,
+    removeFaq,
   };
 
   return (

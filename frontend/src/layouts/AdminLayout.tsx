@@ -9,6 +9,7 @@ import {
   Images,
   CalendarDays,
   Users,
+  HelpCircle,
   LogOut,
   Menu,
   X,
@@ -22,6 +23,7 @@ const sidebarLinks = [
   { label: "Galeri", to: "/admin/gallery", icon: Images, color: "#00cecb", group: "Konten" },
   { label: "Event", to: "/admin/events", icon: CalendarDays, color: "#10b981", group: "Konten" },
   { label: "Member", to: "/admin/members", icon: Users, color: "#f59e0b", group: "Konten" },
+  { label: "FAQ", to: "/admin/faq", icon: HelpCircle, color: "#ec4899", group: "Konten" },
 ];
 
 export default function AdminLayout() {

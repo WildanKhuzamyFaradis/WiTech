@@ -100,9 +100,6 @@ export default function Navbar() {
               );
             })}
             <div className="pt-4 border-t-2 border-border mt-2 flex flex-col gap-3">
-              <Link to="/admin/login" className="px-4 py-3 text-sm text-foreground font-bold rounded-xl hover:bg-muted">
-                Admin
-              </Link>
               <Link
                 to="/contact"
                 className="px-4 py-3 bg-primary text-white border-2 border-border rounded-xl text-sm font-bold text-center neo-shadow-sm"
