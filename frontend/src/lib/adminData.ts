@@ -10,6 +10,7 @@
  */
 
 import { supabase } from "./supabaseClient";
+import { deleteMediaFiles } from "./storage";
 import type { Division, Project, Member, Album, Event, FAQ } from "./types";
 import type { StoreData, MutationResult } from "./dataContract";
 import { withDerivedCounts } from "./dataContract";
@@ -475,8 +476,19 @@ export async function updateProject(
 
 export async function deleteProject(id: string): Promise<MutationResult> {
   try {
+    // Fetch image path before deletion for best-effort Storage cleanup
+    const { data: row } = await supabase
+      .from("projects")
+      .select("image")
+      .eq("id", id)
+      .single();
+    const imagePath = (row as Pick<ProjectRow, "image"> | null)?.image ?? "";
+
     const { error } = await supabase.from("projects").delete().eq("id", id);
     if (error) return { ok: false, error: formatAdminError(error, "Gagal menghapus proyek.") };
+
+    // Best-effort Storage cleanup after DB success (failure here is logged, not surfaced)
+    if (imagePath) await deleteMediaFiles([imagePath]);
     return { ok: true };
   } catch (err) {
     return { ok: false, error: formatAdminError(err, "Gagal menghapus proyek.") };
@@ -542,8 +554,18 @@ export async function updateMember(
 
 export async function deleteMember(id: string): Promise<MutationResult> {
   try {
+    // Fetch avatar path before deletion for best-effort Storage cleanup
+    const { data: row } = await supabase
+      .from("members")
+      .select("avatar")
+      .eq("id", id)
+      .single();
+    const avatarPath = (row as Pick<MemberRow, "avatar"> | null)?.avatar ?? "";
+
     const { error } = await supabase.from("members").delete().eq("id", id);
     if (error) return { ok: false, error: formatAdminError(error, "Gagal menghapus anggota.") };
+
+    if (avatarPath) await deleteMediaFiles([avatarPath]);
     return { ok: true };
   } catch (err) {
     return { ok: false, error: formatAdminError(err, "Gagal menghapus anggota.") };
@@ -682,9 +704,23 @@ export async function updateAlbum(
 
 export async function deleteAlbum(id: string): Promise<MutationResult> {
   try {
+    // Fetch cover image and all photo paths before deletion for Storage cleanup
+    const [albumResult, photosResult] = await Promise.all([
+      supabase.from("albums").select("cover_image").eq("id", id).single(),
+      supabase.from("album_photos").select("image_url").eq("album_id", id),
+    ]);
+    const coverPath = (albumResult.data as Pick<AlbumRow, "cover_image"> | null)?.cover_image ?? "";
+    const photoPaths = ((photosResult.data ?? []) as Pick<AlbumPhotoRow, "image_url">[]).map(
+      (r) => r.image_url
+    );
+
     // ON DELETE CASCADE automatically deletes album_photos in PostgreSQL
     const { error } = await supabase.from("albums").delete().eq("id", id);
     if (error) return { ok: false, error: formatAdminError(error, "Gagal menghapus album.") };
+
+    // Best-effort Storage cleanup after DB success
+    const pathsToDelete = [coverPath, ...photoPaths].filter(Boolean);
+    if (pathsToDelete.length > 0) await deleteMediaFiles(pathsToDelete);
     return { ok: true };
   } catch (err) {
     return { ok: false, error: formatAdminError(err, "Gagal menghapus album.") };
@@ -750,8 +786,18 @@ export async function updateEvent(
 
 export async function deleteEvent(id: string): Promise<MutationResult> {
   try {
+    // Fetch image path before deletion for best-effort Storage cleanup
+    const { data: row } = await supabase
+      .from("events")
+      .select("image")
+      .eq("id", id)
+      .single();
+    const imagePath = (row as Pick<EventRow, "image"> | null)?.image ?? "";
+
     const { error } = await supabase.from("events").delete().eq("id", id);
     if (error) return { ok: false, error: formatAdminError(error, "Gagal menghapus event.") };
+
+    if (imagePath) await deleteMediaFiles([imagePath]);
     return { ok: true };
   } catch (err) {
     return { ok: false, error: formatAdminError(err, "Gagal menghapus event.") };

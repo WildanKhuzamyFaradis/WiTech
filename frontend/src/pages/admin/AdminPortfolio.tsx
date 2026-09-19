@@ -2,9 +2,18 @@ import { useState } from "react";
 import { Search, Plus, Edit, Trash, X, Folder, Eye, AlertCircle } from "lucide-react";
 import { useAdminData } from "../../context/AdminDataContext";
 import type { Project } from "../../lib/types";
+import {
+  resolveMediaUrl,
+  generateStoragePath,
+  uploadMediaFile,
+  deleteMediaFiles,
+  isManagedStoragePath,
+} from "../../lib/storage";
+import MediaUploadInput from "../../components/admin/MediaUploadInput";
 
-interface ProjectFormData extends Omit<Project, "id"> {
+interface ProjectFormData extends Omit<Project, "id" | "image"> {
   sortOrder: number;
+  image: string | File;
 }
 
 const emptyForm: ProjectFormData = {
@@ -36,6 +45,7 @@ export default function AdminPortfolio() {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [originalImagePath, setOriginalImagePath] = useState("");
 
   const filtered = projects.filter(
     (p) =>
@@ -49,6 +59,7 @@ export default function AdminPortfolio() {
     setEditId(null);
     setTagInput("");
     setMemberInput("");
+    setOriginalImagePath("");
     setFormError(null);
     setShowModal(true);
   };
@@ -74,6 +85,7 @@ export default function AdminPortfolio() {
     setEditId(p.id);
     setTagInput("");
     setMemberInput("");
+    setOriginalImagePath(p.image);
     setFormError(null);
     setShowModal(true);
   };
@@ -93,13 +105,30 @@ export default function AdminPortfolio() {
     try {
       setSubmitting(true);
       setFormError(null);
+
+      let imageValue: string;
+      let newlyUploadedPath = "";
+
+      if (form.image instanceof File) {
+        const storagePath = generateStoragePath("project", form.image.type);
+        const uploadResult = await uploadMediaFile(form.image, storagePath);
+        if (!uploadResult.ok) {
+          setFormError(uploadResult.error);
+          return;
+        }
+        imageValue = uploadResult.path;
+        newlyUploadedPath = uploadResult.path;
+      } else {
+        imageValue = form.image.trim();
+      }
+
       const payload = {
         ...form,
+        image: imageValue,
         title: form.title.trim(),
         slug: form.slug.trim().toLowerCase(),
         subtitle: form.subtitle.trim(),
         description: form.description.trim(),
-        image: form.image.trim(),
         award: form.award.trim(),
         githubUrl: form.githubUrl?.trim() || undefined,
         liveUrl: form.liveUrl?.trim() || undefined,
@@ -107,10 +136,17 @@ export default function AdminPortfolio() {
       };
 
       const result = editId ? await updateProject(editId, payload) : await addProject(payload);
+
       if (!result.ok) {
+        if (newlyUploadedPath) await deleteMediaFiles([newlyUploadedPath]);
         setFormError(result.error);
         return;
       }
+
+      if (editId && newlyUploadedPath && isManagedStoragePath(originalImagePath)) {
+        await deleteMediaFiles([originalImagePath]);
+      }
+
       setShowModal(false);
     } finally {
       setSubmitting(false);
@@ -202,14 +238,14 @@ export default function AdminPortfolio() {
                 <tr key={p.id} className="hover:bg-muted/20 transition-colors group">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-4">
-                      {p.image && (
+                      {p.image ? (
                         <img
-                          src={p.image}
+                          src={resolveMediaUrl(p.image)}
                           alt={p.title}
                           className="size-12 rounded-xl object-cover border-2 border-border group-hover:scale-105 transition-transform"
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = "0.3"; }}
                         />
-                      )}
-                      {!p.image && (
+                      ) : (
                         <div className="size-12 rounded-xl border-2 border-border flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform bg-muted">
                           <Folder size={20} className="text-muted-foreground" strokeWidth={2.5} />
                         </div>
@@ -287,7 +323,7 @@ export default function AdminPortfolio() {
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-8">
           <div className="absolute inset-0 bg-foreground/40 backdrop-blur-md" onClick={() => setShowModal(false)} />
-          <div className="relative w-full max-w-2xl neo-card bg-white rounded-3xl p-6 neo-shadow-lg anim-pop">
+          <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto neo-card bg-white rounded-3xl p-6 neo-shadow-lg anim-pop">
             <button
               onClick={() => setShowModal(false)}
               className="absolute top-4 right-4 p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
@@ -347,9 +383,7 @@ export default function AdminPortfolio() {
                   >
                     <option value="">Pilih Divisi</option>
                     {divisions.map((d) => (
-                      <option key={d.id} value={d.id}>
-                        {d.name}
-                      </option>
+                      <option key={d.id} value={d.id}>{d.name}</option>
                     ))}
                   </select>
                 </div>
@@ -359,31 +393,15 @@ export default function AdminPortfolio() {
                 </div>
               </div>
 
-              {/* Image URL & Preview */}
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">URL / Path Gambar</label>
-                <input
-                  type="text"
-                  value={form.image}
-                  onChange={(e) => setForm({ ...form, image: e.target.value })}
-                  placeholder="https://... atau /foto-proyek/image.jpg"
-                  className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors"
-                />
-                {form.image && (
-                  <div className="mt-2 flex items-center gap-3 p-2 bg-muted rounded-xl border border-border/20">
-                    <img
-                      src={form.image}
-                      alt="Preview"
-                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-                      className="size-14 rounded-lg object-cover border border-border bg-white shrink-0"
-                    />
-                    <div className="text-xs text-muted-foreground min-w-0">
-                      <p className="font-bold text-foreground">Preview Gambar</p>
-                      <p className="truncate max-w-xs">{form.image}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
+              {/* Image — dual-mode upload */}
+              <MediaUploadInput
+                label="Gambar Proyek"
+                value={typeof form.image === "string" ? form.image : ""}
+                onChange={(v) => setForm({ ...form, image: v })}
+                maxSizeMB={5}
+                previewClassName="size-14"
+                placeholder="https://... atau /foto-proyek/image.jpg"
+              />
 
               {/* Sort Order */}
               <div>

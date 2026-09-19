@@ -3,8 +3,19 @@ import { Search, Plus, Edit, Trash, X, Calendar, LockOpen, Lock, AlertCircle } f
 import { useAdminData } from "../../context/AdminDataContext";
 import type { Event } from "../../lib/types";
 import { formatEventDate, formatEventTime, todayInJakarta } from "../../lib/dataContract";
+import {
+  generateStoragePath,
+  uploadMediaFile,
+  deleteMediaFiles,
+  isManagedStoragePath,
+} from "../../lib/storage";
+import MediaUploadInput from "../../components/admin/MediaUploadInput";
 
-const emptyForm: Omit<Event, "id"> = {
+interface EventFormData extends Omit<Event, "id" | "image"> {
+  image: string | File;
+}
+
+const emptyForm: EventFormData = {
   title: "",
   date: todayInJakarta(),
   startTime: "09:00",
@@ -22,10 +33,11 @@ export default function AdminEvents() {
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState<Omit<Event, "id">>(emptyForm);
+  const [form, setForm] = useState<EventFormData>(emptyForm);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [originalImagePath, setOriginalImagePath] = useState("");
 
   const filtered = events.filter(
     (e) =>
@@ -36,6 +48,7 @@ export default function AdminEvents() {
   const openAdd = () => {
     setForm({ ...emptyForm, date: todayInJakarta() });
     setEditId(null);
+    setOriginalImagePath("");
     setFormError(null);
     setShowModal(true);
   };
@@ -43,6 +56,7 @@ export default function AdminEvents() {
   const openEdit = (e: Event) => {
     setForm({ ...e });
     setEditId(e.id);
+    setOriginalImagePath(e.image);
     setFormError(null);
     setShowModal(true);
   };
@@ -58,22 +72,48 @@ export default function AdminEvents() {
       return;
     }
     if (submitting) return;
+
     try {
       setSubmitting(true);
       setFormError(null);
+
+      let imageValue: string;
+      let newlyUploadedPath = "";
+
+      if (form.image instanceof File) {
+        const storagePath = generateStoragePath("event", form.image.type);
+        const uploadResult = await uploadMediaFile(form.image, storagePath);
+        if (!uploadResult.ok) {
+          setFormError(uploadResult.error);
+          return;
+        }
+        imageValue = uploadResult.path;
+        newlyUploadedPath = uploadResult.path;
+      } else {
+        imageValue = form.image.trim();
+      }
+
       const payload: Omit<Event, "id"> = {
         ...form,
+        image: imageValue,
         title: form.title.trim(),
         location: form.location.trim(),
         description: form.description.trim(),
-        image: form.image.trim(),
         registrationLink: (form.registrationLink ?? "").trim(),
       };
+
       const result = editId ? await updateEvent(editId, payload) : await addEvent(payload);
+
       if (!result.ok) {
+        if (newlyUploadedPath) await deleteMediaFiles([newlyUploadedPath]);
         setFormError(result.error);
         return;
       }
+
+      if (editId && newlyUploadedPath && isManagedStoragePath(originalImagePath)) {
+        await deleteMediaFiles([originalImagePath]);
+      }
+
       setShowModal(false);
       setForm(emptyForm);
     } finally {
@@ -279,30 +319,15 @@ export default function AdminEvents() {
                 <textarea required rows={2} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors resize-none" />
               </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">URL / Path Gambar</label>
-                <input
-                  type="text"
-                  value={form.image}
-                  onChange={(e) => setForm({ ...form, image: e.target.value })}
-                  placeholder="https://... atau /foto-event/poster.jpg"
-                  className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors"
-                />
-                {form.image && (
-                  <div className="mt-2 flex items-center gap-3 p-2 bg-muted rounded-xl border border-border/20">
-                    <img
-                      src={form.image}
-                      alt="Preview Event"
-                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = '0.3'; }}
-                      className="size-16 rounded-xl object-cover border border-border bg-white shrink-0"
-                    />
-                    <div className="text-xs text-muted-foreground min-w-0">
-                      <p className="font-bold text-foreground">Preview Poster</p>
-                      <p className="truncate max-w-xs">{form.image}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
+              {/* Image — dual-mode upload */}
+              <MediaUploadInput
+                label="Poster / Gambar Event"
+                value={typeof form.image === "string" ? form.image : ""}
+                onChange={(v) => setForm({ ...form, image: v })}
+                maxSizeMB={5}
+                previewClassName="size-16"
+                placeholder="https://... atau /foto-event/poster.jpg"
+              />
 
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider mb-2 text-muted-foreground">Link Pendaftaran</label>

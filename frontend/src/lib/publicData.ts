@@ -12,6 +12,7 @@
  */
 
 import { supabase } from "./supabaseClient";
+import { resolveMediaUrl } from "./storage";
 import type { Division, Project, Member, Album, Event, FAQ } from "./types";
 import type { StoreData } from "./dataContract";
 import { withDerivedCounts } from "./dataContract";
@@ -138,7 +139,7 @@ function mapProject(row: ProjectRow): Project {
     year: row.year,
     status: row.status,
     featured: row.featured,
-    image: row.image,
+    image: resolveMediaUrl(row.image),
     members: row.members ?? [],
     award: row.award ?? "",
     githubUrl: row.github_url ?? undefined,
@@ -153,7 +154,7 @@ function mapMember(row: MemberRow): Member {
     role: row.role,
     divisionId: row.division_id,   // null is preserved as-is
     year: row.year,
-    avatar: row.avatar,
+    avatar: resolveMediaUrl(row.avatar),
     github: row.github ?? "",
     linkedin: row.linkedin ?? "",
     active: row.active,
@@ -166,9 +167,9 @@ function mapAlbum(row: AlbumRow, photos: string[]): Album {
     slug: row.slug,
     title: row.title,
     description: row.description,
-    coverImage: row.cover_image,
+    coverImage: resolveMediaUrl(row.cover_image),
     date: row.date,
-    photos,
+    photos: photos.map(resolveMediaUrl),
     photoCount: photos.length, // derived
   };
 }
@@ -183,7 +184,7 @@ function mapEvent(row: EventRow): Event {
     location: row.location,
     type: row.type,
     description: row.description,
-    image: row.image,
+    image: resolveMediaUrl(row.image),
     registrationOpen: row.registration_open,
     registrationLink: row.registration_link ?? undefined,
   };

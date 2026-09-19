@@ -3,13 +3,21 @@ import { Search, Plus, Edit, Trash, GitFork, Briefcase, X, Users, AlertCircle } 
 import { useAdminData } from "../../context/AdminDataContext";
 import type { Member } from "../../lib/types";
 import { divisionName } from "../../lib/dataContract";
+import {
+  resolveMediaUrl,
+  generateStoragePath,
+  uploadMediaFile,
+  deleteMediaFiles,
+  isManagedStoragePath,
+} from "../../lib/storage";
+import MediaUploadInput from "../../components/admin/MediaUploadInput";
 
 interface MemberFormData {
   name: string;
   role: string;
   divisionId: string | null;
   year: string;
-  avatar: string;
+  avatar: string | File;
   github: string;
   linkedin: string;
   active: boolean;
@@ -37,6 +45,8 @@ export default function AdminMembers() {
   const [form, setForm] = useState<MemberFormData>(emptyForm);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  // Track original raw DB avatar path for cleanup after successful edit
+  const [originalAvatarPath, setOriginalAvatarPath] = useState("");
 
   const filtered = members.filter((m) => {
     const matchDiv =
@@ -53,6 +63,7 @@ export default function AdminMembers() {
     const nextOrder = members.length > 0 ? Math.max(...members.map((m) => m.sortOrder ?? 0)) + 1 : 0;
     setForm({ ...emptyForm, divisionId: divisions[0]?.id ?? null, sortOrder: nextOrder });
     setEditId(null);
+    setOriginalAvatarPath("");
     setFormError(null);
     setShowModal(true);
   };
@@ -70,6 +81,7 @@ export default function AdminMembers() {
       sortOrder: member.sortOrder ?? 0,
     });
     setEditId(member.id);
+    setOriginalAvatarPath(member.avatar);
     setFormError(null);
     setShowModal(true);
   };
@@ -81,26 +93,55 @@ export default function AdminMembers() {
       return;
     }
     if (submitting) return;
+
     try {
       setSubmitting(true);
       setFormError(null);
-      const avatar =
-        form.avatar.trim() ||
-        `https://api.dicebear.com/7.x/notionists/svg?seed=${form.name.trim().replace(/\s+/g, '')}&backgroundColor=transparent`;
+
+      let avatarValue: string;
+      let newlyUploadedPath = "";
+
+      if (form.avatar instanceof File) {
+        // Upload file → get raw storage path
+        const storagePath = generateStoragePath("member", form.avatar.type);
+        const uploadResult = await uploadMediaFile(form.avatar, storagePath);
+        if (!uploadResult.ok) {
+          setFormError(uploadResult.error);
+          return;
+        }
+        avatarValue = uploadResult.path;
+        newlyUploadedPath = uploadResult.path;
+      } else {
+        // String: use as-is, or fallback to DiceBear if empty
+        avatarValue =
+          form.avatar.trim() ||
+          `https://api.dicebear.com/7.x/notionists/svg?seed=${form.name.trim().replace(/\s+/g, "")}&backgroundColor=transparent`;
+      }
+
       const payload: Omit<Member, "id"> = {
         ...form,
         name: form.name.trim(),
         role: form.role.trim(),
         year: form.year.trim(),
-        avatar,
+        avatar: avatarValue,
         github: form.github.trim(),
         linkedin: form.linkedin.trim(),
       };
+
       const result = editId ? await updateMember(editId, payload) : await addMember(payload);
+
       if (!result.ok) {
+        // DB failed — clean up newly uploaded file to avoid orphan objects
+        if (newlyUploadedPath) await deleteMediaFiles([newlyUploadedPath]);
         setFormError(result.error);
         return;
       }
+
+      // DB succeeded — clean up old managed avatar if it was changed (replaced with new upload or reset to DiceBear)
+      if (editId && originalAvatarPath !== avatarValue && isManagedStoragePath(originalAvatarPath)) {
+        await deleteMediaFiles([originalAvatarPath]);
+      }
+
       setShowModal(false);
       setForm(emptyForm);
     } finally {
@@ -204,7 +245,12 @@ export default function AdminMembers() {
                           className="size-12 rounded-xl overflow-hidden border-2 shrink-0 bg-muted group-hover:scale-105 transition-transform"
                           style={{ borderColor: color }}
                         >
-                          <img src={member.avatar} alt={member.name} className="w-full h-full object-cover" />
+                          <img
+                            src={resolveMediaUrl(member.avatar)}
+                            alt={member.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = "0.3"; }}
+                          />
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
@@ -330,37 +376,16 @@ export default function AdminMembers() {
                 </div>
               </div>
 
-              {/* Avatar URL & Preview */}
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">
-                  URL / Path Avatar
-                </label>
-                <input
-                  type="text"
-                  value={form.avatar}
-                  onChange={(e) => setForm({ ...form, avatar: e.target.value })}
-                  placeholder="https://... atau /foto-anggota/nama.jpg (opsional)"
-                  className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors"
-                />
-                <p className="text-[11px] text-muted-foreground mt-1">Kosongkan untuk menggunakan avatar otomatis.</p>
-                {(form.avatar || form.name) && (
-                  <div className="mt-2 flex items-center gap-3 p-2 bg-muted rounded-xl border border-border/20">
-                    <img
-                      src={
-                        form.avatar.trim() ||
-                        `https://api.dicebear.com/7.x/notionists/svg?seed=${form.name.trim().replace(/\s+/g, '')}&backgroundColor=transparent`
-                      }
-                      alt="Preview"
-                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = '0.3'; }}
-                      className="size-12 rounded-xl object-cover border border-border bg-white shrink-0"
-                    />
-                    <div className="text-xs text-muted-foreground min-w-0">
-                      <p className="font-bold text-foreground">Preview Avatar</p>
-                      <p className="truncate max-w-xs">{form.avatar || "Avatar Otomatis (DiceBear)"}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
+              {/* Avatar — dual-mode upload */}
+              <MediaUploadInput
+                label="Avatar"
+                value={typeof form.avatar === "string" ? form.avatar : ""}
+                onChange={(v) => setForm({ ...form, avatar: v })}
+                maxSizeMB={2}
+                previewClassName="size-12"
+                placeholder="https://... atau /foto-anggota/nama.jpg (opsional)"
+              />
+              <p className="text-[11px] text-muted-foreground -mt-1">Kosongkan URL untuk menggunakan avatar otomatis.</p>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
