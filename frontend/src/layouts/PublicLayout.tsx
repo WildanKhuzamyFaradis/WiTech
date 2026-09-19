@@ -3,6 +3,7 @@ import { Outlet, useLocation } from "react-router";
 import Navbar from "../components/public/Navbar";
 import Footer from "../components/public/Footer";
 import { PublicDataProvider } from "../context/PublicDataContext";
+import WiTechAssistant from "../components/public/assistant/WiTechAssistant";
 
 // Auto scroll to top on every route change
 function ScrollToTop() {
@@ -23,6 +24,7 @@ export default function PublicLayout() {
           <Outlet />
         </main>
         <Footer />
+        <WiTechAssistant />
       </div>
     </PublicDataProvider>
   );
