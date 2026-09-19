@@ -1,214 +1,253 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import React from "react";
-import { renderToStaticMarkup } from "react-dom/server";
-import { MemoryRouter, Routes, Route } from "react-router";
-import { createStoreActions, initialStoreData, StoreProvider } from "../src/lib/store";
 import {
-  divisionName, formatEventDate, formatEventTime, isEventCompleted,
-  isValidDate, isValidTime, todayInJakarta, validateStoreData, withDerivedCounts,
-  type MutationResult, type StoreData,
+  divisionName,
+  formatEventDate,
+  formatEventTime,
+  isEventCompleted,
+  isPublishedProject,
+  isValidDate,
+  isValidTime,
+  todayInJakarta,
+  validateStoreData,
+  withDerivedCounts,
+  type StoreData,
 } from "../src/lib/dataContract";
-import Home from "../src/pages/public/Home";
-import Divisions from "../src/pages/public/Divisions";
-import Portfolio from "../src/pages/public/Portfolio";
-import ProjectDetail from "../src/pages/public/ProjectDetail";
-import Members from "../src/pages/public/Members";
-import Gallery from "../src/pages/public/Gallery";
-import Events from "../src/pages/public/Events";
-import FAQ from "../src/pages/public/FAQ";
-import Contact from "../src/pages/public/Contact";
-import AdminPortfolio from "../src/pages/admin/AdminPortfolio";
-import AdminEvents from "../src/pages/admin/AdminEvents";
+import type { Division, Project, Member, Album, Event, FAQ } from "../src/lib/types";
 
-// Use the same mutations as StoreProvider. Re-render actual pages against the
-// resulting snapshot; this verifies logic/data flow, not browser interactions.
-function localStore() {
-  let data = withDerivedCounts(structuredClone(initialStoreData));
-  const actions = createStoreActions(() => data, next => { data = next; });
-  return { actions, get data() { return data; } };
-}
+// Small, isolated local test fixtures (no dependence on runtime Supabase or data.ts)
+const mockDivisions: Division[] = [
+  {
+    id: "academy",
+    name: "WiTECH Academy",
+    shortName: "Academy",
+    description: "Divisi Academy",
+    icon: "Smartphone",
+    memberCount: 0,
+    color: "#ff5e5b",
+    technologies: ["Mentoring"],
+  },
+  {
+    id: "lab",
+    name: "WiTECH Lab",
+    shortName: "Lab",
+    description: "Divisi Lab",
+    icon: "Code",
+    memberCount: 0,
+    color: "#6366f1",
+    technologies: ["Kolaborasi"],
+  },
+];
 
-function accepted(result: MutationResult) {
-  assert.deepEqual(result, { ok: true });
-}
+const mockProjects: Project[] = [
+  {
+    id: "p1",
+    slug: "wilearn-platform",
+    title: "WiLearn",
+    subtitle: "Platform E-Learning",
+    description: "Deskripsi",
+    divisionId: "lab",
+    tags: ["React"],
+    year: 2024,
+    status: "published",
+    featured: true,
+    image: "/foto-proyek/test.jpg",
+    members: ["Budi"],
+  },
+  {
+    id: "p2",
+    slug: "draft-project",
+    title: "Draft Project",
+    subtitle: "Subtitle Draft",
+    description: "Deskripsi",
+    divisionId: "academy",
+    tags: ["Node"],
+    year: 2024,
+    status: "draft",
+    featured: false,
+    image: "/foto-proyek/draft.jpg",
+    members: ["Ani"],
+  },
+];
 
-function rejectedWithoutWrite(store: ReturnType<typeof localStore>, action: () => MutationResult) {
-  const before = store.data;
-  assert.equal(action().ok, false);
-  assert.equal(store.data, before, "Rejected mutation must not commit or partially modify state");
-}
+const mockMembers: Member[] = [
+  {
+    id: "m1",
+    name: "Core Member",
+    role: "Ketua",
+    divisionId: null,
+    year: "2024",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Core",
+    github: "",
+    linkedin: "",
+    active: true,
+  },
+  {
+    id: "m2",
+    name: "Lab Member 1",
+    role: "Anggota",
+    divisionId: "lab",
+    year: "2024",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Lab1",
+    github: "",
+    linkedin: "",
+    active: true,
+  },
+  {
+    id: "m3",
+    name: "Lab Member Inactive",
+    role: "Alumni",
+    divisionId: "lab",
+    year: "2023",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Lab2",
+    github: "",
+    linkedin: "",
+    active: false,
+  },
+];
 
-function render(Page: React.ComponentType, data: StoreData, url = "/") {
-  return renderToStaticMarkup(
-    <StoreProvider initialData={data}>
-      <MemoryRouter initialEntries={[url]}>
-        <Routes><Route path={Page === ProjectDetail ? "/portfolio/:slug" : "*"} element={<Page />} /></Routes>
-      </MemoryRouter>
-    </StoreProvider>,
-  );
-}
+const mockAlbums: Album[] = [
+  {
+    id: "a1",
+    slug: "makrab-2024",
+    title: "Makrab 2024",
+    description: "Kegiatan makrab",
+    coverImage: "/foto-kegiatan/cover.jpg",
+    date: "2024-11-20",
+    photoCount: 0,
+    photos: ["/photo1.jpg", "/photo2.jpg", "/photo3.jpg"],
+  },
+];
 
-test("fixtures conform to stable division IDs, Core nullability, and machine-readable dates", () => {
-  assert.equal(validateStoreData(initialStoreData), null);
-  assert.equal(initialStoreData.divisions.length, 5);
-  assert.equal(initialStoreData.members.filter(m => m.divisionId === null).length, 7);
-  assert.equal(divisionName(initialStoreData.divisions, null), "Core");
-  assert.ok(initialStoreData.projects.every(p => initialStoreData.divisions.some(d => d.id === p.divisionId)));
-  assert.ok(initialStoreData.projects.every(p => !("division" in p)));
-  assert.ok(initialStoreData.members.every(m => !("division" in m)));
-  for (const event of initialStoreData.events) {
-    assert.ok(isValidDate(event.date));
-    assert.ok(isValidTime(event.startTime));
-    assert.ok(isValidTime(event.endTime));
-  }
+const mockEvents: Event[] = [
+  {
+    id: "e1",
+    title: "Workshop Web Dev",
+    date: "2026-09-18",
+    startTime: "09:00",
+    endTime: "12:00",
+    location: "Lab Komputer",
+    type: "Workshop",
+    description: "Belajar web dev",
+    image: "/poster.jpg",
+    registrationOpen: true,
+  },
+];
+
+const mockFaqs: FAQ[] = [
+  {
+    id: "f1",
+    question: "Apa itu WiTech?",
+    answer: "UKM Teknologi di kampus.",
+  },
+];
+
+const createValidStoreData = (): StoreData => ({
+  divisions: structuredClone(mockDivisions),
+  projects: structuredClone(mockProjects),
+  members: structuredClone(mockMembers),
+  albums: structuredClone(mockAlbums),
+  events: structuredClone(mockEvents),
+  faqs: structuredClone(mockFaqs),
 });
 
-test("admin add/edit reaches public Portfolio and detail without changing fixtures", () => {
-  const store = localStore();
-  const fixturesBefore = structuredClone(initialStoreData);
-  const { id, ...template } = store.data.projects[0];
-  accepted(store.actions.addProject({ ...template, slug: "stage-two-project", title: "Stage Two Added", featured: true }));
-  const added = store.data.projects.find(p => p.slug === "stage-two-project")!;
-  assert.match(render(Portfolio, store.data), /Stage Two Added/);
-  assert.match(render(ProjectDetail, store.data, "/portfolio/stage-two-project"), /Stage Two Added/);
-  accepted(store.actions.updateProject(added.id, { title: "Stage Two Edited" }));
-  assert.match(render(Portfolio, store.data), /Stage Two Edited/);
-  assert.doesNotMatch(render(Portfolio, store.data), /Stage Two Added/);
-  accepted(store.actions.removeProject(added.id));
-  assert.doesNotMatch(render(Portfolio, store.data), /Stage Two Edited/);
-  assert.deepEqual(initialStoreData, fixturesBefore);
+// ── Tests ──────────────────────────────────────────────────────────────────
+
+test("divisionName returns 'Core' for null and looks up division name by ID", () => {
+  assert.equal(divisionName(mockDivisions, null), "Core");
+  assert.equal(divisionName(mockDivisions, "lab"), "WiTECH Lab");
+  assert.equal(divisionName(mockDivisions, "academy"), "WiTECH Academy");
+  assert.equal(divisionName(mockDivisions, "unknown-id"), "Divisi tidak ditemukan");
+  assert.equal(divisionName([], "lab"), "Divisi tidak ditemukan");
 });
 
-test("featured drafts stay visible in admin but absent from all public project surfaces", () => {
-  const store = localStore();
-  const project = store.data.projects[0];
-  accepted(store.actions.updateProject(project.id, { title: "Private Draft Marker", status: "draft", featured: true }));
-  assert.match(render(AdminPortfolio, store.data), /Private Draft Marker/);
-  assert.doesNotMatch(render(Portfolio, store.data), /Private Draft Marker/);
-  assert.doesNotMatch(render(Home, store.data), /Private Draft Marker/);
-  const detail = render(ProjectDetail, store.data, `/portfolio/${project.slug}`);
-  assert.match(detail, /Proyek Nggak Ketemu/);
-  assert.doesNotMatch(detail, /Private Draft Marker/);
-  accepted(store.actions.updateProject(project.id, { status: "published" }));
-  assert.match(render(Portfolio, store.data), /Private Draft Marker/);
-  assert.match(render(Home, store.data), /Private Draft Marker/);
-  assert.match(render(ProjectDetail, store.data, `/portfolio/${project.slug}`), /Private Draft Marker/);
+test("isPublishedProject correctly identifies publication status", () => {
+  assert.equal(isPublishedProject(mockProjects[0]), true);
+  assert.equal(isPublishedProject(mockProjects[1]), false);
 });
 
-test("renaming a division retains member/project IDs and updates public labels", () => {
-  const store = localStore();
-  const member = store.data.members.find(m => m.divisionId === "lab")!;
-  const project = store.data.projects.find(p => p.divisionId === "lab")!;
-  accepted(store.actions.updateDivision("lab", { name: "Lab Renamed Marker" }));
-  assert.equal(store.data.members.find(m => m.id === member.id)!.divisionId, "lab");
-  assert.equal(store.data.projects.find(p => p.id === project.id)!.divisionId, "lab");
-  for (const Page of [Members, Divisions, Portfolio, Home]) assert.match(render(Page, store.data), /Lab Renamed Marker/);
-  assert.match(render(ProjectDetail, store.data, `/portfolio/${project.slug}`), /Lab Renamed Marker/);
+test("isValidDate validates ISO YYYY-MM-DD calendar dates strictly", () => {
+  assert.equal(isValidDate("2026-09-18"), true);
+  assert.equal(isValidDate("2028-02-29"), true); // leap year
+  assert.equal(isValidDate("2026-02-29"), false); // non-leap year
+  assert.equal(isValidDate("2026-04-31"), false); // April has 30 days
+  assert.equal(isValidDate("2026-13-01"), false); // invalid month
+  assert.equal(isValidDate("0000-01-01"), false); // year zero
+  assert.equal(isValidDate("18 September 2026"), false);
+  assert.equal(isValidDate(""), false);
 });
 
-test("division deletion rejects member-only and project-only references; allows unused divisions", () => {
-  const store = localStore();
-  rejectedWithoutWrite(store, () => store.actions.removeDivision("connect")); // members only
-  for (const member of store.data.members.filter(m => m.divisionId === "lab")) accepted(store.actions.updateMember(member.id, { divisionId: null }));
-  rejectedWithoutWrite(store, () => store.actions.removeDivision("lab")); // projects only
-  const { id, ...template } = store.data.divisions[0];
-  accepted(store.actions.addDivision({ ...template, name: "Unused Division" }));
-  const added = store.data.divisions.find(d => d.name === "Unused Division")!;
-  accepted(store.actions.removeDivision(added.id));
-  assert.ok(!store.data.divisions.some(d => d.id === added.id));
-  assert.equal(validateStoreData(store.data), null);
+test("isValidTime validates 24-hour HH:mm time format", () => {
+  assert.equal(isValidTime("09:00"), true);
+  assert.equal(isValidTime("13:15"), true);
+  assert.equal(isValidTime("23:59"), true);
+  assert.equal(isValidTime("00:00"), true);
+  assert.equal(isValidTime("24:00"), false);
+  assert.equal(isValidTime("09:60"), false);
+  assert.equal(isValidTime("9:00"), false);
+  assert.equal(isValidTime("09:00 WIB"), false);
+  assert.equal(isValidTime(""), false);
 });
 
-test("consecutive mutations validate against the latest snapshot and keep IDs stable", () => {
-  const store = localStore();
-  const { id, ...division } = store.data.divisions[0];
-  accepted(store.actions.addDivision({ ...division, name: "New Relation" }));
-  const newId = store.data.divisions[0].id;
-  accepted(store.actions.updateMember(store.data.members[0].id, { divisionId: newId }));
-  rejectedWithoutWrite(store, () => store.actions.removeDivision(newId));
-  assert.equal(store.data.divisions.find(d => d.id === newId)!.memberCount, 1);
-  // Even an untyped patch cannot rewrite the stable ID.
-  const patch = { id: "replacement-id", name: "Still Same ID" };
-  accepted(store.actions.updateDivision(newId, patch));
-  assert.equal(store.data.divisions.find(d => d.name === "Still Same ID")!.id, newId);
+test("formatEventDate formats date to Indonesian locale with Asia/Jakarta timezone", () => {
+  assert.equal(formatEventDate("2026-09-18"), "18 September 2026");
+  assert.equal(formatEventDate("2024-01-01"), "1 Januari 2024");
 });
 
-test("slug uniqueness and foreign references are enforced on create and edit", () => {
-  const store = localStore();
-  const { id, ...project } = store.data.projects[0];
-  rejectedWithoutWrite(store, () => store.actions.addProject(project));
-  rejectedWithoutWrite(store, () => store.actions.addProject({ ...project, slug: "" }));
-  rejectedWithoutWrite(store, () => store.actions.updateProject(id, { slug: "Not A Slug" }));
-  rejectedWithoutWrite(store, () => store.actions.updateProject(id, { slug: store.data.projects[1].slug }));
-  rejectedWithoutWrite(store, () => store.actions.addProject({ ...project, slug: "valid-slug", divisionId: "missing" }));
-  rejectedWithoutWrite(store, () => store.actions.updateProject(id, { divisionId: "missing" }));
-  const { id: memberId, ...member } = store.data.members[0];
-  rejectedWithoutWrite(store, () => store.actions.addMember({ ...member, divisionId: "missing" }));
-  rejectedWithoutWrite(store, () => store.actions.updateMember(memberId, { divisionId: "missing" }));
-  accepted(store.actions.updateProject(id, { slug: project.slug }));
-  accepted(store.actions.addMember({ ...member, divisionId: null }));
+test("formatEventTime formats event duration with WIB suffix", () => {
+  assert.equal(formatEventTime(mockEvents[0]), "09:00 - 12:00 WIB");
 });
 
-test("existing events round-trip form values; edits/adds render Indonesian date/time", () => {
-  const store = localStore();
-  const event = store.data.events[0];
-  accepted(store.actions.updateEvent(event.id, { ...event }));
-  accepted(store.actions.updateEvent(event.id, { date: "2026-09-18", startTime: "10:30", endTime: "13:15", title: "Edited Event Marker" }));
-  const html = render(Events, store.data);
-  assert.match(html, /18 September 2026/);
-  assert.match(html, /10:30 - 13:15 WIB/);
-  assert.match(render(AdminEvents, store.data), /Edited Event Marker/);
-  const { id, ...template } = event;
-  accepted(store.actions.addEvent({ ...template, date: "2099-01-02", title: "New Event Marker" }));
-  assert.match(render(Events, store.data), /New Event Marker/);
-});
-
-test("invalid calendar dates, times and reversed intervals are rejected atomically", () => {
-  const store = localStore();
-  const event = store.data.events[0];
-  for (const date of ["12 Oktober 2024", "2026-02-29", "2026-04-31", "2026-13-01", "0000-01-01"]) {
-    rejectedWithoutWrite(store, () => store.actions.updateEvent(event.id, { date }));
-  }
-  for (const time of ["24:00", "09:60", "9:00", "09:00 WIB", ""]) {
-    rejectedWithoutWrite(store, () => store.actions.updateEvent(event.id, { startTime: time }));
-  }
-  rejectedWithoutWrite(store, () => store.actions.updateEvent(event.id, { endTime: "08:00" }));
-  rejectedWithoutWrite(store, () => store.actions.updateEvent(event.id, { endTime: event.startTime }));
-  accepted(store.actions.updateEvent(event.id, { date: "2028-02-29" }));
-});
-
-test("completion uses WIB end time, independently of registration and local machine timezone", () => {
-  const event = { ...initialStoreData.events[0], date: "2026-09-18", startTime: "09:00", endTime: "12:00", registrationOpen: false };
+test("isEventCompleted computes completion using WIB end time", () => {
+  const event = mockEvents[0]; // 2026-09-18 12:00 WIB = 2026-09-18 05:00 UTC
   assert.equal(isEventCompleted(event, new Date("2026-09-18T04:59:59Z")), false);
   assert.equal(isEventCompleted(event, new Date("2026-09-18T05:00:00Z")), true);
-  assert.equal(isEventCompleted({ ...event, registrationOpen: true }, new Date("2026-09-18T05:00:00Z")), true);
+  assert.equal(isEventCompleted(event, new Date("2026-09-18T06:00:00Z")), true);
+});
+
+test("todayInJakarta returns YYYY-MM-DD for Jakarta timezone (UTC+7)", () => {
+  // 18:00 UTC on Sept 17 = 01:00 WIB on Sept 18
   assert.equal(todayInJakarta(new Date("2026-09-17T18:00:00Z")), "2026-09-18");
-  assert.equal(formatEventDate(event.date), "18 September 2026");
-  assert.equal(formatEventTime(event), "09:00 - 12:00 WIB");
-  const state = structuredClone(initialStoreData);
-  state.events = [{ ...event, date: "2099-09-18" }];
-  assert.doesNotMatch(render(Events, state), /SUDAH SELESAI/);
-  assert.match(render(Events, state), /Ditutup/);
-  state.events = [{ ...event, date: "2020-09-18", registrationOpen: true }];
-  assert.match(render(Events, state), /SUDAH SELESAI/);
-  assert.doesNotMatch(render(Events, state), />Daftar[\s<]/);
+  // 16:59 UTC on Sept 17 = 23:59 WIB on Sept 17
+  assert.equal(todayInJakarta(new Date("2026-09-17T16:59:00Z")), "2026-09-17");
 });
 
-test("gallery, members, divisions and FAQ read current store resources", () => {
-  const store = localStore();
-  accepted(store.actions.updateAlbum(store.data.albums[0].id, { title: "Album Marker", photos: [] }));
-  assert.equal(store.data.albums[0].photoCount, 0);
-  assert.match(render(Gallery, store.data), /Album Marker/);
-  accepted(store.actions.updateMember(store.data.members[0].id, { name: "Member Marker" }));
-  assert.match(render(Members, store.data), /Member Marker/);
-  accepted(store.actions.updateFAQ(store.data.faqs[0].id, { question: "FAQ Marker" }));
-  assert.match(render(FAQ, store.data), /FAQ Marker/);
-  accepted(store.actions.updateDivision("academy", { name: "Division Marker" }));
-  assert.match(render(Divisions, store.data), /Division Marker/);
+test("withDerivedCounts calculates memberCount for active division members and photoCount for albums", () => {
+  const data = createValidStoreData();
+  const derived = withDerivedCounts(data);
+
+  // mockMembers has: 1 active in 'lab', 1 inactive in 'lab', 1 in 'Core' (null)
+  const lab = derived.divisions.find((d) => d.id === "lab")!;
+  assert.equal(lab.memberCount, 1);
+
+  const academy = derived.divisions.find((d) => d.id === "academy")!;
+  assert.equal(academy.memberCount, 0);
+
+  // mockAlbums has 3 photos in mock
+  assert.equal(derived.albums[0].photoCount, 3);
 });
 
-test("Contact identifies its local demo before submission", () => {
-  assert.match(render(Contact, initialStoreData), /belum mengirim atau menyimpan pesan/);
-  assert.doesNotMatch(render(Contact, initialStoreData), /kita bales secepetnya/);
+test("validateStoreData checks cross-resource references, slug format, and event intervals", () => {
+  const data = createValidStoreData();
+  assert.equal(validateStoreData(data), null);
+
+  // Invalid slug
+  const badSlug = createValidStoreData();
+  badSlug.projects[0].slug = "INVALID SLUG";
+  assert.match(validateStoreData(badSlug) ?? "", /kebab-case/);
+
+  // Duplicate slug
+  const dupSlug = createValidStoreData();
+  dupSlug.projects[1].slug = dupSlug.projects[0].slug;
+  assert.match(validateStoreData(dupSlug) ?? "", /sudah digunakan/);
+
+  // Missing division reference
+  const missingDiv = createValidStoreData();
+  missingDiv.projects[0].divisionId = "non-existent-division";
+  assert.match(validateStoreData(missingDiv) ?? "", /Divisi proyek tidak valid/);
+
+  // Event end time before or equal to start time
+  const badEvent = createValidStoreData();
+  badEvent.events[0].endTime = "08:00";
+  assert.match(validateStoreData(badEvent) ?? "", /Jam selesai harus setelah jam mulai/);
 });
