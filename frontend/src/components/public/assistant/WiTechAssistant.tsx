@@ -117,29 +117,15 @@ export default function WiTechAssistant() {
     // Calculate deterministic response immediately
     const assistantResponse = getDeterministicAssistantResponse(trimmed, data);
 
-    if (assistantResponse.type !== "needs_ai") {
-      // Deterministic / Out-of-scope / Not-found: NO AI call needed
-      const assistantMsg: ChatMessage = {
-        id: generateSafeId(),
-        role: "assistant",
-        content: assistantResponse.text,
-        timestamp: formatCurrentTime(),
-        responseMeta: assistantResponse,
-      };
-
-      setMessages((prev) => [...prev, userMsg, assistantMsg]);
-      setInput("");
-      return;
-    }
-
-    // It is needs_ai: Show thinking message and query local Copilot service
+    // Every message is sent to the configured assistant API. The deterministic
+    // response remains available as a local fallback if the API is unavailable.
     const thinkingId = generateSafeId();
     const thinkingMsg: ChatMessage = {
       id: thinkingId,
       role: "assistant",
       content: "WiTECH Assistant sedang berpikir...",
       timestamp: formatCurrentTime(),
-      responseMeta: assistantResponse,
+      responseMeta: assistantResponse.type === "needs_ai" ? assistantResponse : undefined,
     };
 
     setMessages((prev) => [...prev, userMsg, thinkingMsg]);
@@ -164,6 +150,15 @@ export default function WiTechAssistant() {
                 },
               };
             }
+            // Keep deterministic answers useful when the remote service rejects or fails.
+            if (assistantResponse.type !== "needs_ai" && aiRes.reason !== "rate_limited") {
+              return {
+                ...m,
+                content: assistantResponse.text,
+                responseMeta: assistantResponse,
+              };
+            }
+
             // Differentiate rate limit vs general quota/AI-unavailable fallback
             const fallbackText =
               aiRes.reason === "rate_limited"
