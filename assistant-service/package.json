@@ -8,6 +8,7 @@
     "dev": "node src/server.js"
   },
   "dependencies": {
-    "@github/copilot-sdk": "^1.0.14"
+    "@github/copilot-sdk": "^1.0.14",
+    "resend": "^4.8.0"
   }
 }

@@ -3,16 +3,31 @@ import { Mail, MapPin, Camera, GitFork, Briefcase, MessageCircle, ArrowRight, Se
 
 export default function Contact() {
   const [submitted, setSubmitted] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [status, setStatus] = useState("");
   const [form, setForm] = useState({
     name: "",
     email: "",
     subject: "join",
     message: "",
+    website: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setSending(true);
+    setStatus("");
+    const baseUrl = (import.meta.env.VITE_ASSISTANT_API_URL || "").replace(/\/$/, "");
+    try {
+      const response = await fetch(`${baseUrl}/api/contact`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
+      if (!response.ok) throw new Error("send_failed");
+      setSubmitted(true);
+      setForm({ name: "", email: "", subject: "join", message: "", website: "" });
+    } catch {
+      setStatus("Pesan belum dapat dikirim. Silakan coba lagi beberapa saat.");
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -145,7 +160,7 @@ export default function Contact() {
                     </div>
                     <div>
                       <h2 className="font-black text-xl tracking-tight">Kirim Pesan</h2>
-                      <p className="text-xs font-medium text-muted-foreground">Mode demo — form ini belum mengirim atau menyimpan pesan.</p>
+                      <p className="text-xs font-medium text-muted-foreground">Kami akan membalas melalui email yang kamu berikan.</p>
                     </div>
                   </div>
 
@@ -199,6 +214,12 @@ export default function Contact() {
                     </select>
                   </div>
 
+                  <div className="hidden" aria-hidden="true">
+                    <label htmlFor="website">Website</label>
+                    <input id="website" name="website" value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} tabIndex={-1} autoComplete="off" />
+                  </div>
+                  {status && <p role="alert" className="text-sm font-bold text-red-600">{status}</p>}
+
                   <div>
                     <label htmlFor="message" className="block text-xs font-bold uppercase tracking-wider mb-2 text-muted-foreground">
                       Pesan *
@@ -216,9 +237,11 @@ export default function Contact() {
 
                   <button
                     type="submit"
+                    disabled={sending}
+                    aria-busy={sending}
                     className="w-full py-4 bg-primary text-white border-2 border-border rounded-2xl font-black text-base neo-shadow-sm hover:-translate-y-1 hover:neo-shadow-md transition-all flex items-center justify-center gap-2"
                   >
-                    Coba Form (Demo) <Send size={18} strokeWidth={3} />
+                    {sending ? "Mengirim..." : "Kirim Pesan"} <Send size={18} strokeWidth={3} />
                   </button>
                 </form>
               )}
