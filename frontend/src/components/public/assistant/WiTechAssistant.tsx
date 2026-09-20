@@ -2,10 +2,6 @@ import React, { useState, useRef, useEffect } from "react";
 import { MessageCircle, X, Send, Sparkles } from "lucide-react";
 import { usePublicData } from "../../../context/PublicDataContext";
 import type { ChatMessage, AssistantAction } from "../../../lib/assistant/types";
-import {
-  getDeterministicAssistantResponse,
-  DEFAULT_QUICK_ACTIONS,
-} from "../../../lib/assistant/deterministicEngine";
 import { fetchCopilotAiResponse } from "../../../lib/assistant/assistantClient";
 
 function generateSafeId(): string {
@@ -18,6 +14,16 @@ function formatCurrentTime(): string {
   const mm = String(d.getMinutes()).padStart(2, "0");
   return `${hh}:${mm}`;
 }
+
+const DEFAULT_QUICK_ACTIONS: AssistantAction[] = [
+  { label: "Divisi", payload: "divisi" },
+  { label: "Project", payload: "project" },
+  { label: "Event", payload: "event" },
+  { label: "Cara Gabung", payload: "cara gabung" },
+  { label: "FAQ", payload: "faq" },
+  { label: "Kontak", payload: "kontak" },
+  { label: "Anggota", payload: "anggota" },
+];
 
 /**
  * Safely renders text with clickable links without dangerouslySetInnerHTML.
@@ -50,7 +56,7 @@ function SafeFormattedText({ text }: { text: string }) {
 }
 
 export default function WiTechAssistant() {
-  const { data, loading } = usePublicData();
+  const { loading } = usePublicData();
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -84,14 +90,6 @@ export default function WiTechAssistant() {
     }
   }, [isOpen]);
 
-  // Development-only log of real division names from usePublicData()
-  useEffect(() => {
-    if (import.meta.env.DEV && data?.divisions && data.divisions.length > 0) {
-      const divisionNames = data.divisions.map((d) => d.name);
-      console.log(`[WiTECH Assistant] real divisions:\n${JSON.stringify(divisionNames)}`);
-    }
-  }, [data]);
-
   // Close on Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -114,24 +112,19 @@ export default function WiTechAssistant() {
       timestamp: formatCurrentTime(),
     };
 
-    // Calculate deterministic response immediately
-    const assistantResponse = getDeterministicAssistantResponse(trimmed, data);
-
-    // Every message is sent to the configured assistant API. The deterministic
-    // response remains available as a local fallback if the API is unavailable.
     const thinkingId = generateSafeId();
     const thinkingMsg: ChatMessage = {
       id: thinkingId,
       role: "assistant",
       content: "WiTECH Assistant sedang berpikir...",
       timestamp: formatCurrentTime(),
-      responseMeta: assistantResponse.type === "needs_ai" ? assistantResponse : undefined,
+      responseMeta: undefined,
     };
 
     setMessages((prev) => [...prev, userMsg, thinkingMsg]);
     setInput("");
 
-    fetchCopilotAiResponse(trimmed, data)
+    fetchCopilotAiResponse(trimmed)
       .then((aiRes) => {
         setMessages((prev) =>
           prev.map((m) => {
@@ -150,16 +143,7 @@ export default function WiTechAssistant() {
                 },
               };
             }
-            // Keep deterministic answers useful when the remote service rejects or fails.
-            if (assistantResponse.type !== "needs_ai" && aiRes.reason !== "rate_limited") {
-              return {
-                ...m,
-                content: assistantResponse.text,
-                responseMeta: assistantResponse,
-              };
-            }
-
-            // Differentiate rate limit vs general quota/AI-unavailable fallback
+            // Differentiate rate limit from a general service failure.
             const fallbackText =
               aiRes.reason === "rate_limited"
                 ? "Kamu sudah cukup banyak menggunakan fitur jawaban pintar. Coba lagi sebentar."
