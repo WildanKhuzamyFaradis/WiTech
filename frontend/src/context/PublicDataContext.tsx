@@ -60,6 +60,17 @@ export function PublicDataProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  useEffect(() => {
+    let icon = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+    if (!icon) {
+      icon = document.createElement("link");
+      icon.rel = "icon";
+      document.head.appendChild(icon);
+    }
+    icon.type = "image/png";
+    icon.href = state.logoUrl;
+  }, [state.logoUrl]);
+
   return (
     <PublicDataContext.Provider value={state}>
       {children}

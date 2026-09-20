@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router";
 import { signOutAdmin } from "../auth/adminAuth";
 import { AdminDataProvider } from "../context/AdminDataContext";
+import { useAdminData } from "../context/AdminDataContext";
 import {
   LayoutDashboard,
   Building2,
@@ -27,6 +28,32 @@ const sidebarLinks = [
   { label: "FAQ", to: "/admin/faq", icon: HelpCircle, color: "#ec4899", group: "Konten" },
   { label: "Pengaturan", to: "/admin/settings", icon: Settings, color: "#64748b", group: "Sistem" },
 ];
+
+function AdminBrand({ onClose }: { onClose: () => void }) {
+  const { logoUrl } = useAdminData();
+
+  return (
+    <div className="px-5 py-5 border-b-4 border-border flex items-center justify-between">
+      <Link to="/" className="flex items-center gap-2.5 group">
+        <div className="size-10 rounded-xl bg-white border-2 border-border flex items-center justify-center neo-shadow-sm overflow-hidden">
+          <img src={logoUrl} alt="Witech Logo" className="max-h-full max-w-full object-contain" />
+        </div>
+        <div>
+          <span className="font-black text-base tracking-tight">
+            WI<span className="text-primary">TECH</span>
+          </span>
+          <p className="text-xs font-bold text-muted-foreground -mt-0.5">Admin Panel</p>
+        </div>
+      </Link>
+      <button
+        onClick={onClose}
+        className="lg:hidden p-1.5 rounded-lg border-2 border-border bg-muted neo-shadow"
+      >
+        <X size={16} strokeWidth={3} />
+      </button>
+    </div>
+  );
+}
 
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -64,26 +91,7 @@ export default function AdminLayout() {
         } lg:translate-x-0`}
         style={{ boxShadow: "4px 0 0 0 #111" }}
       >
-        {/* Logo */}
-        <div className="px-5 py-5 border-b-4 border-border flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="size-9 rounded-xl bg-primary border-2 border-border flex items-center justify-center neo-shadow">
-              <span className="text-white text-sm font-black">W</span>
-            </div>
-            <div>
-              <span className="font-black text-base tracking-tight">
-                WI<span className="text-primary">TECH</span>
-              </span>
-              <p className="text-xs font-bold text-muted-foreground -mt-0.5">Admin Panel</p>
-            </div>
-          </Link>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="lg:hidden p-1.5 rounded-lg border-2 border-border bg-muted neo-shadow"
-          >
-            <X size={16} strokeWidth={3} />
-          </button>
-        </div>
+        <AdminBrand onClose={() => setSidebarOpen(false)} />
 
         {/* Nav */}
         <div className="px-4 py-5 flex-1 overflow-y-auto space-y-2">

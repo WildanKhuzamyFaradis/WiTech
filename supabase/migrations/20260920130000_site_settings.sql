@@ -9,6 +9,9 @@ CREATE TABLE IF NOT EXISTS public.site_settings (
 
 ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
 
+GRANT SELECT ON TABLE public.site_settings TO anon;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.site_settings TO authenticated;
+
 DROP POLICY IF EXISTS "Anonymous users can read site settings" ON public.site_settings;
 CREATE POLICY "Anonymous users can read site settings"
 ON public.site_settings FOR SELECT TO anon, authenticated USING (true);
