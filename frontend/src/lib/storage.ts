@@ -23,6 +23,7 @@ export const ALLOWED_IMAGE_MIME_TYPES: Record<string, string> = {
 
 /** Managed object prefix whitelist */
 export const MANAGED_STORAGE_PREFIXES = [
+  "branding/",
   "members/",
   "projects/",
   "events/",
@@ -30,7 +31,7 @@ export const MANAGED_STORAGE_PREFIXES = [
   "albums/photos/",
 ] as const;
 
-export type StorageMediaKind = "member" | "project" | "event" | "album-cover" | "album-photo";
+export type StorageMediaKind = "logo" | "member" | "project" | "event" | "album-cover" | "album-photo";
 
 export interface ValidationResult {
   valid: boolean;
@@ -205,6 +206,8 @@ export function generateStoragePath(
   const uuid = generateSafeUuid();
 
   switch (kind) {
+    case "logo":
+      return `branding/${uuid}.${ext}`;
     case "member":
       return `members/${uuid}.${ext}`;
     case "project":

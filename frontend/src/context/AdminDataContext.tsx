@@ -19,6 +19,7 @@ import {
 } from "react";
 import type { Division, Project, Member, Album, Event, FAQ } from "../lib/types";
 import type { StoreData, MutationResult } from "../lib/dataContract";
+import { fetchLogoUrl } from "../lib/siteSettings";
 import {
   fetchAdminData,
   createDivision,
@@ -48,6 +49,7 @@ export interface AdminDataContextValue {
   albums: Album[];
   events: Event[];
   faqs: FAQ[];
+  logoUrl: string;
   loading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
@@ -75,6 +77,7 @@ const AdminDataContext = createContext<AdminDataContextValue | null>(null);
 
 export function AdminDataProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<StoreData | null>(null);
+  const [logoUrl, setLogoUrl] = useState("/logo.png");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -82,8 +85,9 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetchAdminData();
+      const [res, logoUrl] = await Promise.all([fetchAdminData(), fetchLogoUrl()]);
       setData(res);
+      setLogoUrl(logoUrl);
     } catch (err) {
       console.error("Failed to load admin data:", err);
       const msg = err instanceof Error ? err.message : "Gagal memuat data admin.";
@@ -267,6 +271,7 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
     albums: data?.albums ?? [],
     events: data?.events ?? [],
     faqs: data?.faqs ?? [],
+    logoUrl,
     loading,
     error,
     refetch: loadData,

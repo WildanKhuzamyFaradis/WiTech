@@ -23,6 +23,7 @@ import AdminMembers from "../pages/admin/AdminMembers";
 import AdminMemberEditor from "../pages/admin/AdminMemberEditor";
 import AdminFAQ from "../pages/admin/AdminFAQ";
 import AdminResourceEditor from "../pages/admin/AdminResourceEditor";
+import AdminSettings from "../pages/admin/AdminSettings";
 
 export const router = createBrowserRouter([
   {
@@ -70,6 +71,7 @@ export const router = createBrowserRouter([
         { path: "faq", Component: AdminFAQ },
         { path: "faq/new", Component: () => createElement(AdminResourceEditor, { kind: "faq" }) },
         { path: "faq/:id/edit", Component: () => createElement(AdminResourceEditor, { kind: "faq" }) },
+        { path: "settings", Component: AdminSettings },
       ],
     }],
   },

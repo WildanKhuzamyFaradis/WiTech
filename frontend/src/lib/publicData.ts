@@ -16,6 +16,7 @@ import { resolveMediaUrl } from "./storage";
 import type { Division, Project, Member, Album, Event, FAQ } from "./types";
 import type { StoreData } from "./dataContract";
 import { withDerivedCounts } from "./dataContract";
+import { fetchLogoUrl } from "./siteSettings";
 
 // ─── Raw DB row shapes (snake_case) ─────────────────────────────────────────
 
@@ -208,7 +209,12 @@ function mapFaq(row: FaqRow): FAQ {
  * application layer to guard against an authenticated admin accidentally
  * seeing non-public records while browsing a public route.
  */
-export async function fetchPublicData(): Promise<StoreData> {
+export interface PublicDataResult {
+  data: StoreData;
+  logoUrl: string;
+}
+
+export async function fetchPublicData(): Promise<PublicDataResult> {
   const [
     divisionsResult,
     projectsResult,
@@ -217,6 +223,7 @@ export async function fetchPublicData(): Promise<StoreData> {
     albumPhotosResult,
     eventsResult,
     faqsResult,
+    logoUrl,
   ] = await Promise.all([
     supabase
       .from("divisions")
@@ -264,6 +271,8 @@ export async function fetchPublicData(): Promise<StoreData> {
       .select("id, question, answer, sort_order")
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: true }),
+
+    fetchLogoUrl(),
   ]);
 
   // Fail fast on any query error — do NOT silently fall back to fixtures.
@@ -300,5 +309,5 @@ export async function fetchPublicData(): Promise<StoreData> {
   // memberCount is derived from active members whose divisionId matches.
   // photoCount is derived from photos.length.
   // withDerivedCounts handles both.
-  return withDerivedCounts({ divisions, projects, members, albums, events, faqs });
+  return { data: withDerivedCounts({ divisions, projects, members, albums, events, faqs }), logoUrl };
 }

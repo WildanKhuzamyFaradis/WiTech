@@ -21,6 +21,7 @@ import { fetchPublicData } from "../lib/publicData";
 
 interface PublicDataState {
   data: StoreData | null;
+  logoUrl: string;
   loading: boolean;
   error: string | null;
 }
@@ -30,6 +31,7 @@ const PublicDataContext = createContext<PublicDataState | null>(null);
 export function PublicDataProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<PublicDataState>({
     data: null,
+    logoUrl: "/logo.png",
     loading: true,
     error: null,
   });
@@ -39,8 +41,8 @@ export function PublicDataProvider({ children }: { children: ReactNode }) {
     setState({ data: null, loading: true, error: null });
 
     fetchPublicData()
-      .then((data) => {
-        if (!cancelled) setState({ data, loading: false, error: null });
+      .then((result) => {
+        if (!cancelled) setState({ data: result.data, logoUrl: result.logoUrl, loading: false, error: null });
       })
       .catch((err: unknown) => {
         if (!cancelled) {
@@ -49,7 +51,7 @@ export function PublicDataProvider({ children }: { children: ReactNode }) {
             err instanceof Error
               ? err.message
               : "Terjadi kesalahan saat memuat data.";
-          setState({ data: null, loading: false, error: msg });
+          setState({ data: null, logoUrl: "/logo.png", loading: false, error: msg });
         }
       });
 

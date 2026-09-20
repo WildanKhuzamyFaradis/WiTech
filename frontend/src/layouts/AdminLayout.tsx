@@ -14,6 +14,7 @@ import {
   Menu,
   X,
   ExternalLink,
+  Settings,
 } from "lucide-react";
 
 const sidebarLinks = [
@@ -24,6 +25,7 @@ const sidebarLinks = [
   { label: "Event", to: "/admin/events", icon: CalendarDays, color: "#10b981", group: "Konten" },
   { label: "Member", to: "/admin/members", icon: Users, color: "#f59e0b", group: "Konten" },
   { label: "FAQ", to: "/admin/faq", icon: HelpCircle, color: "#ec4899", group: "Konten" },
+  { label: "Pengaturan", to: "/admin/settings", icon: Settings, color: "#64748b", group: "Sistem" },
 ];
 
 export default function AdminLayout() {

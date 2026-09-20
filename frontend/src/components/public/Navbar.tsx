@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router";
 import { Menu, X } from "lucide-react";
+import { usePublicData } from "../../context/PublicDataContext";
 
 const navLinks = [
   { label: "About", to: "/about" },
@@ -17,6 +18,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
+  const { logoUrl } = usePublicData();
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20);
@@ -39,7 +41,7 @@ export default function Navbar() {
     >
       <nav className="w-full max-w-7xl mx-auto px-6 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 group shrink-0">
-          <img src="/logo.png" alt="Witech Logo" className="h-10 w-auto group-hover:scale-105 transition-transform" />
+          <img src={logoUrl} alt="Witech Logo" className="h-10 w-auto group-hover:scale-105 transition-transform" />
         </Link>
 
         <div className="hidden lg:flex items-center gap-1 bg-card/60 backdrop-blur-md px-2 py-1.5 rounded-full border-2 border-border neo-shadow-sm">

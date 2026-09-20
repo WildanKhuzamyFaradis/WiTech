@@ -6,7 +6,7 @@ import { Camera, MessageCircle, Briefcase, GitFork, ChevronRight } from 'lucide-
 const divisionIconColors = ["text-primary", "text-secondary", "text-[#a855f7]", "text-[#ffe66d]", "text-[#10b981]", "text-[#f59e0b]"];
 
 const Footer: React.FC = () => {
-  const { data } = usePublicData();
+  const { data, logoUrl } = usePublicData();
   const divisions = data?.divisions ?? [];
   return (
     <footer className="relative bg-foreground text-background border-t-2 border-border overflow-hidden font-sans">
@@ -18,7 +18,7 @@ const Footer: React.FC = () => {
           {/* Brand Col */}
           <div className="md:col-span-12 lg:col-span-5">
             <Link to="/" className="flex items-center gap-2 group mb-6 inline-flex bg-white p-2 rounded-xl">
-              <img src="/logo.png" alt="Witech Logo" className="h-10 w-auto group-hover:scale-105 transition-transform" />
+              <img src={logoUrl} alt="Witech Logo" className="h-10 w-auto group-hover:scale-105 transition-transform" />
             </Link>
             <p className="text-base font-medium text-background/70 max-w-sm mb-8 leading-relaxed">
               UKM Teknologi untuk semua jurusan. Belajar, berkarya, dan berkembang bersama teknologi sejak 2018.
