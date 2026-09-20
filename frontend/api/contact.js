@@ -16,6 +16,8 @@ export default async function handler(request, response) {
     return json(response, 405, { error: 'Method not allowed' });
   }
 
+  console.log('Contact form payload:', request.body);
+
   const { name, email, subject, message } = request.body ?? {};
 
   if (
@@ -36,6 +38,7 @@ export default async function handler(request, response) {
   const to = process.env.CONTACT_TO_EMAIL;
 
   if (!apiKey || !from || !to) {
+    console.error('Contact email config missing:', { hasApiKey: Boolean(apiKey), hasFrom: Boolean(from), hasTo: Boolean(to) });
     return json(response, 500, { error: 'Email service is not configured' });
   }
 
@@ -82,11 +85,14 @@ export default async function handler(request, response) {
     });
 
     if (!resendResponse.ok) {
+      const resendText = await resendResponse.text();
+      console.error('Resend API error:', resendText);
       return json(response, 502, { error: 'Unable to send email' });
     }
 
     return json(response, 200, { success: true });
-  } catch {
+  } catch (error) {
+    console.error('Contact handler failed:', error);
     return json(response, 502, { error: 'Unable to reach email service' });
   }
 }
