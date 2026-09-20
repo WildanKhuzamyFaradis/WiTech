@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { MessageCircle, X, Send, Sparkles } from "lucide-react";
 import { usePublicData } from "../../../context/PublicDataContext";
 import type { ChatMessage, AssistantAction } from "../../../lib/assistant/types";
-import { fetchCopilotAiResponse } from "../../../lib/assistant/assistantClient";
+import { fetchAssistantResponse } from "../../../lib/assistant/assistantClient";
 
 function generateSafeId(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
@@ -124,7 +124,7 @@ export default function WiTechAssistant() {
     setMessages((prev) => [...prev, userMsg, thinkingMsg]);
     setInput("");
 
-    fetchCopilotAiResponse(trimmed)
+    fetchAssistantResponse(trimmed)
       .then((aiRes) => {
         setMessages((prev) =>
           prev.map((m) => {

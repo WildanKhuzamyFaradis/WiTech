@@ -1,5 +1,3 @@
-import type { StoreData } from "../dataContract";
-
 export interface AssistantAiResult {
   ok: boolean;
   reply?: string;
@@ -12,7 +10,7 @@ export interface AssistantAiResult {
     | "deterministic_preferred"
     | "request_in_progress"
     | "invalid_request";
-  source?: "copilot";
+  source?: "assistant-api";
 }
 
 const ENDPOINTS = [
@@ -20,10 +18,10 @@ const ENDPOINTS = [
 ];
 
 /**
- * Calls the WiTECH Assistant service powered by Copilot SDK.
- * Sends ONLY message; public context is safely managed server-side.
+ * Calls the external WiTECH Assistant API.
+ * Sends only the user's message to the independent assistant service.
  */
-export async function fetchCopilotAiResponse(
+export async function fetchAssistantResponse(
   message: string,
   _publicData?: unknown,
   timeoutMs = 30000
@@ -113,7 +111,7 @@ export async function fetchCopilotAiResponse(
         return {
           ok: true,
           reply: data.reply,
-          source: "copilot",
+          source: "assistant-api",
         };
       }
 

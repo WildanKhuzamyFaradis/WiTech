@@ -1,6 +1,5 @@
 packages:
   - frontend
   - backend
-  - assistant-service
 allowBuilds:
   esbuild: true
