@@ -17,9 +17,8 @@ export default function Contact() {
     e.preventDefault();
     setSending(true);
     setStatus("");
-    const baseUrl = (import.meta.env.VITE_ASSISTANT_API_URL || "").replace(/\/$/, "");
     try {
-      const response = await fetch(`${baseUrl}/api/contact`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
+      const response = await fetch("/api/contact", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "omit", body: JSON.stringify(form) });
       if (!response.ok) throw new Error("send_failed");
       setSubmitted(true);
       setForm({ name: "", email: "", subject: "join", message: "", website: "" });

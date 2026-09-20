@@ -15,8 +15,7 @@ export interface AssistantAiResult {
   source?: "copilot";
 }
 
-const ASSISTANT_API_URL = (import.meta.env.VITE_ASSISTANT_API_URL || "").replace(/\/$/, "");
-const ENDPOINTS = [`${ASSISTANT_API_URL}/api/assistant/chat`];
+const ENDPOINTS = ["/api/assistant/chat"];
 
 /**
  * Calls the local isolated WiTECH Assistant service powered by Copilot SDK.
@@ -25,7 +24,7 @@ const ENDPOINTS = [`${ASSISTANT_API_URL}/api/assistant/chat`];
 export async function fetchCopilotAiResponse(
   message: string,
   _publicData?: unknown,
-  timeoutMs = 15000
+  timeoutMs = 30000
 ): Promise<AssistantAiResult> {
   const trimmed = message.trim();
   if (!trimmed) {
@@ -60,7 +59,7 @@ export async function fetchCopilotAiResponse(
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include",
+        credentials: "omit",
         body: payload,
         signal: controller.signal,
       });
