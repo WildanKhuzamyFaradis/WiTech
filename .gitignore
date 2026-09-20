@@ -47,3 +47,4 @@ logs/
 .plugins/
 .opencode-skills/
 supabase/.temp/
+scratch/

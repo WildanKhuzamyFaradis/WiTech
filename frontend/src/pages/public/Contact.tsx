@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Mail, MapPin, Camera, GitFork, Briefcase, MessageCircle, ArrowRight, Send, Clock, Sparkles } from "lucide-react";
+import { Mail, MapPin, Camera, GitFork, Briefcase, MessageCircle, ArrowRight, Send, Sparkles } from "lucide-react";
 
 export default function Contact() {
   const [submitted, setSubmitted] = useState(false);
@@ -60,21 +60,28 @@ export default function Contact() {
                 </div>
               </div>
               
-              <div className="neo-card rounded-2xl p-6 neo-shadow-sm hover:neo-shadow-md hover:-translate-y-1 transition-all bg-white group">
+              <a
+                href="https://www.google.com/search?sca_esv=c2f28d3b49117e12&sxsrf=APpeQnvKwELWn4Nvks5F8yeunTiOSu5twg:1789860472011&q=wiraraja+alamat&ludocid=413712058463513967&sa=X&sqi=2&ved=2ahUKEwjpwIbt5fuWAxUDimMGHf7HACcQ6BN6BAglEAI"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="neo-card rounded-2xl p-6 neo-shadow-sm hover:neo-shadow-md hover:-translate-y-1 transition-all bg-white group block"
+              >
                 <div className="flex items-start gap-4">
                   <div className="size-12 rounded-2xl bg-secondary/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
                     <MapPin size={20} className="text-secondary" strokeWidth={2.5} />
                   </div>
                   <div>
-                    <p className="font-black text-foreground mb-1">Alamat</p>
+                    <p className="font-black text-foreground mb-1 group-hover:text-primary transition-colors flex items-center gap-1.5">
+                      Alamat
+                      <span className="text-xs font-normal text-muted-foreground underline">(Buka Peta)</span>
+                    </p>
                     <p className="text-sm font-medium text-muted-foreground leading-relaxed">
-                      Gedung Student Center Lt. 3<br />
-                      Universitas Teknologi Nasional<br />
-                      Jakarta, Indonesia 12640
+                      Universitas Wiraraja<br />
+                      Jl. Raya Pamekasan - Sumenep No.KM. 05, Panitian Utara, Patean, Kec. Batuan, Kabupaten Sumenep, Jawa Timur 69451
                     </p>
                   </div>
                 </div>
-              </div>
+              </a>
             </div>
 
             {/* Social Media */}
@@ -106,26 +113,6 @@ export default function Contact() {
                     </div>
                     <ArrowRight size={16} className="text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all shrink-0" strokeWidth={2.5} />
                   </a>
-                ))}
-              </div>
-            </div>
-
-            {/* Operating Hours */}
-            <div className="neo-card bg-muted rounded-2xl p-6 neo-shadow-sm">
-              <div className="flex items-center gap-2 mb-4">
-                <Clock size={16} className="text-muted-foreground" strokeWidth={2.5} />
-                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Jam Operasional</p>
-              </div>
-              <div className="space-y-3">
-                {[
-                  { day: "Senin – Jumat", time: "09:00 – 21:00" },
-                  { day: "Sabtu", time: "10:00 – 17:00" },
-                  { day: "Minggu", time: "Libur" },
-                ].map((h) => (
-                  <div key={h.day} className="flex justify-between text-sm">
-                    <span className="font-bold">{h.day}</span>
-                    <span className="font-bold text-muted-foreground font-mono">{h.time}</span>
-                  </div>
                 ))}
               </div>
             </div>
