@@ -276,8 +276,9 @@ export const server = http.createServer(async (req, res) => {
 
 // If run directly via node src/server.js
 if (process.argv[1] && process.argv[1].endsWith("server.js")) {
-  server.listen(PORT, "127.0.0.1", () => {
-    console.log(`[WiTECH Assistant Service] Listening on http://127.0.0.1:${PORT}`);
+  const HOST = process.env.HOST || "0.0.0.0";
+  server.listen(PORT, HOST, () => {
+    console.log(`[WiTECH Assistant Service] Listening on http://${HOST}:${PORT}`);
     console.log(`[WiTECH Assistant Service] Mode: empty, Trusted Server Context: active`);
   });
 
