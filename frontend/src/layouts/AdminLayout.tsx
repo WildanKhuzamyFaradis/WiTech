@@ -3,6 +3,7 @@ import { Outlet, Link, useLocation, useNavigate } from "react-router";
 import { signOutAdmin } from "../auth/adminAuth";
 import { AdminDataProvider } from "../context/AdminDataContext";
 import { useAdminData } from "../context/AdminDataContext";
+import { resolveMediaUrl } from "../lib/storage";
 import {
   LayoutDashboard,
   Building2,
@@ -36,7 +37,7 @@ function AdminBrand({ onClose }: { onClose: () => void }) {
     <div className="px-5 py-5 border-b-4 border-border flex items-center justify-between">
       <Link to="/" className="flex items-center gap-2.5 group">
         <div className="size-10 rounded-xl bg-white border-2 border-border flex items-center justify-center neo-shadow-sm overflow-hidden">
-          <img src={logoUrl} alt="Witech Logo" className="max-h-full max-w-full object-contain" />
+          <img src={resolveMediaUrl(logoUrl)} alt="Witech Logo" className="max-h-full max-w-full object-contain" />
         </div>
         <div>
           <span className="font-black text-base tracking-tight">
