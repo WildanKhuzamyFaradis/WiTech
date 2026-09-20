@@ -15,7 +15,8 @@ export interface AssistantAiResult {
   source?: "copilot";
 }
 
-const ENDPOINTS = ["/api/assistant/chat"];
+const ASSISTANT_API_URL = (import.meta.env.VITE_ASSISTANT_API_URL || "").replace(/\/$/, "");
+const ENDPOINTS = [`${ASSISTANT_API_URL}/api/assistant/chat`];
 
 /**
  * Calls the local isolated WiTECH Assistant service powered by Copilot SDK.

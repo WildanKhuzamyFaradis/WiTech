@@ -86,7 +86,7 @@ function isComplexNeedsAi(text: string): boolean {
   const hasRecommendationKeywords = /cocok|rekomendasi|saran|pilih mana|bingung mau|rekomendasikan/i.test(
     normalized
   );
-  const hasInterestKeywords = /suka|minat|desain|coding|koding|divisi mana|pilih/i.test(normalized);
+  const hasInterestKeywords = /suka|minat|desain|coding|koding|divisi mana|devisi mana|pilih/i.test(normalized);
 
   if (hasRecommendationKeywords && hasInterestKeywords) {
     return true;

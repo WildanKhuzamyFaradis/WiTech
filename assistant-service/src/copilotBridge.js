@@ -1,44 +1,37 @@
-import { CopilotClient, RuntimeConnection, ToolSet } from "@github/copilot-sdk";
+import { CopilotClient, ToolSet } from "@github/copilot-sdk";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import { mkdirSync } from "node:fs";
 
 export class CopilotBridge {
-  constructor(options = {}) {
-    this.runtimeUrl = options.runtimeUrl || "localhost:4321";
-    this.connectionToken = options.connectionToken || process.env.COPILOT_CONNECTION_TOKEN || undefined;
+  constructor() {
+    this.token = process.env.COPILOT_GITHUB_TOKEN || "";
+    this.baseDirectory = join(tmpdir(), "witech-copilot-runtime");
+    mkdirSync(this.baseDirectory, { recursive: true });
     this.client = null;
-    this.isConnected = false;
+    this.startPromise = null;
 
-    // Enforce connection token in production
-    const isProd = process.env.NODE_ENV === "production";
-    if (isProd && !this.connectionToken) {
-      throw new Error(
-        "[Security] Insecure Copilot configuration: COPILOT_CONNECTION_TOKEN is required in production."
-      );
-    }
   }
 
   async ensureConnected() {
-    if (this.client && this.isConnected) return;
+    if (this.client) return this.client;
+    if (!this.token) throw new Error("copilot_token_missing");
+    if (this.startPromise) return this.startPromise;
 
-    // Connect with optional connectionToken using official SDK RuntimeConnection.forUri(url, { connectionToken })
-    const uriOpts = {};
-    if (this.connectionToken) {
-      uriOpts.connectionToken = this.connectionToken;
-    }
-
-    this.client = new CopilotClient({
-      mode: "empty",
-      connection: RuntimeConnection.forUri(this.runtimeUrl, uriOpts),
-    });
-
-    await this.client.start();
-    this.isConnected = true;
+    this.startPromise = (async () => {
+      const client = new CopilotClient({ gitHubToken: this.token, useLoggedInUser: false, mode: "empty", baseDirectory: this.baseDirectory, logLevel: "error", env: { ...process.env, COPILOT_GITHUB_TOKEN: this.token } });
+      await client.start();
+      this.client = client;
+      return client;
+    })().catch((error) => { this.startPromise = null; throw error; });
+    return this.startPromise;
   }
 
   /**
    * Asks Copilot SDK with system prompt built from server-side verified public context.
    * Preserves mode: "empty" and zero tools.
    */
-  async ask({ message, systemContext, validDivisions = [] }) {
+  async ask({ message, systemContext, validDivisions = [], sessionId }) {
     await this.ensureConnected();
 
     const systemPrompt = `Kamu adalah WiTECH Assistant, asisten ringkas dan ramah untuk mahasiswa seputar UKM WiTECH di Universitas Wiraraja (Sumenep).
@@ -70,7 +63,9 @@ PANDUAN GAYA JAWABAN (SANGAT KETAT):
 ${systemContext}`;
 
     // Create session with mode empty, zero tools, and error hook to abort immediately on quota/rate limit
+    const safeSessionId = `witech-web-${String(sessionId || "anonymous").replace(/[^a-zA-Z0-9_-]/g, "_")}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const session = await this.client.createSession({
+      sessionId: safeSessionId,
       availableTools: new ToolSet(),
       systemMessage: {
         mode: "replace",
@@ -116,28 +111,31 @@ ${systemContext}`;
    * Validates that if the reply claims a specific division name, it is a real division from server context.
    */
   verifyOutputGrounding(reply, validDivisions) {
-    const normReply = reply.toLowerCase();
-
-    // Check if reply claims an invented division like "divisi super admin", "divisi hacking", etc.
-    const divisionMentions = normReply.match(/divisi\s+([a-zA-Z0-9_-]+)/g) || [];
-    for (const mention of divisionMentions) {
-      const rawName = mention.replace(/divisi\s+/i, "").trim();
-      // Skip common non-specific division words
-      if (["lain", "lainnya", "tersebut", "ini", "itu", "mana", "terkait", "terbaik"].includes(rawName)) {
-        continue;
-      }
-      const isValid = validDivisions.some(
-        (d) =>
-          d.name.toLowerCase().includes(rawName) ||
-          d.shortName.toLowerCase().includes(rawName)
-      );
-      // If an explicitly named division is mentioned but not found in validDivisions:
-      if (!isValid) {
-        // Potential hallucination of division
-        return false;
+    const normalize = (value) => value.trim().toLowerCase().replace(/\s+/g, " ");
+    const validNames = new Set();
+    for (const division of validDivisions) {
+      for (const value of [division.name, division.shortName]) {
+        if (typeof value === "string" && value.trim()) {
+          const normalized = normalize(value);
+          validNames.add(normalized);
+          validNames.add(`witech ${normalized}`);
+        }
       }
     }
-    return true;
+
+    // Only capitalized proper-name forms are claims. Lowercase prose such as
+    // "divisi yang cocok" is intentionally ignored.
+    const explicitClaims = [];
+    const brandedPattern = /\bWiTECH\s+([A-Z][A-Za-z0-9_-]*(?:\s+[A-Z][A-Za-z0-9_-]*)*)/g;
+    for (const match of reply.matchAll(brandedPattern)) {
+      explicitClaims.push(normalize(match[0]));
+    }
+    const namedDivisionPattern = /\b[Dd]ivisi\s+([A-Z][A-Za-z0-9_-]*(?:\s+[A-Z][A-Za-z0-9_-]*)*)/g;
+    for (const match of reply.matchAll(namedDivisionPattern)) {
+      explicitClaims.push(normalize(match[1]));
+    }
+
+    return explicitClaims.every((claim) => validNames.has(claim) || validNames.has(`witech ${claim}`));
   }
 
   async checkHealth() {
@@ -146,7 +144,6 @@ ${systemContext}`;
       const ping = await this.client.ping("health");
       return { ok: true, ping };
     } catch (err) {
-      this.isConnected = false;
       return { ok: false, error: err instanceof Error ? err.message : String(err) };
     }
   }
@@ -159,7 +156,7 @@ ${systemContext}`;
         // best effort
       }
       this.client = null;
-      this.isConnected = false;
+      this.startPromise = null;
     }
   }
 }

@@ -31,9 +31,7 @@ const ALLOWED_ORIGINS = new Set(
     : DEFAULT_ALLOWED_ORIGINS
 );
 
-const bridge = new CopilotBridge({
-  runtimeUrl: process.env.COPILOT_RUNTIME_URL || "localhost:4321",
-});
+const bridge = new CopilotBridge();
 
 function getClientIp(req) {
   const forwarded = req.headers["x-forwarded-for"];
@@ -230,6 +228,7 @@ export const server = http.createServer(async (req, res) => {
           message: rawMessage,
           systemContext: minimalContext,
           validDivisions: publicData.divisions || [],
+          sessionId,
         });
 
         // Success: release lock and return reply
@@ -276,8 +275,9 @@ export const server = http.createServer(async (req, res) => {
 
 // If run directly via node src/server.js
 if (process.argv[1] && process.argv[1].endsWith("server.js")) {
-  server.listen(PORT, "127.0.0.1", () => {
-    console.log(`[WiTECH Assistant Service] Listening on http://127.0.0.1:${PORT}`);
+  const HOST = IS_PRODUCTION ? "0.0.0.0" : (process.env.HOST || "127.0.0.1");
+  server.listen(PORT, HOST, () => {
+    console.log(`[WiTECH Assistant Service] Listening on http://${HOST}:${PORT}`);
     console.log(`[WiTECH Assistant Service] Mode: empty, Trusted Server Context: active`);
   });
 
