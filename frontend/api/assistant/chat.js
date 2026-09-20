@@ -25,7 +25,7 @@ export default async function handler(req, res) {
     });
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
-    const upstream = await fetch(`http://api.witech.eu.cc:2072/api/assistant/chat`, {
+    const upstream = await fetch(`https://api.witech.eu.cc/api/assistant/chat`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
