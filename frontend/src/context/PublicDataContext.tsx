@@ -4,7 +4,7 @@
  *
  * ARCHITECTURE BOUNDARY:
  * - Public pages use usePublicData() from this context.
- * - Admin pages still use useStore() from the local Store.
+ * - Admin pages use useAdminData() from the Supabase-backed admin context.
  * - This provider is mounted ONLY inside PublicLayout, so admin routes are
  *   completely unaffected.
  */
@@ -38,7 +38,7 @@ export function PublicDataProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
-    setState({ data: null, loading: true, error: null });
+    setState({ data: null, logoUrl: "/logo.png", loading: true, error: null });
 
     fetchPublicData()
       .then((result) => {
