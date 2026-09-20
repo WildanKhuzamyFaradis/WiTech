@@ -164,9 +164,11 @@ export default function WiTechAssistant() {
                 },
               };
             }
-            // Graceful quota fallback or AI-unavailable fallback
+            // Differentiate rate limit vs general quota/AI-unavailable fallback
             const fallbackText =
-              "Fitur jawaban pintar sedang tidak tersedia. Aku masih bisa bantu lewat informasi WiTECH yang tersedia.";
+              aiRes.reason === "rate_limited"
+                ? "Kamu sudah cukup banyak menggunakan fitur jawaban pintar. Coba lagi sebentar."
+                : "Fitur jawaban pintar sedang tidak tersedia. Aku masih bisa bantu lewat informasi WiTECH yang tersedia.";
             return {
               ...m,
               content: fallbackText,

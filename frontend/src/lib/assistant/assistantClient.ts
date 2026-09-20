@@ -4,7 +4,14 @@ export interface AssistantAiResult {
   ok: boolean;
   reply?: string;
   error?: string;
-  reason?: "quota_exhausted" | "rate_limited" | "ai_unavailable";
+  reason?:
+    | "quota_exhausted"
+    | "rate_limited"
+    | "ai_unavailable"
+    | "out_of_scope"
+    | "deterministic_preferred"
+    | "request_in_progress"
+    | "invalid_request";
   source?: "copilot";
 }
 
@@ -15,11 +22,11 @@ const ENDPOINTS = [
 
 /**
  * Calls the local isolated WiTECH Assistant service powered by Copilot SDK.
- * Handles timeouts, network failures, quota limits, and public context safely.
+ * Sends ONLY message; public context is safely managed server-side.
  */
 export async function fetchCopilotAiResponse(
   message: string,
-  publicData: StoreData | null,
+  _publicData?: unknown,
   timeoutMs = 15000
 ): Promise<AssistantAiResult> {
   const trimmed = message.trim();
@@ -31,26 +38,9 @@ export async function fetchCopilotAiResponse(
     return { ok: false, error: "Pesan melebihi batas 500 karakter." };
   }
 
-  // Package only public non-sensitive data
-  const publicContext = {
-    divisions: publicData?.divisions?.map((d) => ({
-      name: d.name,
-      shortName: d.shortName,
-      description: d.description,
-      technologies: d.technologies,
-    })) || [],
-    projects: publicData?.projects?.filter((p) => p.status === "published").slice(0, 5).map((p) => ({
-      title: p.title,
-      year: p.year,
-      tags: p.tags,
-      subtitle: p.subtitle,
-      description: p.description,
-    })) || [],
-  };
-
+  // Send ONLY message to server; server builds its own trusted context
   const payload = JSON.stringify({
     message: trimmed,
-    publicContext,
   });
 
   // Try endpoint with timeout; DO NOT retry if status is 429 (quota/rate limit)
@@ -64,52 +54,63 @@ export async function fetchCopilotAiResponse(
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: payload,
         signal: controller.signal,
       });
 
       clearTimeout(timeoutId);
 
-      // 429 / Quota Exhausted / Rate Limited -> DO NOT RETRY, return immediately
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch {
+        // ignore JSON parse error
+      }
+
+      // 429 / Quota Exhausted / Rate Limited / Request In Progress -> DO NOT RETRY
       if (res.status === 429) {
-        let errData: any = null;
-        try {
-          errData = await res.json();
-        } catch {
-          // ignore
+        if (data?.reason === "request_in_progress") {
+          return {
+            ok: false,
+            reason: "request_in_progress",
+            error: data?.error || "Permintaan sedang diproses. Mohon tunggu sebentar ya.",
+          };
         }
-        const reason: "quota_exhausted" | "rate_limited" =
-          errData?.reason === "rate_limited" ? "rate_limited" : "quota_exhausted";
+        if (data?.reason === "rate_limited") {
+          return {
+            ok: false,
+            reason: "rate_limited",
+            error: "Kamu sudah cukup banyak menggunakan fitur jawaban pintar. Coba lagi sebentar.",
+          };
+        }
         return {
           ok: false,
-          reason,
+          reason: "quota_exhausted",
           error: "Fitur jawaban pintar sedang tidak tersedia. Aku masih bisa bantu lewat informasi WiTECH yang tersedia.",
         };
       }
 
       if (!res.ok) {
-        let errData: any = null;
-        try {
-          errData = await res.json();
-        } catch {
-          // ignore
-        }
-        if (errData?.reason === "quota_exhausted") {
+        if (res.status === 400) {
           return {
             ok: false,
-            reason: "quota_exhausted",
-            error: "Fitur jawaban pintar sedang tidak tersedia. Aku masih bisa bantu lewat informasi WiTECH yang tersedia.",
+            reason: "invalid_request",
+            error: data?.error || "Permintaan tidak valid.",
           };
         }
-        // If 400 Bad Request, no need to retry another endpoint
-        if (res.status === 400) {
-          return { ok: false, error: errData?.error || "Permintaan tidak valid." };
+        if (data?.reason === "quota_exhausted" || data?.reason === "ai_unavailable") {
+          return {
+            ok: false,
+            reason: data.reason,
+            error: "Fitur jawaban pintar sedang tidak tersedia. Aku masih bisa bantu lewat informasi WiTECH yang tersedia.",
+          };
         }
         continue;
       }
 
-      const data = await res.json();
-      if (data.ok && typeof data.reply === "string") {
+      // 200 OK: success or scope gate result
+      if (data?.ok && typeof data.reply === "string") {
         return {
           ok: true,
           reply: data.reply,
@@ -117,10 +118,18 @@ export async function fetchCopilotAiResponse(
         };
       }
 
-      if (data.reason === "quota_exhausted") {
+      if (data?.reason === "out_of_scope" || data?.reason === "deterministic_preferred") {
         return {
           ok: false,
-          reason: "quota_exhausted",
+          reason: data.reason,
+          error: data?.error || "Pertanyaan di luar cakupan asisten.",
+        };
+      }
+
+      if (data?.reason === "quota_exhausted" || data?.reason === "ai_unavailable") {
+        return {
+          ok: false,
+          reason: data.reason,
           error: "Fitur jawaban pintar sedang tidak tersedia. Aku masih bisa bantu lewat informasi WiTECH yang tersedia.",
         };
       }
