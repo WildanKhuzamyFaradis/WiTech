@@ -13,7 +13,7 @@ export interface AssistantAiResult {
   source?: "assistant-api";
 }
 
-const ENDPOINT = import.meta.env.VITE_ASSISTANT_API_URL || "/api/assistant/chat";
+const ENDPOINT = "/api/assistant/chat";
 
 /**
  * Calls the external WiTECH Assistant API.
