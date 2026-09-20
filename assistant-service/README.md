@@ -20,11 +20,10 @@ Isolated Node.js microservice powering the hybrid WiTECH Assistant via the offic
    - 2-dimensional rate limiting: 5 requests / 10 min per session, 10 requests / 10 min per IP, and 5 requests / 2s global burst.
    - Circuit breaker trips on `quota_exhausted` (5 min cooldown) and `rate_limited` (30s cooldown) to protect Copilot runtime.
 
-4. **Copilot Headless Runtime & Connection Token**:
-   - **Environment Variable**: `COPILOT_CONNECTION_TOKEN`
-   - **How it works**:
-     - `assistant-service` reads `COPILOT_CONNECTION_TOKEN` and passes it via `RuntimeConnection.forUri(url, { connectionToken })`.
-     - **Production requirement**: If `NODE_ENV === "production"`, `assistant-service` will refuse to start / connect if `COPILOT_CONNECTION_TOKEN` is missing.
-     - **Copilot CLI Runtime pairing**: The headless Copilot runtime daemon (`localhost:4321`) MUST be started with the **SAME** token (e.g. `COPILOT_CONNECTION_TOKEN=<token> copilot --headless --port 4321` or equivalent).
-     - For local development, it remains optional.
+4. **Direct Copilot SDK runtime**:
+   - The service starts one reusable `CopilotClient` in-process. It does not connect to `COPILOT_RUNTIME_URL` and does not require a runtime connection token.
+   - `COPILOT_GITHUB_TOKEN` is a server-only runtime secret. It must be supplied through the deployment secret manager and is never sent to the browser or logged.
+   - Sessions receive an isolated server-generated SDK session id and are disconnected after each request.
    - **Permissions / Mode**: Always runs in `mode: "empty"` with `ToolSet()` (no shell, no filesystem, no git, no browser, no MCP, no SQL, no write tools).
+
+The `copilot-runtime/` directory is retained as historical deployment material only; it is not required by the current assistant service and should not be deployed alongside it.

@@ -148,7 +148,7 @@ export default function AdminLayout() {
       )}
 
       {/* ── Main Content ──────────────────────────────── */}
-      <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
+      <div className="flex-1 lg:ml-64 flex flex-col min-h-screen bg-[#f5f6f8]">
         {/* Top bar */}
         <header className="h-16 border-b-4 border-border bg-card flex items-center px-6 gap-4 sticky top-0 z-30" style={{ boxShadow: "0 4px 0 0 #111" }}>
           <button
@@ -174,8 +174,10 @@ export default function AdminLayout() {
           </Link>
         </header>
 
-        <main className="flex-1 p-6 lg:p-8">
-          <Outlet />
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">
+          <div className="w-full max-w-[1440px] mx-auto">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

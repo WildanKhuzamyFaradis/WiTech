@@ -1,52 +1,15 @@
 import { useState } from "react";
-import { Search, Plus, Edit, Trash, GitFork, Briefcase, X, Users, AlertCircle } from "lucide-react";
+import { Link } from "react-router";
+import { Search, Plus, Edit, Trash, GitFork, Briefcase } from "lucide-react";
 import { useAdminData } from "../../context/AdminDataContext";
 import type { Member } from "../../lib/types";
 import { divisionName } from "../../lib/dataContract";
-import {
-  resolveMediaUrl,
-  generateStoragePath,
-  uploadMediaFile,
-  deleteMediaFiles,
-  isManagedStoragePath,
-} from "../../lib/storage";
-import MediaUploadInput from "../../components/admin/MediaUploadInput";
-
-interface MemberFormData {
-  name: string;
-  role: string;
-  divisionId: string | null;
-  year: string;
-  avatar: string | File;
-  github: string;
-  linkedin: string;
-  active: boolean;
-  sortOrder: number;
-}
-
-const emptyForm: MemberFormData = {
-  name: "",
-  role: "Anggota",
-  divisionId: null,
-  year: "2024",
-  avatar: "",
-  github: "",
-  linkedin: "",
-  active: true,
-  sortOrder: 0,
-};
+import { resolveMediaUrl } from "../../lib/storage";
 
 export default function AdminMembers() {
-  const { members, divisions, addMember, updateMember, removeMember, loading } = useAdminData();
+  const { members, divisions, removeMember, loading } = useAdminData();
   const [search, setSearch] = useState("");
   const [divFilter, setDivFilter] = useState("all");
-  const [showModal, setShowModal] = useState(false);
-  const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState<MemberFormData>(emptyForm);
-  const [submitting, setSubmitting] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
-  // Track original raw DB avatar path for cleanup after successful edit
-  const [originalAvatarPath, setOriginalAvatarPath] = useState("");
 
   const filtered = members.filter((m) => {
     const matchDiv =
@@ -59,95 +22,6 @@ export default function AdminMembers() {
     return matchDiv && matchSearch;
   });
 
-  const openAdd = () => {
-    const nextOrder = members.length > 0 ? Math.max(...members.map((m) => m.sortOrder ?? 0)) + 1 : 0;
-    setForm({ ...emptyForm, divisionId: divisions[0]?.id ?? null, sortOrder: nextOrder });
-    setEditId(null);
-    setOriginalAvatarPath("");
-    setFormError(null);
-    setShowModal(true);
-  };
-
-  const openEdit = (member: Member) => {
-    setForm({
-      name: member.name,
-      role: member.role,
-      divisionId: member.divisionId,
-      year: member.year,
-      avatar: member.avatar,
-      github: member.github,
-      linkedin: member.linkedin,
-      active: member.active ?? true,
-      sortOrder: member.sortOrder ?? 0,
-    });
-    setEditId(member.id);
-    setOriginalAvatarPath(member.avatar);
-    setFormError(null);
-    setShowModal(true);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.name.trim()) {
-      setFormError("Nama harus diisi.");
-      return;
-    }
-    if (submitting) return;
-
-    try {
-      setSubmitting(true);
-      setFormError(null);
-
-      let avatarValue: string;
-      let newlyUploadedPath = "";
-
-      if (form.avatar instanceof File) {
-        // Upload file → get raw storage path
-        const storagePath = generateStoragePath("member", form.avatar.type);
-        const uploadResult = await uploadMediaFile(form.avatar, storagePath);
-        if (!uploadResult.ok) {
-          setFormError(uploadResult.error);
-          return;
-        }
-        avatarValue = uploadResult.path;
-        newlyUploadedPath = uploadResult.path;
-      } else {
-        // String: use as-is, or fallback to DiceBear if empty
-        avatarValue =
-          form.avatar.trim() ||
-          `https://api.dicebear.com/7.x/notionists/svg?seed=${form.name.trim().replace(/\s+/g, "")}&backgroundColor=transparent`;
-      }
-
-      const payload: Omit<Member, "id"> = {
-        ...form,
-        name: form.name.trim(),
-        role: form.role.trim(),
-        year: form.year.trim(),
-        avatar: avatarValue,
-        github: form.github.trim(),
-        linkedin: form.linkedin.trim(),
-      };
-
-      const result = editId ? await updateMember(editId, payload) : await addMember(payload);
-
-      if (!result.ok) {
-        // DB failed — clean up newly uploaded file to avoid orphan objects
-        if (newlyUploadedPath) await deleteMediaFiles([newlyUploadedPath]);
-        setFormError(result.error);
-        return;
-      }
-
-      // DB succeeded — clean up old managed avatar if it was changed (replaced with new upload or reset to DiceBear)
-      if (editId && originalAvatarPath !== avatarValue && isManagedStoragePath(originalAvatarPath)) {
-        await deleteMediaFiles([originalAvatarPath]);
-      }
-
-      setShowModal(false);
-      setForm(emptyForm);
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   return (
     <div className="anim-fade-up">
@@ -161,12 +35,12 @@ export default function AdminMembers() {
           <button className="inline-flex items-center gap-2 px-5 py-3 border-2 border-border bg-white rounded-xl text-sm font-bold text-foreground hover:-translate-y-1 transition-transform neo-shadow-sm">
             Import CSV
           </button>
-          <button
-            onClick={openAdd}
+          <Link
+            to="/admin/members/new"
             className="inline-flex items-center gap-2 px-5 py-3 bg-primary text-white border-2 border-border rounded-xl text-sm font-bold hover:-translate-y-1 transition-transform neo-shadow-sm hover:neo-shadow-md"
           >
             <Plus size={18} strokeWidth={3} /> Tambah
-          </button>
+          </Link>
         </div>
       </div>
 
@@ -291,9 +165,9 @@ export default function AdminMembers() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-1">
-                        <button onClick={() => openEdit(member)} className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" title="Edit">
+                        <Link to={`/admin/members/${member.id}/edit`} className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" title="Edit">
                           <Edit size={16} strokeWidth={2.5} />
-                        </button>
+                        </Link>
                         <button onClick={async () => {
                           if (confirm(`Hapus member "${member.name}"?`)) {
                             const result = await removeMember(member.id);
@@ -325,119 +199,6 @@ export default function AdminMembers() {
         </div>
       </div>
 
-      {/* Add/Edit Member Modal */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-8">
-          <div className="absolute inset-0 bg-foreground/40 backdrop-blur-md" onClick={() => setShowModal(false)} />
-          <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto neo-card bg-white rounded-3xl p-6 neo-shadow-lg anim-pop">
-            <button
-              onClick={() => setShowModal(false)}
-              className="absolute top-4 right-4 p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            >
-              <X size={20} strokeWidth={3} />
-            </button>
-            
-            <div className="flex items-center gap-3 mb-6">
-              <div className="size-10 bg-primary/10 rounded-xl flex items-center justify-center">
-                <Users size={20} className="text-primary" strokeWidth={2.5} />
-              </div>
-              <h2 className="text-2xl font-black tracking-tight">{editId ? "Edit Member" : "Tambah Member"}</h2>
-            </div>
-
-            {formError && (
-              <div className="mb-4 p-3 bg-red-50 text-red-700 border border-red-200 rounded-xl text-xs font-bold flex items-center gap-2">
-                <AlertCircle size={16} className="shrink-0" />
-                <span>{formError}</span>
-              </div>
-            )}
-            
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">Nama Lengkap</label>
-                  <input required type="text" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors" />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">Role</label>
-                  <input required type="text" value={form.role} onChange={e => setForm({ ...form, role: e.target.value })} className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors" />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">Divisi</label>
-                  <select required value={form.divisionId ?? "core"} onChange={e => setForm({ ...form, divisionId: e.target.value === "core" ? null : e.target.value })} className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors">
-                    <option value="core">Core (Pengurus)</option>
-                    {divisions.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">Angkatan</label>
-                  <input required type="text" value={form.year} onChange={e => setForm({ ...form, year: e.target.value })} className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors" />
-                </div>
-              </div>
-
-              {/* Avatar — dual-mode upload */}
-              <MediaUploadInput
-                label="Avatar"
-                value={typeof form.avatar === "string" ? form.avatar : ""}
-                onChange={(v) => setForm({ ...form, avatar: v })}
-                maxSizeMB={2}
-                previewClassName="size-12"
-                placeholder="https://... atau /foto-anggota/nama.jpg (opsional)"
-              />
-              <p className="text-[11px] text-muted-foreground -mt-1">Kosongkan URL untuk menggunakan avatar otomatis.</p>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">GitHub</label>
-                  <input type="text" value={form.github} onChange={e => setForm({ ...form, github: e.target.value })} placeholder="username" className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors" />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">LinkedIn</label>
-                  <input type="text" value={form.linkedin} onChange={e => setForm({ ...form, linkedin: e.target.value })} placeholder="username" className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors" />
-                </div>
-              </div>
-
-              {/* Sort Order */}
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">
-                  Urutan Tampilan
-                </label>
-                <input
-                  type="number"
-                  min={0}
-                  value={form.sortOrder}
-                  onChange={(e) => setForm({ ...form, sortOrder: Number(e.target.value) })}
-                  className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors"
-                />
-                <p className="text-[11px] text-muted-foreground mt-1">Nilai lebih kecil akan tampil lebih dulu.</p>
-              </div>
-
-              {/* Status Aktif */}
-              <div className="flex items-center gap-3 p-3 bg-muted rounded-xl border border-border/10">
-                <input
-                  type="checkbox"
-                  id="member-active"
-                  checked={form.active}
-                  onChange={(e) => setForm({ ...form, active: e.target.checked })}
-                  className="size-4 accent-primary rounded cursor-pointer"
-                />
-                <label htmlFor="member-active" className="text-xs font-bold text-foreground cursor-pointer select-none">
-                  Anggota Aktif (Tampil di website publik)
-                </label>
-              </div>
-
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full mt-3 py-3 bg-primary text-white border-2 border-border rounded-2xl font-black text-base neo-shadow-sm hover:-translate-y-1 hover:neo-shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {submitting ? "Menyimpan..." : editId ? "Simpan Perubahan" : "Simpan"}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

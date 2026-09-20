@@ -5,7 +5,7 @@
   },
   "description": "Showcase technology-focused UKM with an engaging profile, featuring sections for portfolio, members, and an admin dashboard for content management.",
   "robots": {
-    "index": false
+    "index": true
   },
   "accessibility": {
     "addBypassLinks": false,

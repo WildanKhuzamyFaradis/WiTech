@@ -1,4 +1,5 @@
 import http from "node:http";
+import { Resend } from "resend";
 import { CopilotBridge } from "./copilotBridge.js";
 import { getPublicWiTechData, buildMinimalContext } from "./publicData.js";
 import { evaluateScope } from "./scopeGate.js";
@@ -31,9 +32,27 @@ const ALLOWED_ORIGINS = new Set(
     : DEFAULT_ALLOWED_ORIGINS
 );
 
-const bridge = new CopilotBridge({
-  runtimeUrl: process.env.COPILOT_RUNTIME_URL || "localhost:4321",
-});
+const bridge = new CopilotBridge();
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+const contactAttempts = new Map();
+const CONTACT_WINDOW_MS = 15 * 60 * 1000;
+const CONTACT_LIMIT = 5;
+
+function allowContact(ip) {
+  const now = Date.now();
+  const recent = (contactAttempts.get(ip) || []).filter((time) => now - time < CONTACT_WINDOW_MS);
+  if (recent.length >= CONTACT_LIMIT) {
+    contactAttempts.set(ip, recent);
+    return false;
+  }
+  recent.push(now);
+  contactAttempts.set(ip, recent);
+  return true;
+}
+
+function contactText({ name, email, subject, message }) {
+  return `Nama: ${name}\nEmail: ${email}\nSubjek: ${subject || "Pesan dari Website"}\n\nPesan:\n${message}`;
+}
 
 function getClientIp(req) {
   const forwarded = req.headers["x-forwarded-for"];
@@ -91,6 +110,44 @@ export const server = http.createServer(async (req, res) => {
     sendJson(res, 200, {
       ok: true,
       service: "witech-assistant",
+    });
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/api/contact") {
+    const clientIp = getClientIp(req);
+    if (!handleCors(req, res)) return sendJson(res, 403, { ok: false, error: "Origin not allowed." });
+    if (!(req.headers["content-type"] || "").includes("application/json")) {
+      return sendJson(res, 400, { ok: false, error: "Format permintaan tidak valid." });
+    }
+    if (!allowContact(clientIp)) return sendJson(res, 429, { ok: false, error: "Terlalu banyak pesan. Coba lagi nanti." });
+    let body = "";
+    let tooLarge = false;
+    req.on("data", (chunk) => { body += chunk; if (body.length > 16000) { tooLarge = true; req.destroy(); } });
+    req.on("end", async () => {
+      if (tooLarge) return sendJson(res, 413, { ok: false, error: "Payload terlalu besar." });
+      let payload;
+      try { payload = JSON.parse(body || "{}"); } catch { return sendJson(res, 400, { ok: false, error: "Format permintaan tidak valid." }); }
+      const name = typeof payload.name === "string" ? payload.name.trim() : "";
+      const email = typeof payload.email === "string" ? payload.email.trim() : "";
+      const subject = typeof payload.subject === "string" ? payload.subject.trim() : "";
+      const message = typeof payload.message === "string" ? payload.message.trim() : "";
+      if (payload.website) return sendJson(res, 200, { ok: true });
+      if (!name || name.length > 100 || !email || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || subject.length > 150 || !message || message.length > 3000) {
+        return sendJson(res, 400, { ok: false, error: "Periksa kembali data formulir." });
+      }
+      if (!resend) return sendJson(res, 503, { ok: false, error: "Layanan pesan sedang tidak tersedia." });
+      try {
+        const result = await resend.emails.send({
+          from: process.env.CONTACT_FROM_EMAIL || "WiTECH Website <noreply@witech.id>",
+          to: process.env.CONTACT_TO_EMAIL || "contact@witech.id",
+          replyTo: email,
+          subject: `[WiTECH Contact] ${subject || "Pesan dari Website"}`,
+          text: contactText({ name, email, subject, message }),
+        });
+        if (result.error) throw new Error("resend_failed");
+        sendJson(res, 200, { ok: true });
+      } catch { sendJson(res, 503, { ok: false, error: "Pesan belum dapat dikirim. Coba lagi nanti." }); }
     });
     return;
   }
@@ -230,6 +287,7 @@ export const server = http.createServer(async (req, res) => {
           message: rawMessage,
           systemContext: minimalContext,
           validDivisions: publicData.divisions || [],
+          sessionId,
         });
 
         // Success: release lock and return reply
@@ -276,8 +334,9 @@ export const server = http.createServer(async (req, res) => {
 
 // If run directly via node src/server.js
 if (process.argv[1] && process.argv[1].endsWith("server.js")) {
-  server.listen(PORT, "127.0.0.1", () => {
-    console.log(`[WiTECH Assistant Service] Listening on http://127.0.0.1:${PORT}`);
+  const HOST = IS_PRODUCTION ? "0.0.0.0" : (process.env.HOST || "127.0.0.1");
+  server.listen(PORT, HOST, () => {
+    console.log(`[WiTECH Assistant Service] Listening on http://${HOST}:${PORT}`);
     console.log(`[WiTECH Assistant Service] Mode: empty, Trusted Server Context: active`);
   });
 

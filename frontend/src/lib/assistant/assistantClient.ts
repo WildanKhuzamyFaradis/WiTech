@@ -15,10 +15,7 @@ export interface AssistantAiResult {
   source?: "copilot";
 }
 
-const ENDPOINTS = [
-  "/api/assistant/chat",
-  "http://127.0.0.1:3001/api/assistant/chat",
-];
+const ENDPOINTS = ["/api/assistant/chat"];
 
 /**
  * Calls the local isolated WiTECH Assistant service powered by Copilot SDK.
@@ -27,7 +24,7 @@ const ENDPOINTS = [
 export async function fetchCopilotAiResponse(
   message: string,
   _publicData?: unknown,
-  timeoutMs = 15000
+  timeoutMs = 30000
 ): Promise<AssistantAiResult> {
   const trimmed = message.trim();
   if (!trimmed) {
@@ -36,6 +33,14 @@ export async function fetchCopilotAiResponse(
 
   if (trimmed.length > 500) {
     return { ok: false, error: "Pesan melebihi batas 500 karakter." };
+  }
+
+  if (import.meta.env.VITE_ASSISTANT_AI_ENABLED !== "true") {
+    return {
+      ok: false,
+      reason: "ai_unavailable",
+      error: "Fitur rekomendasi pintar belum tersedia. Aku masih bisa bantu lewat informasi WiTECH yang tersedia.",
+    };
   }
 
   // Send ONLY message to server; server builds its own trusted context
@@ -54,7 +59,7 @@ export async function fetchCopilotAiResponse(
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include",
+        credentials: "omit",
         body: payload,
         signal: controller.signal,
       });

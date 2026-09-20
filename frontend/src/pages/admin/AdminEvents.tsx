@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import { Search, Plus, Edit, Trash, X, Calendar, LockOpen, Lock, AlertCircle } from "lucide-react";
 import { useAdminData } from "../../context/AdminDataContext";
 import type { Event } from "../../lib/types";
@@ -30,8 +31,8 @@ const emptyForm: EventFormData = {
 
 export default function AdminEvents() {
   const { events, addEvent, updateEvent, removeEvent, loading } = useAdminData();
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
-  const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState<EventFormData>(emptyForm);
   const [submitting, setSubmitting] = useState(false);
@@ -46,19 +47,21 @@ export default function AdminEvents() {
   );
 
   const openAdd = () => {
+    navigate("/admin/events/new");
+    return;
     setForm({ ...emptyForm, date: todayInJakarta() });
     setEditId(null);
     setOriginalImagePath("");
     setFormError(null);
-    setShowModal(true);
   };
 
   const openEdit = (e: Event) => {
+    navigate(`/admin/events/${e.id}/edit`);
+    return;
     setForm({ ...e });
     setEditId(e.id);
     setOriginalImagePath(e.image);
     setFormError(null);
-    setShowModal(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -113,8 +116,6 @@ export default function AdminEvents() {
       if (editId && newlyUploadedPath && isManagedStoragePath(originalImagePath)) {
         await deleteMediaFiles([originalImagePath]);
       }
-
-      setShowModal(false);
       setForm(emptyForm);
     } finally {
       setSubmitting(false);
@@ -249,118 +250,6 @@ export default function AdminEvents() {
         </div>
       </div>
 
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-8">
-          <div className="absolute inset-0 bg-foreground/40 backdrop-blur-md" onClick={() => setShowModal(false)} />
-          <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto neo-card bg-white rounded-3xl p-6 neo-shadow-lg anim-pop">
-            <button
-              onClick={() => setShowModal(false)}
-              className="absolute top-4 right-4 p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            >
-              <X size={20} strokeWidth={3} />
-            </button>
-
-            <div className="flex items-center gap-3 mb-6">
-              <div className="size-10 bg-primary/10 rounded-xl flex items-center justify-center">
-                <Calendar size={20} className="text-primary" strokeWidth={2.5} />
-              </div>
-              <h2 className="text-2xl font-black tracking-tight">{editId ? "Edit Event" : "Tambah Event"}</h2>
-            </div>
-
-            {formError && (
-              <div className="mb-4 p-3 bg-red-50 text-red-700 border border-red-200 rounded-xl text-xs font-bold flex items-center gap-2">
-                <AlertCircle size={16} className="shrink-0" />
-                <span>{formError}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">Judul Event</label>
-                <input required type="text" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors" />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">Tanggal</label>
-                  <input required type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors" />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">Jam Mulai</label>
-                  <input required type="time" value={form.startTime} onChange={(e) => setForm({ ...form, startTime: e.target.value })} className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors" />
-                  <label className="block text-xs font-bold uppercase tracking-wider mt-2 mb-1.5 text-muted-foreground">Jam Selesai</label>
-                  <input required type="time" value={form.endTime} onChange={(e) => setForm({ ...form, endTime: e.target.value })} className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors" />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">Lokasi</label>
-                <input required type="text" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors" />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">Tipe Event</label>
-                <select
-                  required
-                  value={form.type}
-                  onChange={(e) => setForm({ ...form, type: e.target.value as Event["type"] })}
-                  className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors"
-                >
-                  <option value="Workshop">Workshop</option>
-                  <option value="Bootcamp">Bootcamp</option>
-                  <option value="Seminar">Seminar</option>
-                  <option value="Sharing Session">Sharing Session</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">Deskripsi</label>
-                <textarea required rows={2} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors resize-none" />
-              </div>
-
-              {/* Image — dual-mode upload */}
-              <MediaUploadInput
-                label="Poster / Gambar Event"
-                value={typeof form.image === "string" ? form.image : ""}
-                onChange={(v) => setForm({ ...form, image: v })}
-                maxSizeMB={5}
-                previewClassName="size-16"
-                placeholder="https://... atau /foto-event/poster.jpg"
-              />
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider mb-2 text-muted-foreground">Link Pendaftaran</label>
-                <input
-                  type="text"
-                  value={form.registrationLink || ""}
-                  onChange={(e) => setForm({ ...form, registrationLink: e.target.value })}
-                  placeholder="https://... atau link pendaftaran"
-                  className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors"
-                />
-              </div>
-
-              <label className="flex items-center gap-2 px-4 py-3 bg-muted border-2 border-transparent rounded-xl font-bold cursor-pointer hover:border-border transition-colors">
-                <input
-                  type="checkbox"
-                  checked={form.registrationOpen}
-                  onChange={(e) => setForm({ ...form, registrationOpen: e.target.checked })}
-                  className="size-5 rounded border-2 border-border cursor-pointer"
-                />
-                <span className="text-sm">Pendaftaran Buka</span>
-              </label>
-
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full mt-3 py-3 bg-primary text-white border-2 border-border rounded-2xl font-black text-base neo-shadow-sm hover:-translate-y-1 hover:neo-shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {submitting ? "Menyimpan..." : editId ? "Simpan Perubahan" : "Tambah Event"}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

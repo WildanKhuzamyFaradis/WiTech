@@ -1,4 +1,5 @@
 import { createBrowserRouter } from "react-router";
+import { createElement } from "react";
 import PublicLayout from "../layouts/PublicLayout";
 import AdminLayout from "../layouts/AdminLayout";
 import AdminRouteGuard from "../auth/AdminRouteGuard";
@@ -19,7 +20,9 @@ import AdminPortfolio from "../pages/admin/AdminPortfolio";
 import AdminGallery from "../pages/admin/AdminGallery";
 import AdminEvents from "../pages/admin/AdminEvents";
 import AdminMembers from "../pages/admin/AdminMembers";
+import AdminMemberEditor from "../pages/admin/AdminMemberEditor";
 import AdminFAQ from "../pages/admin/AdminFAQ";
+import AdminResourceEditor from "../pages/admin/AdminResourceEditor";
 
 export const router = createBrowserRouter([
   {
@@ -50,11 +53,23 @@ export const router = createBrowserRouter([
       children: [
         { index: true, Component: AdminDashboard },
         { path: "divisions", Component: AdminDivisions },
+        { path: "divisions/new", Component: () => createElement(AdminResourceEditor, { kind: "divisions" }) },
+        { path: "divisions/:id/edit", Component: () => createElement(AdminResourceEditor, { kind: "divisions" }) },
         { path: "portfolio", Component: AdminPortfolio },
+        { path: "portfolio/new", Component: () => createElement(AdminResourceEditor, { kind: "portfolio" }) },
+        { path: "portfolio/:id/edit", Component: () => createElement(AdminResourceEditor, { kind: "portfolio" }) },
         { path: "gallery", Component: AdminGallery },
+        { path: "gallery/new", Component: () => createElement(AdminResourceEditor, { kind: "gallery" }) },
+        { path: "gallery/:id/edit", Component: () => createElement(AdminResourceEditor, { kind: "gallery" }) },
         { path: "events", Component: AdminEvents },
+        { path: "events/new", Component: () => createElement(AdminResourceEditor, { kind: "events" }) },
+        { path: "events/:id/edit", Component: () => createElement(AdminResourceEditor, { kind: "events" }) },
         { path: "members", Component: AdminMembers },
+        { path: "members/new", Component: AdminMemberEditor },
+        { path: "members/:id/edit", Component: AdminMemberEditor },
         { path: "faq", Component: AdminFAQ },
+        { path: "faq/new", Component: () => createElement(AdminResourceEditor, { kind: "faq" }) },
+        { path: "faq/:id/edit", Component: () => createElement(AdminResourceEditor, { kind: "faq" }) },
       ],
     }],
   },

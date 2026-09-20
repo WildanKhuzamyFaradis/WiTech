@@ -37,12 +37,6 @@ export default defineConfig(({ mode }) => {
       port,
       strictPort: true,
       watch: { ignored: ['**/.figma/**'] },
-      proxy: {
-        '/api/assistant': {
-          target: 'http://127.0.0.1:3001',
-          changeOrigin: true,
-        },
-      },
     },
     preview: {
       host: '0.0.0.0',

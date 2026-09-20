@@ -52,22 +52,24 @@ export default function AdminDashboard() {
 
   return (
     <div className="anim-fade-up">
-      <div className="mb-10">
-        <h1 className="text-4xl font-black mb-2 tracking-tighter">Dashboard</h1>
+      <div className="mb-8 flex items-end justify-between gap-4 flex-wrap">
+        <div>
+        <h1 className="text-3xl font-black mb-2 tracking-tight">Dashboard</h1>
         <p className="text-base font-medium text-muted-foreground">
           Selamat datang, Admin! Ini ringkasan kegiatan Witech.
         </p>
+        </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
         {stats.map((stat, i) => {
           const Icon = stat.icon;
           return (
             <Link
               key={stat.label}
               to={stat.href}
-              className="neo-card bg-white rounded-2xl p-6 hover:-translate-y-1 transition-all group neo-shadow-sm hover:neo-shadow-md"
+              className="neo-card bg-white rounded-xl p-5 hover:-translate-y-1 transition-all group neo-shadow-sm hover:neo-shadow-md"
               style={{ animationDelay: `${i * 0.1}s` }}
             >
               <div className="flex items-start justify-between mb-6">
@@ -83,7 +85,7 @@ export default function AdminDashboard() {
                   strokeWidth={3}
                 />
               </div>
-              <p className="text-4xl font-black text-foreground mb-1 tracking-tight">{stat.value}</p>
+              <p className="text-3xl font-black text-foreground mb-1 tracking-tight">{stat.value}</p>
               <p className="text-sm font-bold text-muted-foreground mb-3">{stat.label}</p>
               <p className="text-xs font-bold flex items-center gap-1.5 px-3 py-1.5 bg-muted rounded-full inline-flex text-muted-foreground">
                 <TrendingUp size={12} strokeWidth={3} className="text-secondary" /> {stat.delta}
@@ -93,9 +95,9 @@ export default function AdminDashboard() {
         })}
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Recent Projects */}
-        <div className="xl:col-span-2 neo-card bg-white rounded-3xl overflow-hidden neo-shadow-sm">
+        <div className="xl:col-span-2 neo-card bg-white rounded-xl overflow-hidden neo-shadow-sm">
           <div className="px-6 py-5 border-b-2 border-border/10 flex items-center justify-between">
             <h2 className="font-black text-lg">Proyek Terbaru</h2>
             <Link
@@ -132,10 +134,10 @@ export default function AdminDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
           { label: "Buat Portofolio", to: "/admin/portfolio", desc: "Tambah karya ke portfolio", icon: FolderOpen, color: "#6366f1" },
-          { label: "Tambah Member", to: "/admin/members", desc: "Daftarin anggota baru", icon: Users, color: "#ec4899" },
+          { label: "Tambah Member", to: "/admin/members/new", desc: "Daftarin anggota baru", icon: Users, color: "#ec4899" },
           { label: "Upload Album", to: "/admin/gallery", desc: "Bikin galeri foto baru", icon: Image, color: "#06b6d4" },
         ].map((a) => {
           const Icon = a.icon;
