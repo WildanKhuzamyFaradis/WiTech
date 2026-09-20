@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import { Search, Plus, Edit, Trash, X, HelpCircle, AlertCircle } from "lucide-react";
 import { useAdminData } from "../../context/AdminDataContext";
 import type { FAQ } from "../../lib/types";
@@ -17,8 +18,8 @@ const emptyForm: FaqForm = {
 
 export default function AdminFAQ() {
   const { faqs, addFaq, updateFaq, removeFaq, loading } = useAdminData();
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
-  const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState<FaqForm>(emptyForm);
   const [submitting, setSubmitting] = useState(false);
@@ -31,14 +32,17 @@ export default function AdminFAQ() {
   );
 
   const openAdd = () => {
+    navigate("/admin/faq/new");
+    return;
     const nextOrder = faqs.length > 0 ? Math.max(...faqs.map((f) => f.sortOrder ?? 0)) + 1 : 0;
     setForm({ ...emptyForm, sortOrder: nextOrder });
     setEditId(null);
     setFormError(null);
-    setShowModal(true);
   };
 
   const openEdit = (f: FAQ) => {
+    navigate(`/admin/faq/${f.id}/edit`);
+    return;
     setForm({
       question: f.question,
       answer: f.answer,
@@ -46,7 +50,6 @@ export default function AdminFAQ() {
     });
     setEditId(f.id);
     setFormError(null);
-    setShowModal(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -74,7 +77,6 @@ export default function AdminFAQ() {
         setFormError(result.error);
         return;
       }
-      setShowModal(false);
     } finally {
       setSubmitting(false);
     }
@@ -180,87 +182,6 @@ export default function AdminFAQ() {
         </div>
       </div>
 
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-8">
-          <div className="absolute inset-0 bg-foreground/40 backdrop-blur-md" onClick={() => setShowModal(false)} />
-          <div className="relative w-full max-w-xl neo-card bg-white rounded-3xl p-6 neo-shadow-lg anim-pop">
-            <button
-              onClick={() => setShowModal(false)}
-              className="absolute top-4 right-4 p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            >
-              <X size={20} strokeWidth={3} />
-            </button>
-
-            <div className="flex items-center gap-3 mb-6">
-              <div className="size-10 bg-primary/10 rounded-xl flex items-center justify-center">
-                <HelpCircle size={20} className="text-primary" strokeWidth={2.5} />
-              </div>
-              <h2 className="text-2xl font-black tracking-tight">{editId ? "Edit FAQ" : "Tambah FAQ"}</h2>
-            </div>
-
-            {formError && (
-              <div className="mb-4 p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm font-bold flex items-center gap-2">
-                <AlertCircle size={16} className="shrink-0" />
-                <span>{formError}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">
-                  Pertanyaan
-                </label>
-                <input
-                  required
-                  type="text"
-                  value={form.question}
-                  onChange={(e) => setForm({ ...form, question: e.target.value })}
-                  placeholder="Misal: Apakah mahasiswa non-IT boleh bergabung?"
-                  className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">
-                  Jawaban
-                </label>
-                <textarea
-                  required
-                  rows={4}
-                  value={form.answer}
-                  onChange={(e) => setForm({ ...form, answer: e.target.value })}
-                  placeholder="Jawaban penjelasan..."
-                  className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors resize-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-muted-foreground">
-                  Urutan Tampilan
-                </label>
-                <input
-                  required
-                  type="number"
-                  min={0}
-                  value={form.sortOrder}
-                  onChange={(e) => setForm({ ...form, sortOrder: Number(e.target.value) })}
-                  className="w-full px-3 py-2.5 bg-muted border-2 border-transparent rounded-lg text-sm font-bold focus:border-border outline-none transition-colors"
-                />
-                <p className="text-xs text-muted-foreground mt-1">Nilai lebih kecil akan tampil lebih dulu.</p>
-              </div>
-
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full mt-3 py-3 bg-primary text-white border-2 border-border rounded-2xl font-black text-base neo-shadow-sm hover:-translate-y-1 hover:neo-shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {submitting ? "Menyimpan..." : editId ? "Simpan Perubahan" : "Tambah FAQ"}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
