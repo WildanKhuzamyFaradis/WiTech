@@ -253,9 +253,9 @@ export default function Home() {
       </section>
 
       {/* ── CTA ───────────────────────────────────────────── */}
-      <section className="bg-background">
+      <section className="bg-background overflow-x-hidden">
         <div className="max-w-7xl mx-auto px-6 py-32">
-          <div className="reveal relative rounded-3xl border-2 border-border p-12 md:p-24 text-center neo-shadow-lg overflow-hidden bg-white" ref={ctaRef}>
+          <div className="reveal relative rounded-3xl border-2 border-border p-8 sm:p-12 md:p-24 text-center neo-shadow-lg overflow-visible bg-white" ref={ctaRef}>
             {/* Gradient Glows */}
             <div className="absolute -top-32 -right-32 size-64 bg-primary/20 blur-3xl rounded-full" />
             <div className="absolute -bottom-32 -left-32 size-64 bg-secondary/20 blur-3xl rounded-full" />

@@ -140,15 +140,19 @@ export default function Contact() {
                   <div className="size-24 bg-secondary/10 rounded-full flex items-center justify-center text-4xl mb-6">
                     🎉
                   </div>
-                  <h3 className="text-3xl font-black mb-3 tracking-tight">Pesan Belum Dikirim</h3>
+                  <h3 className="text-3xl font-black mb-3 tracking-tight">Pesan Berhasil Dikirim</h3>
                   <p className="font-medium text-muted-foreground max-w-xs mx-auto leading-relaxed">
-                    Form ini masih berupa demo. Pesan belum dikirim atau disimpan. Silakan hubungi kontak yang tercantum.
+                    Terima kasih sudah menghubungi WiTECH. Pesan kamu sudah kami terima dan akan kami balas melalui email jika diperlukan.
                   </p>
                   <button
-                    onClick={() => setSubmitted(false)}
+                    onClick={() => {
+                      setSubmitted(false);
+                      setForm({ name: "", email: "", subject: "join", message: "", website: "" });
+                      setStatus("");
+                    }}
                     className="mt-8 px-6 py-3 bg-foreground text-background font-bold rounded-xl border-2 border-border neo-shadow-sm hover:-translate-y-1 transition-transform"
                   >
-                    Kembali ke Form
+                    Kirim Pesan Lagi
                   </button>
                 </div>
               ) : (
