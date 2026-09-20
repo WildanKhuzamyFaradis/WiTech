@@ -33,8 +33,8 @@ export default async function handler(request, response) {
     return json(response, 400, { error: 'All fields are required' });
   }
 
-  const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.RESEND_FROM_EMAIL;
+  const apiKey = process.env.CONTACT_API_KEY;
+  const from = process.env.CONTACT_FROM_EMAIL;
   const to = process.env.CONTACT_TO_EMAIL;
 
   if (!apiKey || !from || !to) {
