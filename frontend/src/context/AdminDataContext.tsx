@@ -19,7 +19,7 @@ import {
 } from "react";
 import type { Division, Project, Member, Album, Event, FAQ } from "../lib/types";
 import type { StoreData, MutationResult } from "../lib/dataContract";
-import { fetchLogoUrl } from "../lib/siteSettings";
+import { fetchLogoPath } from "../lib/siteSettings";
 import {
   fetchAdminData,
   createDivision,
@@ -85,7 +85,7 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       setError(null);
-      const [res, logoUrl] = await Promise.all([fetchAdminData(), fetchLogoUrl()]);
+      const [res, logoUrl] = await Promise.all([fetchAdminData(), fetchLogoPath()]);
       setData(res);
       setLogoUrl(logoUrl);
     } catch (err) {
