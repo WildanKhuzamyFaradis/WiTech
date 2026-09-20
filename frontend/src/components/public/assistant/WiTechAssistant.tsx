@@ -6,6 +6,7 @@ import {
   getDeterministicAssistantResponse,
   DEFAULT_QUICK_ACTIONS,
 } from "../../../lib/assistant/deterministicEngine";
+import { fetchCopilotAiResponse } from "../../../lib/assistant/assistantClient";
 
 function generateSafeId(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
@@ -83,6 +84,14 @@ export default function WiTechAssistant() {
     }
   }, [isOpen]);
 
+  // Development-only log of real division names from usePublicData()
+  useEffect(() => {
+    if (import.meta.env.DEV && data?.divisions && data.divisions.length > 0) {
+      const divisionNames = data.divisions.map((d) => d.name);
+      console.log(`[WiTECH Assistant] real divisions:\n${JSON.stringify(divisionNames)}`);
+    }
+  }, [data]);
+
   // Close on Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -108,16 +117,96 @@ export default function WiTechAssistant() {
     // Calculate deterministic response immediately
     const assistantResponse = getDeterministicAssistantResponse(trimmed, data);
 
-    const assistantMsg: ChatMessage = {
-      id: generateSafeId(),
+    if (assistantResponse.type !== "needs_ai") {
+      // Deterministic / Out-of-scope / Not-found: NO AI call needed
+      const assistantMsg: ChatMessage = {
+        id: generateSafeId(),
+        role: "assistant",
+        content: assistantResponse.text,
+        timestamp: formatCurrentTime(),
+        responseMeta: assistantResponse,
+      };
+
+      setMessages((prev) => [...prev, userMsg, assistantMsg]);
+      setInput("");
+      return;
+    }
+
+    // It is needs_ai: Show thinking message and query local Copilot service
+    const thinkingId = generateSafeId();
+    const thinkingMsg: ChatMessage = {
+      id: thinkingId,
       role: "assistant",
-      content: assistantResponse.text,
+      content: "WiTECH Assistant sedang berpikir...",
       timestamp: formatCurrentTime(),
       responseMeta: assistantResponse,
     };
 
-    setMessages((prev) => [...prev, userMsg, assistantMsg]);
+    setMessages((prev) => [...prev, userMsg, thinkingMsg]);
     setInput("");
+
+    fetchCopilotAiResponse(trimmed, data)
+      .then((aiRes) => {
+        setMessages((prev) =>
+          prev.map((m) => {
+            if (m.id !== thinkingId) return m;
+            if (aiRes.ok && aiRes.reply) {
+              return {
+                ...m,
+                content: aiRes.reply,
+                responseMeta: {
+                  type: "needs_ai",
+                  text: aiRes.reply,
+                  actions: [
+                    { label: "Lihat Divisi", payload: "divisi" },
+                    { label: "Hubungi WiTECH", payload: "kontak" },
+                  ],
+                },
+              };
+            }
+            // Graceful quota fallback or AI-unavailable fallback
+            const fallbackText =
+              "Fitur jawaban pintar sedang tidak tersedia. Aku masih bisa bantu lewat informasi WiTECH yang tersedia.";
+            return {
+              ...m,
+              content: fallbackText,
+              responseMeta: {
+                type: "direct",
+                text: fallbackText,
+                actions: [
+                  { label: "Divisi", payload: "divisi" },
+                  { label: "FAQ", payload: "faq" },
+                  { label: "Hubungi WiTECH", payload: "kontak" },
+                ],
+              },
+            };
+          })
+        );
+      })
+      .catch(() => {
+        // Fallback on network failure
+        const fallbackText =
+          "Fitur jawaban pintar sedang tidak tersedia. Aku masih bisa bantu lewat informasi WiTECH yang tersedia.";
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === thinkingId
+              ? {
+                  ...m,
+                  content: fallbackText,
+                  responseMeta: {
+                    type: "direct",
+                    text: fallbackText,
+                    actions: [
+                      { label: "Divisi", payload: "divisi" },
+                      { label: "FAQ", payload: "faq" },
+                      { label: "Hubungi WiTECH", payload: "kontak" },
+                    ],
+                  },
+                }
+              : m
+          )
+        );
+      });
   };
 
   const handleFormSubmit = (e: React.FormEvent) => {
@@ -128,6 +217,10 @@ export default function WiTechAssistant() {
   };
 
   const handleActionClick = (action: AssistantAction) => {
+    if (action.payload.startsWith("http://") || action.payload.startsWith("https://")) {
+      window.open(action.payload, "_blank", "noopener,noreferrer");
+      return;
+    }
     handleSendMessage(action.payload);
   };
 

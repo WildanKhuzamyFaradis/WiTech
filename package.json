@@ -10,6 +10,8 @@
     "format": "pnpm --dir frontend run format",
     "frontend:dev": "pnpm --dir frontend run dev",
     "frontend:build": "pnpm --dir frontend run build",
+    "assistant:dev": "pnpm --dir assistant-service run dev",
+    "assistant:start": "pnpm --dir assistant-service run start",
     "backend:install": "pnpm --dir backend install",
     "backend:dev": "pnpm --dir backend dev"
   },

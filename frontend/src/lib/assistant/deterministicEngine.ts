@@ -1,5 +1,5 @@
-import type { StoreData } from "../dataContract";
-import { formatEventDate, formatEventTime, todayInJakarta } from "../dataContract";
+import type { StoreData } from "../dataContract.ts";
+import { formatEventDate, formatEventTime, todayInJakarta } from "../dataContract.ts";
 import type { AssistantAction, AssistantResponse } from "./types";
 import type { Division, Project, Event, FAQ, Member } from "../types";
 
@@ -260,7 +260,10 @@ export function getDeterministicAssistantResponse(
     return {
       type: "needs_ai",
       text: "Pertanyaan itu butuh rekomendasi yang lebih kontekstual. Fitur rekomendasi pintar WiTECH Assistant akan tersedia di tahap berikutnya. Untuk sekarang, aku bisa bantu menampilkan daftar divisi dan fokusnya.",
-      actions: [{ label: "Lihat Divisi", payload: "divisi" }],
+      actions: [
+        { label: "Lihat Divisi", payload: "divisi" },
+        { label: "Hubungi WiTECH", payload: "kontak" },
+      ],
     };
   }
 
@@ -278,6 +281,44 @@ export function getDeterministicAssistantResponse(
       type: "direct",
       text: "Sama-sama! Senang bisa membantu. Jika ada hal lain seputar WiTECH yang ingin kamu tanyakan, silakan beri tahu ya! 😊",
       actions: DEFAULT_QUICK_ACTIONS,
+    };
+  }
+
+  // 5.5 Website Creator Intent
+  // Matches: siapa yang bikin/buat/coding/develop website/web ini, siapa pembuat/developer/kreator website, etc.
+  if (
+    /(siapa|yang).*(bikin|buat|coding|koding|develop|bangun|ngembangin|garap|ngoding|ngebuat|ngerjain|kerjain|rancang|desain).*(web|website|situs|site)/i.test(normalized) ||
+    /(pembuat|developer|kreator|creator|pengembang|programmer|coder).*(web|website|situs|site)/i.test(normalized) ||
+    /(web|website|situs|site).*(buatan|dibuat|dibikin|dikembangkan|dikoding|dibangun|dirancang).*(siapa)/i.test(normalized) ||
+    /(web|website|situs|site).*(siapa).*(buat|bikin|coding|koding|develop|bangun|garap)/i.test(normalized) ||
+    /siapa (developer|pembuat|pengembang|programmer|coder)(nya)?$/i.test(normalized) ||
+    /^(lihat )?profil wildan$/i.test(normalized)
+  ) {
+    const wildan = data.members.find((m) => /wildan/i.test(m.name));
+    let profileUrl = "https://github.com/WildanKhuzamyFaradis";
+
+    if (wildan) {
+      if (wildan.github) {
+        profileUrl = wildan.github.startsWith("http")
+          ? wildan.github
+          : `https://github.com/${wildan.github}`;
+      } else if (wildan.linkedin) {
+        profileUrl = wildan.linkedin.startsWith("http")
+          ? wildan.linkedin
+          : `https://www.linkedin.com/in/${wildan.linkedin}`;
+      }
+    }
+
+    const actions: AssistantAction[] = [
+      { label: "Lihat Profil Wildan", payload: profileUrl },
+      { label: "Divisi Lab", payload: "divisi lab" },
+      { label: "Hubungi WiTECH", payload: "kontak" },
+    ];
+
+    return {
+      type: "direct",
+      text: "Website WiTECH ini dikembangkan oleh Wildan, Ketua WiTECH Lab 2026.\nKalau mau lihat karya atau profil lainnya, kamu bisa cek profil Wildan.",
+      actions,
     };
   }
 

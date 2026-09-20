@@ -215,7 +215,7 @@ INSERT INTO public.members (
   ('9', 'Ach. Faiz mahmudi', 'Anggota', 'academy', '2024', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Faiz', '', '', true, 8),
   ('10', 'Dina Safitri', 'Anggota', 'academy', '2024', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Dina', '', '', true, 9),
   ('11', 'Lailatul Hasanah', 'Anggota', 'academy', '2024', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Lailatul', '', '', true, 10),
-  ('12', 'Wildan khuzamy faradis', 'Ketua Divisi', 'lab', '2024', '/foto-angota/wildanz.jpeg', '', '', true, 11),
+  ('12', 'Wildan khuzamy faradis', 'Ketua Divisi', 'lab', '2024', '/foto-angota/wildanz.jpeg', 'WildanKhuzamyFaradis', 'wildan-khuzamy-f-31b40a42a', true, 11),
   ('13', 'Nofan nelandi R', 'Anggota', 'lab', '2024', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Nofan', '', '', true, 12),
   ('14', 'Nur Hartatik', 'Anggota', 'lab', '2024', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Hartatik', '', '', true, 13),
   ('15', 'Wafika Jamila hadi', 'Anggota', 'lab', '2024', 'https://api.dicebear.com/7.x/avataaars/svg?seed=Wafika', '', '', true, 14),
