@@ -2,7 +2,6 @@ import http from "node:http";
 import { Resend } from "resend";
 import { CopilotBridge } from "./copilotBridge.js";
 import { getPublicWiTechData, buildMinimalContext } from "./publicData.js";
-import { evaluateScope } from "./scopeGate.js";
 import {
   checkRateLimits,
   recordRequest,
@@ -226,18 +225,7 @@ export const server = http.createServer(async (req, res) => {
         return;
       }
 
-      // 4. Server-Side Scope Gate (BEFORE any Copilot / Supabase load)
-      const scope = evaluateScope(rawMessage);
-      if (!scope.allowed) {
-        sendJson(res, 200, {
-          ok: false,
-          reason: scope.reason || "out_of_scope",
-          error: "Pertanyaan di luar cakupan asisten.",
-        });
-        return;
-      }
-
-      // 5. Concurrency Guard: 1 active AI request per session
+      // 4. Concurrency Guard: 1 active AI request per session
       const lockAcquired = acquireSessionLock(sessionId);
       if (!lockAcquired) {
         sendJson(res, 429, {
