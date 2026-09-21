@@ -18,12 +18,16 @@ export default async function handler(req, res) {
     const linkedin = body.linkedin ? validHttpsUrl(String(body.linkedin).trim(), "linkedin.com") : null;
     const github = body.github ? validHttpsUrl(String(body.github).trim(), "github.com") : null;
     if ((body.linkedin && !linkedin) || (body.github && !github)) return json(res, 400, { ok: false, reason: "invalid_request", error: "URL profil harus menggunakan HTTPS dan domain yang sesuai." });
-    const { data: division, error: divisionError } = await service.from("divisions").select("id").eq("id", String(body.divisionId || "")).maybeSingle();
+    const divisionId = String(body.divisionId || "");
+    const isCore = divisionId === "core";
+    const { data: division, error: divisionError } = isCore
+      ? { data: null, error: null }
+      : await service.from("divisions").select("id").eq("id", divisionId).maybeSingle();
     if (divisionError) { logSafeError("create", divisionError); return json(res, 500, { ok: false, reason: "database_error", error: "Data upload belum dapat dibuat." }); }
-    if (!division) return json(res, 400, { ok: false, reason: "invalid_request", error: "Divisi tidak valid." });
+    if (!isCore && !division) return json(res, 400, { ok: false, reason: "invalid_request", error: "Divisi tidak valid." });
     const submissionId = id();
     const path = `pending/${slug(name)}--${submissionId}.upload`;
-    const { error: insertError } = await service.from("member_photo_submissions").insert({ id: submissionId, name, division_id: division.id, linkedin_url: linkedin, github_url: github, storage_path: path, original_filename: original, mime_type: type, file_size: size, status: "uploading" });
+    const { error: insertError } = await service.from("member_photo_submissions").insert({ id: submissionId, name, division_id: isCore ? null : division.id, linkedin_url: linkedin, github_url: github, storage_path: path, original_filename: original, mime_type: type, file_size: size, status: "uploading" });
     if (insertError) { logSafeError("create", insertError); return json(res, 500, { ok: false, reason: "database_error", error: "Pengiriman belum dapat dimulai." }); }
     const { data: signed, error: signedError } = await service.storage.from(BUCKET).createSignedUploadUrl(path);
     if (signedError || !signed?.token) { if (signedError) logSafeError("create-storage", signedError); await service.from("member_photo_submissions").delete().eq("id", submissionId).eq("status", "uploading"); return json(res, 503, { ok: false, reason: "storage_error", error: "Upload foto belum tersedia." }); }

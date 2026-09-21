@@ -40,4 +40,19 @@ export async function consumeSubmissionRate(req) {
 }
 
 export function signature(buffer) { if (buffer.subarray(0, 3).equals(Buffer.from([0xff, 0xd8, 0xff]))) return "image/jpeg"; if (buffer.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return "image/png"; if (buffer.subarray(0, 4).toString() === "RIFF" && buffer.subarray(8, 12).toString() === "WEBP") return "image/webp"; return null; }
-export async function requireAdmin(req) { if (!service) return false; const header = req.headers.authorization || ""; if (!header.startsWith("Bearer ")) return false; const { data } = await service.auth.getUser(header.slice(7)); if (!data.user) return false; const { data: admin } = await service.from("admin_users").select("user_id").eq("user_id", data.user.id).maybeSingle(); return Boolean(admin); }
+export async function requireAdmin(req) {
+  if (!service) return false;
+  const header = req.headers.authorization || "";
+  if (!header.startsWith("Bearer ")) return false;
+  const { data: userData, error: userError } = await service.auth.getUser(header.slice(7));
+  if (userError || !userData.user) {
+    logSafeError("admin-auth", userError || new Error("user_not_found"));
+    return false;
+  }
+  const { data: admin, error: adminError } = await service.from("admin_users").select("user_id").eq("user_id", userData.user.id).maybeSingle();
+  if (adminError) {
+    logSafeError("admin-allowlist", adminError);
+    return false;
+  }
+  return Boolean(admin);
+}
