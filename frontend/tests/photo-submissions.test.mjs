@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readJsonBody, signature, validHttpsUrl } from "../api/photo-submissions/_shared.js";
+import { deriveRateLimitKey, readJsonBody, signature, sourceHashForSource, validHttpsUrl } from "../api/photo-submissions/_shared.js";
 
 const request = (body, contentType = "application/json") => ({ headers: { "content-type": contentType }, body, socket: { remoteAddress: "test" } });
 const response = () => { const out = {}; return { status(code) { out.status = code; return this; }, json(body) { out.body = body; return out; }, out }; };
@@ -74,5 +74,23 @@ test("rejected and used submissions cannot be promoted", async () => {
   assert.match(use, /eq\("status", "pending"\)/);
   assert.match(reject, /status: "rejected"/);
   assert.doesNotMatch(reject, /\.remove\(/);
+});
+test("rate limiter derives a deterministic non-reversible source hash from the service key", async () => {
+  const key = "server-only-service-role-key";
+  const first = sourceHashForSource("203.0.113.10", key);
+  const second = sourceHashForSource("203.0.113.10", key);
+  const other = sourceHashForSource("203.0.113.11", key);
+  assert.equal(first, second);
+  assert.notEqual(first, other);
+  assert.notEqual(first, "203.0.113.10");
+  assert.notEqual(first, key);
+  assert.ok(Buffer.isBuffer(deriveRateLimitKey(key)));
+  assert.equal(sourceHashForSource("203.0.113.10", ""), null);
+  const fs = await import("node:fs/promises");
+  const shared = await fs.readFile(new URL("../api/photo-submissions/_shared.js", import.meta.url), "utf8");
+  const removedName = ["PHOTO", "SUBMISSION", "RATE", "LIMIT", "SECRET"].join("_");
+  assert.doesNotMatch(shared, new RegExp(removedName));
+  assert.match(shared, /SUPABASE_SERVICE_ROLE_KEY/);
+  assert.doesNotMatch(shared, /attempts = new Map/);
 });
 
