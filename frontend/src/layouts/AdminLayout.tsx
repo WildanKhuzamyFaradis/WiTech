@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router";
-import { signOutAdmin } from "../auth/adminAuth";
+import type { Session } from "@supabase/supabase-js";
+import { getAdminSession, signOutAdmin, subscribeToAdminAuthState } from "../auth/adminAuth";
 import { AdminDataProvider } from "../context/AdminDataContext";
 import { useAdminData } from "../context/AdminDataContext";
 import { resolveMediaUrl } from "../lib/storage";
@@ -59,8 +60,27 @@ function AdminBrand({ onClose }: { onClose: () => void }) {
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [logoutError, setLogoutError] = useState("");
+  const [authSession, setAuthSession] = useState<Session | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    let mounted = true;
+    const { data } = subscribeToAdminAuthState((_event, session) => {
+      if (mounted) setAuthSession(session);
+    });
+
+    getAdminSession().then((session) => {
+      if (mounted) setAuthSession(session);
+    }).catch(() => {
+      if (mounted) setAuthSession(null);
+    });
+
+    return () => {
+      mounted = false;
+      data.subscription.unsubscribe();
+    };
+  }, []);
 
   const handleLogout = async () => {
     setLogoutError("");
@@ -136,7 +156,11 @@ export default function AdminLayout() {
             </div>
             <div>
               <p className="text-sm font-black">Administrator</p>
-              <p className="text-xs font-medium text-muted-foreground">admin@witech.id</p>
+              {authSession?.user.email && (
+                <p className="text-xs font-medium text-muted-foreground max-w-[170px] truncate" title={authSession.user.email}>
+                  {authSession.user.email}
+                </p>
+              )}
             </div>
           </div>
           <button
