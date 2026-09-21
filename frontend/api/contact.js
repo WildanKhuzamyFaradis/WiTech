@@ -1,98 +1,36 @@
-const json = (response, status, body) => {
-  response.status(status).json(body);
-};
+import { consumeRateLimit } from "./_rateLimit.js";
 
-const escapeHtml = (value) =>
-  value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+const MAX_BODY_BYTES = 16 * 1024;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const json = (response, status, body) => response.status(status).json(body);
+const escapeHtml = (value) => value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 
 export default async function handler(request, response) {
-  if (request.method !== 'POST') {
-    response.setHeader('Allow', 'POST');
-    return json(response, 405, { error: 'Method not allowed' });
-  }
-
-  console.log('Contact form payload:', request.body);
-
-  const { name, email, subject, message } = request.body ?? {};
-
-  if (
-    typeof name !== 'string' ||
-    typeof email !== 'string' ||
-    typeof subject !== 'string' ||
-    typeof message !== 'string' ||
-    !name.trim() ||
-    !email.trim() ||
-    !subject.trim() ||
-    !message.trim()
-  ) {
-    return json(response, 400, { error: 'All fields are required' });
-  }
-
+  if (request.method !== "POST") { response.setHeader("Allow", "POST"); return json(response, 405, { error: "Method not allowed" }); }
+  let body;
+  try {
+    const raw = typeof request.body === "string" ? request.body : JSON.stringify(request.body ?? {});
+    if (Buffer.byteLength(raw, "utf8") > MAX_BODY_BYTES) return json(response, 413, { error: "Payload terlalu besar." });
+    body = typeof request.body === "string" ? JSON.parse(request.body) : request.body ?? {};
+  } catch { return json(response, 400, { error: "Permintaan JSON tidak valid." }); }
+  if (!body || typeof body !== "object" || Array.isArray(body)) return json(response, 400, { error: "Data formulir tidak valid." });
+  if (body.website) return json(response, 200, { success: true });
+  const name = typeof body.name === "string" ? body.name.trim() : "";
+  const email = typeof body.email === "string" ? body.email.trim() : "";
+  const subject = typeof body.subject === "string" ? body.subject.trim() : "";
+  const message = typeof body.message === "string" ? body.message.trim() : "";
+  if (name.length < 2 || name.length > 100 || email.length < 1 || email.length > 254 || !EMAIL_PATTERN.test(email) || subject.length < 2 || subject.length > 150 || message.length < 1 || message.length > 5000) return json(response, 400, { error: "Data formulir tidak valid." });
+  const rate = await consumeRateLimit(request, "contact", 5, 3600);
+  if (rate.unavailable) return json(response, 503, { error: "Layanan kontak belum tersedia." });
+  if (!rate.allowed) return json(response, 429, { error: "Terlalu banyak pesan. Coba lagi nanti." });
   const apiKey = process.env.CONTACT_API_KEY;
   const from = process.env.CONTACT_FROM_EMAIL;
   const to = process.env.CONTACT_TO_EMAIL;
-
-  if (!apiKey || !from || !to) {
-    console.error('Contact email config missing:', { hasApiKey: Boolean(apiKey), hasFrom: Boolean(from), hasTo: Boolean(to) });
-    return json(response, 500, { error: 'Email service is not configured' });
-  }
-
-  const safeName = escapeHtml(name.trim());
-  const safeEmail = escapeHtml(email.trim());
-  const safeSubject = escapeHtml(subject.trim());
-  const safeMessage = escapeHtml(message.trim());
-
+  if (!apiKey || !from || !to) { console.error("[contact] Email configuration incomplete", { hasApiKey: Boolean(apiKey), hasFrom: Boolean(from), hasTo: Boolean(to) }); return json(response, 500, { error: "Email service is not configured" }); }
+  const safeName = escapeHtml(name), safeEmail = escapeHtml(email), safeSubject = escapeHtml(subject), safeMessage = escapeHtml(message).replace(/\n/g, "<br>");
   try {
-    const resendResponse = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from,
-        to: [to],
-        reply_to: email.trim(),
-        subject: `[Portfolio] ${subject.trim()}`,
-        text: `Name: ${name.trim()}\nEmail: ${email.trim()}\n\n${message.trim()}`,
-        html: `
-                    <div style="margin:0;background:#f4f1e9;padding:32px 16px;font-family:Arial,sans-serif;color:#141414;">
-                        <div style="max-width:620px;margin:0 auto;background:#fffdf7;border:2px solid #141414;box-shadow:6px 6px 0 #141414;">
-                            <div style="background:#f26a3d;border-bottom:2px solid #141414;padding:26px 28px;">
-                                <div style="font-size:12px;letter-spacing:2px;text-transform:uppercase;font-weight:bold;">IRFAN HARIYANTO</div>
-                                <h1 style="margin:22px 0 0;font-size:30px;line-height:1.05;letter-spacing:-1px;">New message from your portfolio</h1>
-                            </div>
-                            <div style="padding:28px;">
-                                <div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#696763;margin-bottom:8px;">Message details</div>
-                                <table role="presentation" style="width:100%;border-collapse:collapse;border-top:2px solid #141414;border-bottom:2px solid #141414;margin-bottom:26px;">
-                                    <tr><td style="padding:12px 0;font-size:12px;color:#696763;width:110px;">FROM</td><td style="padding:12px 0;font-size:14px;font-weight:bold;">${safeName}</td></tr>
-                                    <tr><td style="padding:12px 0;font-size:12px;color:#696763;">EMAIL</td><td style="padding:12px 0;font-size:14px;"><a href="mailto:${safeEmail}" style="color:#141414;">${safeEmail}</a></td></tr>
-                                    <tr><td style="padding:12px 0;font-size:12px;color:#696763;">SUBJECT</td><td style="padding:12px 0;font-size:14px;font-weight:bold;">${safeSubject}</td></tr>
-                                </table>
-                                <div style="background:#f4f1e9;border-left:5px solid #8cc7ff;padding:18px 20px;white-space:pre-wrap;font-size:15px;line-height:1.6;">${safeMessage}</div>
-                                <a href="mailto:${safeEmail}?subject=Re: ${safeSubject}" style="display:inline-block;margin-top:26px;background:#141414;color:#fffdf7;padding:14px 18px;text-decoration:none;font-weight:bold;font-size:12px;text-transform:uppercase;">Reply to ${safeName} &rarr;</a>
-                            </div>
-                            <div style="border-top:2px solid #141414;padding:16px 28px;font-size:11px;color:#696763;">Sent from irfanhariyanto.com contact form</div>
-                        </div>
-                    </div>
-                `,
-      }),
-    });
-
-    if (!resendResponse.ok) {
-      const resendText = await resendResponse.text();
-      console.error('Resend API error:', resendText);
-      return json(response, 502, { error: 'Unable to send email' });
-    }
-
+    const resendResponse = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [to], reply_to: email, subject: `[Portfolio] ${subject}`, text: `Name: ${name}\nEmail: ${email}\n\n${message}`, html: `<p><strong>FROM:</strong> ${safeName}</p><p><strong>EMAIL:</strong> ${safeEmail}</p><p><strong>SUBJECT:</strong> ${safeSubject}</p><p><strong>MESSAGE:</strong><br>${safeMessage}</p>` }) });
+    if (!resendResponse.ok) { console.error("[contact] Provider rejected request", { status: resendResponse.status }); return json(response, 502, { error: "Unable to send email" }); }
     return json(response, 200, { success: true });
-  } catch (error) {
-    console.error('Contact handler failed:', error);
-    return json(response, 502, { error: 'Unable to reach email service' });
-  }
+  } catch (error) { console.error("[contact] Handler failed", { name: error?.name, message: error?.message }); return json(response, 502, { error: "Unable to reach email service" }); }
 }
