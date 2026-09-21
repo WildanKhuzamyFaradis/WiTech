@@ -9,14 +9,16 @@
     "preview": "vite preview",
     "format": "oxfmt",
     "backend:install": "pnpm --dir ../backend install",
-    "backend:dev": "pnpm --dir ../backend dev"
+    "backend:dev": "pnpm --dir ../backend dev",
+    "test:photo": "node --test tests/photo-submissions.test.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",
     "lucide-react": "^1.34.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-router": "^8.3.0"
+    "react-router": "^8.3.0",
+    "sharp": "^0.34.3"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.0.0",

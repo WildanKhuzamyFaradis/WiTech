@@ -507,7 +507,7 @@ export async function createMember(
     // divisionId === null or "core" must write SQL NULL
     const divisionId = !data.divisionId || data.divisionId === "core" ? null : data.divisionId;
 
-    const { error } = await supabase.from("members").insert({
+    const { data: created, error } = await supabase.from("members").insert({
       name: data.name.trim(),
       role: data.role.trim(),
       division_id: divisionId,
@@ -517,10 +517,10 @@ export async function createMember(
       linkedin: data.linkedin?.trim() || "",
       active: data.active ?? true,
       sort_order: nextSort,
-    });
+    }).select("id").single();
 
     if (error) return { ok: false, error: formatAdminError(error, "Gagal menambah anggota.") };
-    return { ok: true };
+    return { ok: true, id: created?.id };
   } catch (err) {
     return { ok: false, error: formatAdminError(err, "Gagal menambah anggota.") };
   }

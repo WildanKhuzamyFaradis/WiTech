@@ -13,6 +13,7 @@ import Gallery from "../pages/public/Gallery";
 import Events from "../pages/public/Events";
 import FAQ from "../pages/public/FAQ";
 import Contact from "../pages/public/Contact";
+import UploadFoto from "../pages/public/UploadFoto";
 import AdminLogin from "../pages/admin/AdminLogin";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import AdminDivisions from "../pages/admin/AdminDivisions";
@@ -40,6 +41,7 @@ export const router = createBrowserRouter([
       { path: "events", Component: Events },
       { path: "faq", Component: FAQ },
       { path: "contact", Component: Contact },
+      { path: "upload-foto", Component: UploadFoto },
     ],
   },
   {
