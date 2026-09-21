@@ -93,4 +93,22 @@ test("rate limiter derives a deterministic non-reversible source hash from the s
   assert.match(shared, /SUPABASE_SERVICE_ROLE_KEY/);
   assert.doesNotMatch(shared, /attempts = new Map/);
 });
+test("create handler follows the Vercel req/res contract", async () => {
+  const { default: handler } = await import("../api/photo-submissions/create.js");
+  const calls = [];
+  const res = { setHeader(name, value) { calls.push([name, value]); }, status(code) { calls.push(["status", code]); return this; }, json(body) { calls.push(["json", body]); return this; } };
+  await handler({ method: "GET", headers: {}, body: {} }, res);
+  assert.deepEqual(calls[0], ["Allow", "POST"]);
+  assert.equal(calls[1][1], 405);
+});
+
+test("create returns a safe configuration reason when server credentials are absent", async () => {
+  const { default: handler } = await import("../api/photo-submissions/create.js");
+  let payload;
+  const res = { setHeader() {}, status(code) { this.code = code; return this; }, json(body) { payload = body; return this; } };
+  await handler({ method: "POST", headers: { "content-type": "application/json" }, body: {} }, res);
+  assert.equal(res.code, 500);
+  assert.equal(payload.reason, "server_config");
+  assert.doesNotMatch(JSON.stringify(payload), /SUPABASE_SERVICE_ROLE_KEY/);
+});
 

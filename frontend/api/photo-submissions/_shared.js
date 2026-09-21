@@ -4,9 +4,10 @@ import crypto from "node:crypto";
 export const BUCKET = "member-submissions";
 export const MAX_BYTES = 5 * 1024 * 1024;
 export const TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
-export const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "";
-export const service = supabaseUrl && process.env.SUPABASE_SERVICE_ROLE_KEY
-  ? createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false, autoRefreshToken: false } })
+export const supabaseUrl = process.env.VITE_SUPABASE_URL || "";
+export const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+export const service = supabaseUrl && serviceRoleKey
+  ? createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } })
   : null;
 
 export function json(res, status, body) { return res.status(status).json(body); }
@@ -21,26 +22,20 @@ export function readJsonBody(req) {
   if (typeof req.body !== "object" || Array.isArray(req.body)) throw new Error("invalid_json");
   return req.body;
 }
+export function missingConfigLabels() { return [!supabaseUrl ? "supabase_url" : null, !serviceRoleKey ? "service_role" : null].filter(Boolean); }
+export function configMissing() { return missingConfigLabels().length > 0; }
+export function logSafeError(scope, error) { console.error(`[photo-submissions/${scope}]`, { name: error?.name, message: error?.message }); }
 
 const rateContext = "witech-photo-submission-rate-limit-v1";
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-export function deriveRateLimitKey(key = serviceRoleKey) {
-  return key ? crypto.createHmac("sha256", key).update(rateContext).digest() : null;
-}
-export function sourceHashForSource(source, key = serviceRoleKey) {
-  const derivedKey = deriveRateLimitKey(key);
-  return derivedKey ? crypto.createHmac("sha256", derivedKey).update(source).digest("hex") : null;
-}
-export function sourceHash(req) {
-  const source = req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.socket?.remoteAddress || "unknown";
-  return sourceHashForSource(source);
-}
+export function deriveRateLimitKey(key = serviceRoleKey) { return key ? crypto.createHmac("sha256", key).update(rateContext).digest() : null; }
+export function sourceHashForSource(source, key = serviceRoleKey) { const derivedKey = deriveRateLimitKey(key); return derivedKey ? crypto.createHmac("sha256", derivedKey).update(source).digest("hex") : null; }
+export function sourceHash(req) { const source = req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.socket?.remoteAddress || "unknown"; return sourceHashForSource(source); }
 export async function consumeSubmissionRate(req) {
   if (!service || !serviceRoleKey) return { allowed: false, unavailable: true };
   const hash = sourceHash(req);
   if (!hash) return { allowed: false, unavailable: true };
   const { data, error } = await service.rpc("consume_photo_submission_rate", { p_source_hash: hash, p_limit: 5 });
-  if (error) return { allowed: false, unavailable: true };
+  if (error) { logSafeError("rate-limit", error); return { allowed: false, unavailable: true }; }
   return { allowed: data === true, unavailable: false };
 }
 
