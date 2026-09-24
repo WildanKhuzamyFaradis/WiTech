@@ -56,7 +56,7 @@ export default function AdminMemberEditor() {
     return () => { document.removeEventListener("keydown", onKeyDown); (openerRef.current || previous)?.focus?.(); };
   }, [pickerOpen]);
 
-  const dirty = JSON.stringify(form) !== JSON.stringify(initial);
+  const dirty = JSON.stringify(form) !== JSON.stringify(initial) || selectedSubmission !== null;
   const setValue = <K extends keyof FormState>(key: K, value: FormState[K]) => setForm((current) => ({ ...current, [key]: value }));
   const visibleSubmissions = useMemo(() => submissions.filter((item) => (!divisionFilter || item.division_id === divisionFilter) && item.name.toLowerCase().includes(search.trim().toLowerCase())), [submissions, divisionFilter, search]);
 
