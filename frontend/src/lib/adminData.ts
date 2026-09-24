@@ -538,7 +538,7 @@ export async function updateMember(
       updatePayload.division_id = !patch.divisionId || patch.divisionId === "core" ? null : patch.divisionId;
     }
     if (patch.year !== undefined) updatePayload.year = String(patch.year).trim();
-    if (patch.avatar !== undefined) updatePayload.avatar = patch.avatar.trim();
+    if (patch.avatar !== undefined) updatePayload.avatar = patch.avatar === null ? null : patch.avatar.trim();
     if (patch.github !== undefined) updatePayload.github = patch.github.trim();
     if (patch.linkedin !== undefined) updatePayload.linkedin = patch.linkedin.trim();
     if (patch.active !== undefined) updatePayload.active = patch.active;

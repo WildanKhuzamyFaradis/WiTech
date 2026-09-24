@@ -37,7 +37,7 @@ export interface Member {
   /** null identifies Core/pengurus, not a missing division. */
   divisionId: string | null;
   year: string;
-  avatar: string;
+  avatar: string | null;
   github: string;
   linkedin: string;
   active: boolean;

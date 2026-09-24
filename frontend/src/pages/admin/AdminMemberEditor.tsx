@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, Save, Search, UploadCloud, X } from "lucide-react";
+import { ArrowLeft, Save, Search, Trash2, UploadCloud, X } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router";
 import { useAdminData } from "../../context/AdminDataContext";
 import type { Member } from "../../lib/types";
-import { deleteMediaFiles, generateStoragePath, isManagedStoragePath, uploadMediaFile, resolveMediaUrl } from "../../lib/storage";
+import { deleteMediaFiles, generateStoragePath, uploadMediaFile, resolveMediaUrl } from "../../lib/storage";
+import { avatarAfterSave, cancelStagedAvatar, confirmAvatarRemoval, shouldDeletePreviousAvatar } from "../../lib/avatarRemoval";
 import { supabase } from "../../lib/supabaseClient";
 
-type FormState = Omit<Omit<Member, "id">, "avatar"> & { avatar: string | File };
+type FormState = Omit<Omit<Member, "id">, "avatar"> & { avatar: string | File | null };
 type Submission = { id: string; name: string; preview_url: string; division_id: string; division_name?: string; linkedin_url?: string | null; github_url?: string | null; created_at: string };
 const emptyForm: FormState = { name: "", role: "Anggota", divisionId: null, year: "2024", avatar: "", github: "", linkedin: "", active: true, sortOrder: 0 };
 const field = "w-full min-h-11 px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm font-semibold text-slate-900 placeholder:text-slate-400 hover:border-slate-400 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15";
@@ -25,6 +26,8 @@ export default function AdminMemberEditor() {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
+  const [avatarRemovalRequested, setAvatarRemovalRequested] = useState(false);
+  const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [divisionFilter, setDivisionFilter] = useState("");
   const [rejecting, setRejecting] = useState<string | null>(null);
@@ -37,7 +40,7 @@ export default function AdminMemberEditor() {
   useEffect(() => {
     if (member) {
       const next = { name: member.name ?? "", role: member.role ?? "", divisionId: member.divisionId ?? null, year: member.year ?? "", avatar: member.avatar ?? "", github: member.github ?? "", linkedin: member.linkedin ?? "", active: member.active ?? true, sortOrder: member.sortOrder ?? 0 };
-      setForm(next); setInitial(next);
+      setForm(next); setInitial(next); setSelectedSubmission(null); setAvatarRemovalRequested(false);
     }
   }, [member]);
 
@@ -56,7 +59,9 @@ export default function AdminMemberEditor() {
     return () => { document.removeEventListener("keydown", onKeyDown); (openerRef.current || previous)?.focus?.(); };
   }, [pickerOpen]);
 
-  const dirty = JSON.stringify(form) !== JSON.stringify(initial) || selectedSubmission !== null;
+  const dirty = JSON.stringify(form) !== JSON.stringify(initial) || selectedSubmission !== null || avatarRemovalRequested;
+  const fallbackAvatar = `https://api.dicebear.com/7.x/notionists/svg?seed=${form.name.trim().replace(/\s+/g, "")}&backgroundColor=transparent`;
+  const hasAvatarToRemove = !avatarRemovalRequested && (selectedSubmission !== null || form.avatar instanceof File || Boolean(form.avatar) || Boolean(member?.avatar));
   const setValue = <K extends keyof FormState>(key: K, value: FormState[K]) => setForm((current) => ({ ...current, [key]: value }));
   const visibleSubmissions = useMemo(() => submissions.filter((item) => (!divisionFilter || item.division_id === divisionFilter) && item.name.toLowerCase().includes(search.trim().toLowerCase())), [submissions, divisionFilter, search]);
 
@@ -84,6 +89,29 @@ export default function AdminMemberEditor() {
     finally { setRejecting(null); }
   };
 
+  const requestRemoveAvatar = () => {
+    if (selectedSubmission) {
+      const next = cancelStagedAvatar({ avatar: form.avatar, selectedSubmission: true, removalRequested: avatarRemovalRequested }, member?.avatar ?? null);
+      setSelectedSubmission(next.selectedSubmission ? selectedSubmission : null);
+      return;
+    }
+    if (form.avatar instanceof File) {
+      const next = cancelStagedAvatar({ avatar: form.avatar, selectedSubmission: false, removalRequested: avatarRemovalRequested }, member?.avatar ?? null);
+      setValue("avatar", next.avatar);
+      setAvatarRemovalRequested(next.removalRequested);
+      return;
+    }
+    if (member?.avatar || form.avatar) setRemoveDialogOpen(true);
+  };
+
+  const confirmRemoveAvatar = () => {
+    setRemoveDialogOpen(false);
+    const next = confirmAvatarRemoval();
+    setSelectedSubmission(null);
+    setAvatarRemovalRequested(next.removalRequested);
+    setValue("avatar", next.avatar);
+  };
+
   if (loading && editing) return <div className="py-20 text-center font-bold text-muted-foreground">Memuat data member...</div>;
   if (editing && !member) return <div className="max-w-3xl py-10"><h1 className="text-3xl font-black mb-3">Member tidak ditemukan.</h1><Link to="/admin/members" className="text-primary font-bold">Kembali ke Member</Link></div>;
 
@@ -93,10 +121,10 @@ export default function AdminMemberEditor() {
     if (form.github.trim() && !/^https?:\/\//i.test(form.github.trim())) { setError("GitHub harus berupa URL lengkap."); return; }
     if (form.linkedin.trim() && !/^https?:\/\//i.test(form.linkedin.trim())) { setError("LinkedIn harus berupa URL lengkap."); return; }
     if (submitting) return;
-    setSubmitting(true); let avatar = typeof form.avatar === "string" ? form.avatar.trim() : ""; let uploaded = "";
+    setSubmitting(true); const previousAvatar = member?.avatar ?? null; let uploaded = "";
     try {
-      if (form.avatar instanceof File) { const result = await uploadMediaFile(form.avatar, generateStoragePath("member", form.avatar.type)); if (!result.ok) { setError(result.error); return; } avatar = result.path; uploaded = result.path; }
-      if (!avatar) avatar = member?.avatar || `https://api.dicebear.com/7.x/notionists/svg?seed=${form.name.trim().replace(/\s+/g, "")}&backgroundColor=transparent`;
+      if (form.avatar instanceof File) { const result = await uploadMediaFile(form.avatar, generateStoragePath("member", form.avatar.type)); if (!result.ok) { setError(result.error); return; } uploaded = result.path; }
+      const avatar = avatarAfterSave({ avatar: form.avatar, selectedSubmission: selectedSubmission !== null, removalRequested: avatarRemovalRequested }, previousAvatar, uploaded || null, fallbackAvatar);
       const payload: Omit<Member, "id"> = { ...form, name: form.name.trim(), role: form.role.trim(), year: form.year.trim(), avatar, github: form.github.trim(), linkedin: form.linkedin.trim() };
       const existingId = editing ? id : createdMemberId;
       const result = existingId ? await updateMember(existingId, payload) : await addMember(payload);
@@ -110,7 +138,11 @@ export default function AdminMemberEditor() {
         const used = await response.json();
         if (!response.ok || !used.ok) { setError("Member sudah tersimpan. Foto belum terhubung; periksa submission lalu tekan Simpan lagi untuk mencoba ulang."); return; }
       }
-      if (editing && member && member.avatar !== avatar && isManagedStoragePath(member.avatar)) await deleteMediaFiles([member.avatar]);
+      if (editing && shouldDeletePreviousAvatar(previousAvatar, avatar)) {
+        const cleanup = await deleteMediaFiles([previousAvatar]);
+        if (!cleanup.ok) console.error("Avatar cleanup failed after member update.");
+      }
+      setInitial(payload); setForm(payload); setSelectedSubmission(null); setAvatarRemovalRequested(false);
       setSuccess(editing ? "Perubahan member berhasil disimpan." : "Member berhasil ditambahkan."); navigate("/admin/members");
     } finally { setSubmitting(false); }
   };
@@ -122,7 +154,19 @@ export default function AdminMemberEditor() {
       {error && <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm font-bold" role="alert">{error}</div>}
       {success && <div className="p-3 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm font-bold" role="status">{success}</div>}
       <section><h2 className="text-lg font-black pb-3 border-b-2 border-border/10">Informasi Utama</h2><div className="grid md:grid-cols-2 gap-5 mt-5"><label className="text-sm font-bold">Nama Lengkap<input required value={form.name} onChange={(e) => setValue("name", e.target.value)} placeholder="Nama lengkap anggota" className={`${field} mt-2`} /></label><label className="text-sm font-bold">Role<input required value={form.role} onChange={(e) => setValue("role", e.target.value)} placeholder="Contoh: Anggota" className={`${field} mt-2`} /></label><label className="text-sm font-bold">Divisi<select value={form.divisionId ?? "core"} onChange={(e) => setValue("divisionId", e.target.value === "core" ? null : e.target.value)} className={`${field} mt-2`}><option value="core">Core (Pengurus)</option>{divisions.map((division) => <option key={division.id} value={division.id}>{division.name}</option>)}</select></label><label className="text-sm font-bold">Angkatan<input required value={form.year} onChange={(e) => setValue("year", e.target.value)} className={`${field} mt-2`} /></label></div></section>
-      <section><h2 className="text-lg font-black pb-3 border-b-2 border-border/10">Foto Profil</h2><div className="mt-5 flex flex-wrap items-center gap-5"><div className="size-20 rounded-xl overflow-hidden bg-muted border-2 border-border/20">{selectedSubmission ? <img src={selectedSubmission.preview_url} alt={`Preview ${selectedSubmission.name}`} className="w-full h-full object-cover" /> : (avatarPreview || (typeof form.avatar === "string" && form.avatar)) && <img src={avatarPreview || resolveMediaUrl(form.avatar as string)} alt="Preview avatar" className="w-full h-full object-cover" />}</div><label className="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-border rounded-lg font-bold cursor-pointer focus-within:ring-2 focus-within:ring-primary"><UploadCloud size={17} /> Ganti Foto<input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => { const file = e.target.files?.[0]; if (file) { setSelectedSubmission(null); setValue("avatar", file); } }} /></label><button ref={openerRef as React.RefObject<HTMLButtonElement>} type="button" onClick={openPicker} className="px-4 py-2.5 border-2 border-border rounded-lg font-bold focus:outline-none focus:ring-2 focus:ring-primary">Pilih dari Upload Masuk</button><p className="text-xs text-muted-foreground">JPG, PNG, atau WEBP. Maksimal 2 MB.</p></div></section>
+      <section>
+        <h2 className="text-lg font-black pb-3 border-b-2 border-border/10">Foto Profil</h2>
+        <div className="mt-5 flex flex-wrap items-center gap-5">
+          <div className="size-20 rounded-xl overflow-hidden bg-muted border-2 border-border/20">
+            {selectedSubmission ? <img src={selectedSubmission.preview_url} alt={`Preview ${selectedSubmission.name}`} className="w-full h-full object-cover" /> : <img src={avatarPreview || resolveMediaUrl(typeof form.avatar === "string" ? form.avatar : "") || fallbackAvatar} alt="Preview avatar" className="w-full h-full object-cover" />}
+          </div>
+          <label className="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-border rounded-lg font-bold cursor-pointer focus-within:ring-2 focus-within:ring-primary"><UploadCloud size={17} /> Ganti Foto<input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(e) => { const file = e.target.files?.[0]; if (file) { setAvatarRemovalRequested(false); setSelectedSubmission(null); setValue("avatar", file); } }} /></label>
+          <button ref={openerRef as React.RefObject<HTMLButtonElement>} type="button" onClick={openPicker} className="px-4 py-2.5 border-2 border-border rounded-lg font-bold focus:outline-none focus:ring-2 focus:ring-primary">Pilih dari Upload Masuk</button>
+          <button type="button" onClick={requestRemoveAvatar} disabled={!hasAvatarToRemove} className="inline-flex items-center gap-2 px-4 py-2.5 border-2 border-red-200 text-red-700 rounded-lg font-bold hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"><Trash2 size={17} /> Hapus Foto</button>
+          <p className="text-xs text-muted-foreground">JPG, PNG, atau WEBP. Maksimal 2 MB.</p>
+          {removeDialogOpen && <div className="fixed inset-0 z-50 bg-black/40 p-4 flex items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="remove-avatar-title"><div className="max-w-sm w-full bg-white rounded-xl p-6"><h2 id="remove-avatar-title" className="text-lg font-black">Hapus foto profil member ini?</h2><div className="flex justify-end gap-3 mt-6"><button type="button" onClick={() => setRemoveDialogOpen(false)} className="px-4 py-2.5 border-2 border-border rounded-lg font-bold">Batal</button><button type="button" onClick={confirmRemoveAvatar} className="px-4 py-2.5 bg-red-600 text-white rounded-lg font-bold">Hapus Foto</button></div></div></div>}
+        </div>
+      </section>
       <section><h2 className="text-lg font-black pb-3 border-b-2 border-border/10">Social Media</h2><div className="grid md:grid-cols-2 gap-5 mt-5"><label className="text-sm font-bold">GitHub<input value={form.github} onChange={(e) => setValue("github", e.target.value)} placeholder="https://github.com/username" className={`${field} mt-2`} /></label><label className="text-sm font-bold">LinkedIn<input value={form.linkedin} onChange={(e) => setValue("linkedin", e.target.value)} placeholder="https://www.linkedin.com/in/username" className={`${field} mt-2`} /></label></div></section>
       <section><h2 className="text-lg font-black pb-3 border-b-2 border-border/10">Pengaturan Member</h2><div className="mt-5 space-y-5"><label className="flex items-start gap-3 text-sm font-bold"><input type="checkbox" checked={form.active} onChange={(e) => setValue("active", e.target.checked)} className="size-4 mt-0.5 accent-primary" /><span>Member Aktif<small className="block font-medium text-muted-foreground mt-1">Member aktif akan ditampilkan di website publik.</small></span></label><label className="block text-sm font-bold max-w-xs">Urutan Tampilan<input type="number" min={0} value={form.sortOrder} onChange={(e) => setValue("sortOrder", Number(e.target.value))} className={`${field} mt-2`} /><small className="block font-medium text-muted-foreground mt-1">Angka lebih kecil ditampilkan lebih dulu.</small></label></div></section>
       <div className="flex justify-end gap-3 pt-5 border-t-2 border-border/10"><Link to="/admin/members" className="px-5 py-3 border-2 border-border rounded-lg font-bold">Batal</Link><button type="submit" disabled={submitting || !dirty} className="inline-flex items-center gap-2 px-5 py-3 bg-primary text-white border-2 border-border rounded-lg font-bold disabled:opacity-50"><Save size={17} />{submitting ? "Menyimpan..." : editing ? "Simpan Perubahan" : "Simpan Member"}</button></div>
