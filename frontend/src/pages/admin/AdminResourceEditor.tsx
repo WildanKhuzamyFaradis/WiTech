@@ -30,7 +30,7 @@ export default function AdminResourceEditor({ kind }: { kind: Kind }) {
   const [typesMissing, setTypesMissing] = useState(false);
   // Compatibility with databases that still use the original events.type CHECK.
   const availableEventTypes = useMemo(() => typesMissing
-    ? [...new Set(["Workshop", "Bootcamp", "Seminar", "Sharing Session", ...d.events.map(event => event.type)])]
+    ? [...new Set(["Workshop", "Bootcamp", "Seminar", "Sharing Session", "Hangout", ...d.events.map(event => event.type)])]
     : eventTypes, [typesMissing, eventTypes, d.events]);
   const [typesRetry, setTypesRetry] = useState(0);
   useEffect(() => {
