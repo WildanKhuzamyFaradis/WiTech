@@ -71,7 +71,7 @@ export interface Event {
   startTime: string;
   endTime: string;
   location: string;
-  type: "Workshop" | "Bootcamp" | "Seminar" | "Sharing Session";
+  type: string; // Validated against the database event_types catalog.
   description: string;
   image: string;
   registrationOpen: boolean;

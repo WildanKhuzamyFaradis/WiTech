@@ -83,7 +83,7 @@ interface EventRow {
   start_time: string; // HH:mm:ss from Postgres TIME
   end_time: string;   // HH:mm:ss
   location: string;
-  type: "Workshop" | "Bootcamp" | "Seminar" | "Sharing Session";
+  type: string; // Validated against the database event_types catalog.
   description: string;
   image: string;
   registration_open: boolean;

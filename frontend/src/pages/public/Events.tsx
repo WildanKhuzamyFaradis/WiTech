@@ -1,10 +1,15 @@
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
 import { Calendar, MapPin, Clock, ArrowRight, Sparkles } from 'lucide-react';
 import { usePublicData } from '../../context/PublicDataContext';
 import PublicPageShell from '../../components/public/PublicPageShell';
 import type { Event } from '../../lib/types';
 import { formatEventDate, formatEventTime, isEventCompleted } from '../../lib/dataContract';
-const EventCard = ({ event, index }: { event: Event, index: number }) => (
+const EventCard = ({ event, index }: { event: Event, index: number }) => {
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const descriptionId = useId();
+  const completed = isEventCompleted(event);
+  const registrationLink = event.registrationLink?.trim();
+  return (
   <div 
     className="group neo-card rounded-3xl overflow-hidden bg-white neo-shadow-sm hover:neo-shadow-md transition-all hover:-translate-y-1 flex flex-col sm:flex-row lg:flex-col xl:flex-row"
     style={{ animationDelay: `${index * 0.1}s` }}
@@ -46,31 +51,38 @@ const EventCard = ({ event, index }: { event: Event, index: number }) => (
           </div>
         </div>
         
-        <p className="text-sm font-medium text-muted-foreground line-clamp-2 mb-6">
-          {event.description}
+        <p id={descriptionId} className={`text-sm font-medium text-muted-foreground whitespace-pre-wrap break-words mb-6 ${detailsOpen ? '' : 'line-clamp-2'}`}>
+          {event.description.trim() || 'Deskripsi event belum tersedia.'}
         </p>
       </div>
       
-      <div>
-        {event.registrationOpen && !isEventCompleted(event) ? (
+      <div className="space-y-3">
+        <button
+          type="button"
+          aria-expanded={detailsOpen}
+          aria-controls={descriptionId}
+          onClick={() => setDetailsOpen(open => !open)}
+          className="inline-flex items-center justify-center gap-2 w-full px-5 py-3 bg-white text-foreground font-black rounded-xl border-2 border-border neo-shadow-sm hover:neo-shadow-md transition-all focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+        >
+          {detailsOpen ? 'Tutup detail' : 'Lihat detail'}
+        </button>
+        {event.registrationOpen && !completed && registrationLink ? (
           <a 
-            href={event.registrationLink} 
+            href={registrationLink}
             className="inline-flex items-center justify-center gap-2 w-full px-5 py-3 bg-primary text-white font-black rounded-xl border-2 border-border neo-shadow-sm hover:neo-shadow-md hover:-translate-y-1 transition-all"
           >
             Daftar <ArrowRight size={18} strokeWidth={3} />
           </a>
         ) : (
-          <button 
-            disabled
-            className="inline-flex items-center justify-center w-full px-5 py-3 bg-muted text-muted-foreground font-bold rounded-xl border-2 border-transparent cursor-not-allowed"
-          >
-            Ditutup
-          </button>
+          <p className="text-center text-sm font-medium text-muted-foreground">
+            {completed ? 'Event sudah selesai' : event.registrationOpen ? 'Link pendaftaran belum tersedia' : 'Pendaftaran ditutup'}
+          </p>
         )}
       </div>
     </div>
   </div>
-);
+  );
+};
 
 export default function Events() {
   const { data, loading, error } = usePublicData();
