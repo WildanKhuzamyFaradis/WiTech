@@ -13,7 +13,7 @@ import {
   isEventCompleted,
 } from "../../lib/dataContract"
 
-const EventCard = ({ event, index }: { event: Event index: number }) => {
+const EventCard = ({ event, index }: { event: Event; index: number }) => {
   const [detailsOpen, setDetailsOpen] = useState(false)
   const descriptionId = useId()
   const completed = isEventCompleted(event)

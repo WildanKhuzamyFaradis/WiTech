@@ -34,7 +34,7 @@ import MediaUploadInput from "../../components/admin/MediaUploadInput"
 
 // A photo entry is either a plain string (URL/path) or a pending file upload
 
-type PhotoEntry = string | { file: File previewUrl: string }
+type PhotoEntry = string | { file: File; previewUrl: string }
 
 interface AlbumFormData {
   slug: string
@@ -412,7 +412,8 @@ export default function AdminGallery() {
           .filter(Boolean)
 
         const filePhotos = form.photos.filter(
-          (p): p is { file: File previewUrl: string } => typeof p !== "string",
+          (p): p is { file: File; previewUrl: string } =>
+            typeof p !== "string",
         )
 
         // Step C: Insert album row (no file photos yet, placeholder cover if needed)

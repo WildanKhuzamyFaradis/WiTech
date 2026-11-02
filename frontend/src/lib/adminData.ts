@@ -338,7 +338,11 @@ export function formatAdminError(err: unknown, defaultMsg: string): string {
 
   if (!err || typeof err !== "object") return defaultMsg
 
-  const errorObj = err as { code?: string message?: string details?: string }
+  const errorObj = err as {
+    code?: string
+    message?: string
+    details?: string
+  }
 
   const code = errorObj.code
 

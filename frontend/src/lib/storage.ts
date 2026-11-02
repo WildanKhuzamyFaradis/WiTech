@@ -308,7 +308,7 @@ export async function uploadMediaFile(
   file: File,
 
   path: string,
-): Promise<{ ok: true path: string } | { ok: false error: string }> {
+): Promise<{ ok: true; path: string } | { ok: false; error: string }> {
   try {
     if (!isManagedStoragePath(path)) {
       console.error(
@@ -349,7 +349,7 @@ export async function uploadMediaFile(
 
 export async function deleteMediaFiles(
   paths: string[],
-): Promise<{ ok: true } | { ok: false error: string }> {
+): Promise<{ ok: true } | { ok: false; error: string }> {
   try {
     if (!paths || paths.length === 0) {
       return { ok: true }

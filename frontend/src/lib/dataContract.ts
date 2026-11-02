@@ -14,7 +14,7 @@ export interface StoreData {
   faqs: FAQ[]
 }
 
-export type MutationResult = { ok: true id?: string } | {
+export type MutationResult = { ok: true; id?: string } | {
   ok: false
   error: string
 }

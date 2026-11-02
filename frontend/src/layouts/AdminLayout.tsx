@@ -168,7 +168,7 @@ export default function AdminLayout() {
     navigate("/admin/login", { replace: true })
   }
 
-  const isActive = (link: { to: string exact?: boolean }) => {
+  const isActive = (link: { to: string; exact?: boolean }) => {
     if (link.exact) return location.pathname === link.to
 
     return location.pathname.startsWith(link.to)
