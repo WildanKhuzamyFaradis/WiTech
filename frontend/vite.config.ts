@@ -47,7 +47,6 @@ export default defineConfig(({ mode }) => {
       figmaReactRefreshBoundaryFallback(),
 
       figmaMakeKitPlugin({ storiesGlob: "/src/**/*.stories.{ts,tsx,js,jsx}" }),
-      assistantApiDevPlugin(localEnv),
     ],
 
     resolve: {
@@ -524,73 +523,6 @@ function figmaMakeKitPlugin(options: {
         } catch (err) {
           next(err as Error)
         }
-      })
-    },
-  }
-}
-
-/** Dev server middleware for /api/assistant/chat */
-function assistantApiDevPlugin(env: Record<string, string>): Plugin {
-  return {
-    name: "assistant-api-dev",
-    configureServer(server) {
-      server.middlewares.use(async (req, res, next) => {
-        const url = req.url?.split("?")[0]
-        if (url !== "/api/assistant/chat") return next()
-        if (req.method !== "POST") {
-          res.statusCode = 405
-          res.setHeader("Content-Type", "application/json")
-          return res.end(
-            JSON.stringify({ ok: false, error: "Method not allowed" }),
-          )
-        }
-
-        let raw = ""
-        req.on("data", (chunk) => {
-          raw += chunk
-        })
-        req.on("end", async () => {
-          try {
-            if (!process.env.APINEX_API_KEY && env.APINEX_API_KEY) {
-              process.env.APINEX_API_KEY = env.APINEX_API_KEY
-            }
-            if (!process.env.APINEX_BASE_URL && env.APINEX_BASE_URL) {
-              process.env.APINEX_BASE_URL = env.APINEX_BASE_URL
-            }
-            if (!process.env.APINEX_MODEL && env.APINEX_MODEL) {
-              process.env.APINEX_MODEL = env.APINEX_MODEL
-            }
-
-            const { default: handler } = await import("./api/assistant/chat.js")
-            const mockReq = Object.assign(req, {
-              body: raw ? JSON.parse(raw) : {},
-            })
-            const mockRes = {
-              setHeader(k: string, v: string) {
-                res.setHeader(k, v)
-              },
-              status(code: number) {
-                res.statusCode = code
-                return {
-                  json(payload: any) {
-                    res.setHeader("Content-Type", "application/json")
-                    res.end(JSON.stringify(payload))
-                  },
-                }
-              },
-            }
-            await handler(mockReq, mockRes)
-          } catch (err: any) {
-            res.statusCode = 500
-            res.setHeader("Content-Type", "application/json")
-            res.end(
-              JSON.stringify({
-                ok: false,
-                error: err?.message || "Server error",
-              }),
-            )
-          }
-        })
       })
     },
   }

@@ -20,14 +20,6 @@ VITE_APINEX_BASE_URL=https://api.apinex.bond/v1
 VITE_APINEX_MODEL=free/gemini-3.8-flash
 ```
 
-### Optional Server-only Variables
-```text
-APINEX_API_KEY=your_apinex_api_key
-APINEX_BASE_URL=https://api.apinex.bond/v1
-APINEX_MODEL=free/gemini-3.8-flash
-```
-
 > [!NOTE]
-> Chatbot sekarang mengirim request langsung dari frontend ke endpoint OpenAI-compatible Apinex (`https://api.apinex.bond/v1`).
-> Karena ini dipanggil dari browser, gunakan variabel dengan prefix `VITE_` agar bisa dibaca di sisi frontend.
-> Endpoint `/api/assistant/chat` tidak lagi menjadi jalur utama untuk AI chat.
+> Chatbot mengirim request langsung dari frontend ke endpoint OpenAI-compatible Apinex (`https://api.apinex.bond/v1`).
+> Nilai `VITE_APINEX_API_KEY` akan masuk ke bundle browser dan dapat dilihat pengguna. Gunakan hanya key yang dibatasi sesuai fitur yang tersedia di provider; jangan gunakan secret key dengan hak akses sensitif.
