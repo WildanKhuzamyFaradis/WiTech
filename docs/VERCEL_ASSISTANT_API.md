@@ -4,7 +4,7 @@ Set the frontend Vercel project root to `frontend`. The frontend includes its ow
 `package-lock.json`; use npm so installs do not depend on the workspace lockfile
 located at the repository root.
 
-- Install command: `npm ci`
+- Install command: `npm ci --include=dev`
 - Build command: `npm run build`
 - Output directory: `dist`
 
