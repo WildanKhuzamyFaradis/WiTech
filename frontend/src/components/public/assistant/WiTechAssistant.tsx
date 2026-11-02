@@ -1,37 +1,53 @@
-import React, { useState, useRef, useEffect } from "react";
-import { MessageCircle, X, Send, Sparkles } from "lucide-react";
-import { usePublicData } from "../../../context/PublicDataContext";
-import type { ChatMessage, AssistantAction } from "../../../lib/assistant/types";
-import { fetchAssistantResponse } from "../../../lib/assistant/assistantClient";
+import React, { useState, useRef, useEffect } from "react"
+
+import { MessageCircle, X, Send, Sparkles } from "lucide-react"
+
+import { usePublicData } from "../../../context/PublicDataContext"
+
+import type { ChatMessage, AssistantAction } from "../../../lib/assistant/types"
+
+import { fetchAssistantResponse } from "../../../lib/assistant/assistantClient"
 
 function generateSafeId(): string {
-  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`
 }
 
 function formatCurrentTime(): string {
-  const d = new Date();
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mm = String(d.getMinutes()).padStart(2, "0");
-  return `${hh}:${mm}`;
+  const d = new Date()
+
+  const hh = String(d.getHours()).padStart(2, "0")
+
+  const mm = String(d.getMinutes()).padStart(2, "0")
+
+  return `${hh}:${mm}`
 }
 
 const DEFAULT_QUICK_ACTIONS: AssistantAction[] = [
   { label: "Divisi", payload: "divisi" },
+
   { label: "Project", payload: "project" },
+
   { label: "Event", payload: "event" },
+
   { label: "Cara Gabung", payload: "cara gabung" },
+
   { label: "FAQ", payload: "faq" },
+
   { label: "Kontak", payload: "kontak" },
+
   { label: "Anggota", payload: "anggota" },
-];
+]
 
 /**
  * Safely renders text with clickable links without dangerouslySetInnerHTML.
  */
+
 function SafeFormattedText({ text }: { text: string }) {
   // Regex to match URLs
-  const urlRegex = /(https?:\/\/[^\s]+)/g;
-  const parts = text.split(urlRegex);
+
+  const urlRegex = /(https?:\/\/[^\s]+)/g
+
+  const parts = text.split(urlRegex)
 
   return (
     <span className="whitespace-pre-line leading-relaxed">
@@ -47,163 +63,221 @@ function SafeFormattedText({ text }: { text: string }) {
             >
               {part}
             </a>
-          );
+          )
         }
-        return <React.Fragment key={i}>{part}</React.Fragment>;
+
+        return <React.Fragment key={i}>{part}</React.Fragment>
       })}
     </span>
-  );
+  )
 }
 
 export default function WiTechAssistant() {
-  const { loading } = usePublicData();
-  const [isOpen, setIsOpen] = useState(false);
-  const [input, setInput] = useState("");
+  const { loading } = usePublicData()
+
+  const [isOpen, setIsOpen] = useState(false)
+
+  const [input, setInput] = useState("")
+
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "init",
+
       role: "assistant",
-      content: "Halo 👋\nAku WiTECH Assistant. Mau cari informasi tentang WiTECH?",
+
+      content:
+        "Halo 👋\nAku WiTECH Assistant. Mau cari informasi tentang WiTECH?",
+
       timestamp: formatCurrentTime(),
+
       responseMeta: {
         type: "direct",
+
         text: "",
+
         actions: DEFAULT_QUICK_ACTIONS,
       },
     },
-  ]);
+  ])
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  const inputRef = useRef<HTMLInputElement>(null)
 
   // Auto scroll to bottom when message arrives
+
   useEffect(() => {
     if (isOpen) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
     }
-  }, [messages, isOpen]);
+  }, [messages, isOpen])
 
   // Focus input when opened
+
   useEffect(() => {
     if (isOpen) {
-      inputRef.current?.focus();
+      inputRef.current?.focus()
     }
-  }, [isOpen]);
+  }, [isOpen])
 
   // Close on Escape key
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
-        setIsOpen(false);
+        setIsOpen(false)
       }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen]);
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [isOpen])
 
   const handleSendMessage = (textToSend: string) => {
-    const trimmed = textToSend.trim();
-    if (!trimmed) return;
+    const trimmed = textToSend.trim()
+
+    if (!trimmed) return
 
     const userMsg: ChatMessage = {
       id: generateSafeId(),
-      role: "user",
-      content: trimmed,
-      timestamp: formatCurrentTime(),
-    };
 
-    const thinkingId = generateSafeId();
+      role: "user",
+
+      content: trimmed,
+
+      timestamp: formatCurrentTime(),
+    }
+
+    const thinkingId = generateSafeId()
+
     const thinkingMsg: ChatMessage = {
       id: thinkingId,
-      role: "assistant",
-      content: "WiTECH Assistant sedang berpikir...",
-      timestamp: formatCurrentTime(),
-      responseMeta: undefined,
-    };
 
-    setMessages((prev) => [...prev, userMsg, thinkingMsg]);
-    setInput("");
+      role: "assistant",
+
+      content: "WiTECH Assistant sedang berpikir...",
+
+      timestamp: formatCurrentTime(),
+
+      responseMeta: undefined,
+    }
+
+    setMessages((prev) => [...prev, userMsg, thinkingMsg])
+
+    setInput("")
 
     fetchAssistantResponse(trimmed)
+
       .then((aiRes) => {
         setMessages((prev) =>
           prev.map((m) => {
-            if (m.id !== thinkingId) return m;
+            if (m.id !== thinkingId) return m
+
             if (aiRes.ok && aiRes.reply) {
               return {
                 ...m,
+
                 content: aiRes.reply,
+
                 responseMeta: {
                   type: "needs_ai",
+
                   text: aiRes.reply,
+
                   actions: [
                     { label: "Lihat Divisi", payload: "divisi" },
+
                     { label: "Hubungi WiTECH", payload: "kontak" },
                   ],
                 },
-              };
+              }
             }
+
             // Differentiate rate limit from a general service failure.
+
             const fallbackText =
               aiRes.reason === "rate_limited"
                 ? "Kamu sudah cukup banyak menggunakan fitur jawaban pintar. Coba lagi sebentar."
-                : "Fitur jawaban pintar sedang tidak tersedia. Aku masih bisa bantu lewat informasi WiTECH yang tersedia.";
+                : "Fitur jawaban pintar sedang tidak tersedia. Aku masih bisa bantu lewat informasi WiTECH yang tersedia."
+
             return {
               ...m,
+
               content: fallbackText,
+
               responseMeta: {
                 type: "direct",
+
                 text: fallbackText,
+
                 actions: [
                   { label: "Divisi", payload: "divisi" },
+
                   { label: "FAQ", payload: "faq" },
+
                   { label: "Hubungi WiTECH", payload: "kontak" },
                 ],
               },
-            };
-          })
-        );
+            }
+          }),
+        )
       })
+
       .catch(() => {
         // Fallback on network failure
+
         const fallbackText =
-          "Fitur jawaban pintar sedang tidak tersedia. Aku masih bisa bantu lewat informasi WiTECH yang tersedia.";
+          "Fitur jawaban pintar sedang tidak tersedia. Aku masih bisa bantu lewat informasi WiTECH yang tersedia."
+
         setMessages((prev) =>
           prev.map((m) =>
             m.id === thinkingId
               ? {
                   ...m,
+
                   content: fallbackText,
+
                   responseMeta: {
                     type: "direct",
+
                     text: fallbackText,
+
                     actions: [
                       { label: "Divisi", payload: "divisi" },
+
                       { label: "FAQ", payload: "faq" },
+
                       { label: "Hubungi WiTECH", payload: "kontak" },
                     ],
                   },
                 }
-              : m
-          )
-        );
-      });
-  };
+              : m,
+          ),
+        )
+      })
+  }
 
   const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
+
     if (input.trim()) {
-      handleSendMessage(input);
+      handleSendMessage(input)
     }
-  };
+  }
 
   const handleActionClick = (action: AssistantAction) => {
-    if (action.payload.startsWith("http://") || action.payload.startsWith("https://")) {
-      window.open(action.payload, "_blank", "noopener,noreferrer");
-      return;
+    if (
+      action.payload.startsWith("http://") ||
+      action.payload.startsWith("https://")
+    ) {
+      window.open(action.payload, "_blank", "noopener,noreferrer")
+
+      return
     }
-    handleSendMessage(action.payload);
-  };
+
+    handleSendMessage(action.payload)
+  }
 
   return (
     <>
@@ -217,10 +291,18 @@ export default function WiTechAssistant() {
         className="fixed bottom-6 right-6 z-40 size-14 rounded-full bg-secondary text-white neo-shadow-md hover:neo-shadow-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring border-2 border-border cursor-pointer group"
       >
         {isOpen ? (
-          <X size={24} strokeWidth={2.5} className="group-hover:rotate-90 transition-transform" />
+          <X
+            size={24}
+            strokeWidth={2.5}
+            className="group-hover:rotate-90 transition-transform"
+          />
         ) : (
           <>
-            <MessageCircle size={26} strokeWidth={2.5} className="group-hover:scale-110 transition-transform" />
+            <MessageCircle
+              size={26}
+              strokeWidth={2.5}
+              className="group-hover:scale-110 transition-transform"
+            />
             <span className="absolute -top-1 -right-1 flex size-3.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
               <span className="relative inline-flex rounded-full size-3.5 bg-primary border-2 border-white" />
@@ -340,5 +422,5 @@ export default function WiTechAssistant() {
         </section>
       )}
     </>
-  );
+  )
 }

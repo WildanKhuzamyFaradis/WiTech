@@ -1,17 +1,25 @@
-import { useEffect } from "react";
-import { Outlet, useLocation } from "react-router";
-import Navbar from "../components/public/Navbar";
-import Footer from "../components/public/Footer";
-import { PublicDataProvider } from "../context/PublicDataContext";
-import WiTechAssistant from "../components/public/assistant/WiTechAssistant";
+import { useEffect } from "react"
+
+import { Outlet, useLocation } from "react-router"
+
+import Navbar from "../components/public/Navbar"
+
+import Footer from "../components/public/Footer"
+
+import { PublicDataProvider } from "../context/PublicDataContext"
+
+import WiTechAssistant from "../components/public/assistant/WiTechAssistant"
 
 // Auto scroll to top on every route change
+
 function ScrollToTop() {
-  const { pathname } = useLocation();
+  const { pathname } = useLocation()
+
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "instant" });
-  }, [pathname]);
-  return null;
+    window.scrollTo({ top: 0, behavior: "instant" })
+  }, [pathname])
+
+  return null
 }
 
 export default function PublicLayout() {
@@ -27,5 +35,5 @@ export default function PublicLayout() {
         <WiTechAssistant />
       </div>
     </PublicDataProvider>
-  );
+  )
 }

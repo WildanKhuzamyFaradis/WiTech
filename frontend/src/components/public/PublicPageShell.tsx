@@ -4,12 +4,14 @@
  * Consistent with existing design language — no redesign.
  */
 
-import type { ReactNode } from "react";
+import type { ReactNode } from "react"
 
 interface Props {
-  loading: boolean;
-  error: unknown;
-  children: ReactNode;
+  loading: boolean
+
+  error: unknown
+
+  children: ReactNode
 }
 
 export default function PublicPageShell({ loading, error, children }: Props) {
@@ -21,17 +23,19 @@ export default function PublicPageShell({ loading, error, children }: Props) {
           <p className="font-medium text-sm">Memuat data…</p>
         </div>
       </div>
-    );
+    )
   }
 
   if (error) {
-    console.error("Public data load error:", error);
+    console.error("Public data load error:", error)
 
     return (
       <div className="min-h-screen bg-background flex items-center justify-center pt-32 px-6">
         <div className="max-w-sm w-full text-center neo-card bg-white rounded-2xl p-8 neo-shadow-sm border-2 border-border">
           <p className="text-2xl mb-4">⚠️</p>
-          <h2 className="font-black text-lg mb-2 tracking-tight">Gagal memuat data.</h2>
+          <h2 className="font-black text-lg mb-2 tracking-tight">
+            Gagal memuat data.
+          </h2>
           <p className="text-sm font-medium text-muted-foreground leading-relaxed">
             Silakan coba lagi.
           </p>
@@ -43,8 +47,8 @@ export default function PublicPageShell({ loading, error, children }: Props) {
           </button>
         </div>
       </div>
-    );
+    )
   }
 
-  return <>{children}</>;
+  return <>{children}</>
 }
