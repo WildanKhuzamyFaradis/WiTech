@@ -1,5 +1,8 @@
 import React, { useState, useRef, useEffect } from "react"
 
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
+
 import { MessageCircle, X, Send, Sparkles } from "lucide-react"
 
 import { usePublicData } from "../../../context/PublicDataContext"
@@ -39,36 +42,68 @@ const DEFAULT_QUICK_ACTIONS: AssistantAction[] = [
 ]
 
 /**
- * Safely renders text with clickable links without dangerouslySetInnerHTML.
+ * Safely renders AI-generated markdown with clickable links without dangerouslySetInnerHTML.
  */
 
 function SafeFormattedText({ text }: { text: string }) {
-  // Regex to match URLs
-
-  const urlRegex = /(https?:\/\/[^\s]+)/g
-
-  const parts = text.split(urlRegex)
-
   return (
-    <span className="whitespace-pre-line leading-relaxed">
-      {parts.map((part, i) => {
-        if (part.match(urlRegex)) {
-          return (
+    <div className="markdown-content leading-relaxed text-inherit [&_p]:mb-1 [&_p:last-child]:mb-0 [&_a]:text-inherit [&_a]:font-bold [&_a]:underline [&_a]:break-all [&_a:hover]:text-primary [&_strong]:font-bold [&_em]:italic [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-1 [&_blockquote]:my-2 [&_blockquote]:border-l-2 [&_blockquote]:border-primary [&_blockquote]:pl-2 [&_blockquote]:text-current/80 [&_pre]:my-2 [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:bg-foreground [&_pre]:p-2 [&_pre]:text-background [&_code]:rounded [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[10px] [&_code]:sm:text-[11px] [&_h1]:mt-3 [&_h1]:mb-2 [&_h1]:text-base [&_h1]:font-black [&_h2]:mt-3 [&_h2]:mb-2 [&_h2]:text-sm [&_h2]:font-black [&_h3]:mt-2 [&_h3]:mb-1 [&_h3]:text-xs [&_h3]:font-black [&_hr]:my-2 [&_hr]:border-border">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        skipHtml
+        components={{
+          a: ({ href, children, ...props }) => (
             <a
-              key={i}
-              href={part}
+              href={href}
               target="_blank"
               rel="noopener noreferrer"
+              {...props}
               className="text-secondary font-bold underline hover:text-primary break-all transition-colors"
             >
-              {part}
+              {children}
             </a>
-          )
-        }
+          ),
+          ul: ({ children }) => <ul className="list-disc pl-5 space-y-1">{children}</ul>,
+          ol: ({ children }) => <ol className="list-decimal pl-5 space-y-1">{children}</ol>,
+          li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+          p: ({ children }) => <p className="leading-relaxed">{children}</p>,
+          strong: ({ children }) => <strong className="font-bold">{children}</strong>,
+          em: ({ children }) => <em className="italic">{children}</em>,
+          blockquote: ({ children }) => (
+            <blockquote className="border-l-2 border-primary pl-2 text-current/80">
+              {children}
+            </blockquote>
+          ),
+          code: ({ children, className, ...props }) => {
+            const isInline = !className
 
-        return <React.Fragment key={i}>{part}</React.Fragment>
-      })}
-    </span>
+            return isInline ? (
+              <code
+                className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] sm:text-[11px]"
+                {...props}
+              >
+                {children}
+              </code>
+            ) : (
+              <code className={className} {...props}>
+                {children}
+              </code>
+            )
+          },
+          pre: ({ children }) => (
+            <pre className="overflow-x-auto rounded-lg bg-foreground p-2 text-background">
+              {children}
+            </pre>
+          ),
+          h1: ({ children }) => <h1 className="text-base font-black leading-relaxed">{children}</h1>,
+          h2: ({ children }) => <h2 className="text-sm font-black leading-relaxed">{children}</h2>,
+          h3: ({ children }) => <h3 className="text-xs font-black leading-relaxed">{children}</h3>,
+          hr: () => <hr className="my-2 border-border" />,
+        }}
+      >
+        {text}
+      </ReactMarkdown>
+    </div>
   )
 }
 
