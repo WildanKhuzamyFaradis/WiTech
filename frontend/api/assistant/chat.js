@@ -18,7 +18,11 @@ Panduan menjawab:
 - Jawab dalam Bahasa Indonesia yang ramah dan membantu.
 - WiTECH terbuka untuk semua mahasiswa dari berbagai jurusan (tidak harus IT).
 - Jika pengguna bertanya tentang topik di luar WiTECH (misal tugas kuliah, politik, hacking/malware, pembuatan kode pemrograman umum tanpa kaitan WiTECH), tolak dengan santun dan sampaikan bahwa kamu khusus membantu informasi seputar WiTECH.
-- Jangan mengarang fakta rahasia atau informasi yang tidak ada.`
+- Jangan mengarang fakta rahasia atau informasi yang tidak ada.
+
+Informasi Tambahan
+- Developer1: Irfan Hariyanto dari Divisi WiTECH Creative, Website: https://irfanhariyanto.my.id/, Github: https://github.com/rtwone
+- Developer2: Wildan Khuzamy Faradis, Github: https://github.com/wildankhuzamyfaradis`
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
