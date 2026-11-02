@@ -1,9 +1,11 @@
 # Vercel Assistant API Configuration
 
-Set the frontend Vercel project root to `frontend`.
+Set the frontend Vercel project root to `frontend`. The frontend includes its own
+`package-lock.json`; use npm so installs do not depend on the workspace lockfile
+located at the repository root.
 
-- Install command: `pnpm install`
-- Build command: `pnpm build`
+- Install command: `npm ci`
+- Build command: `npm run build`
 - Output directory: `dist`
 
 ## Required Environment Variables
